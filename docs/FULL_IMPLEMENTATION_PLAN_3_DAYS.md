@@ -2,6 +2,8 @@
 
 > The current plan is the [two-person, two-day Flutter Web MVP demo plan](PROTOTYPE_PLAN_2_DAYS.md), which replaces the earlier reduced two-day scope. This three-day document is historical reference only; use the current plan for task ownership, schedule, and demo boundaries.
 
+> **Reward model superseded (21 Oct 2026):** the monthly 300-coin/four-session rules, helper-only wallets, award endpoints and reward fixtures below describe an old design. The user has confirmed rewards after each eligible completed activity/helping session for both elders and helpers. Use the current plan's reward section; exact rates and revised API response shapes are still pending. Historical reward details below must not be implemented as current requirements.
+
 **Scope update (21 Oct 2026):** Tanya Dulu is deferred to a future release and is excluded from this build. Place problems and helper report/block remain in scope under G09.
 
 **Team:** two developers. **Time:** three days, eight working hours per developer per day. **Capacity:** 48 person-hours: 40 planned and eight reserved for fixes.

@@ -2,13 +2,15 @@
 
 **Scope update (21 Oct 2026):** Tanya Dulu is a future feature, excluded from the current MVP and prototype builds. The current elder home has three main actions: Saya OK, Jom Keluar, and Minta Teman.
 
+**Confirmed reward update (21 Oct 2026):** eligible completed activities/helping sessions earn coins for participating elders and helpers. The monthly 300-coin/four-session award is superseded. Coin values, the detailed eligibility/attendance rules and exact response JSON remain pending; see the EmasCare Coins section.
+
 ## Executive summary
 
 EmasCare should be built as a module inside the Sime Darby Property (SDP) App that gives older parents who are home alone on weekdays a daily check-in, a reason and a companion to go out, and simple access information, with company provided by neighbours who are free in the daytime and thanked with SDP-only coins. We recommend SDP pilot it for 12 weeks in City of Elmina, starting with the multigenerational households of Ilham Residence.
 
 The target group is large and overlooked. About 74% of Malaysian elders live with a child and only about 6% live alone, yet most services are designed for those living alone. With female labour force participation at a record 69% in Selangor, many of these parents spend 8am to 7pm alone. One in seven older Malaysians falls each year, a third report poor social support, and people aged 61 and above bear 27.9% of online-fraud losses.
 
-The solution follows the **SIANG framework**: **S**aya OK (daily check-in), **I**nvite out (weekday activities), **A**ccess notes (simple, coordinator-updated access information), **N**eighbour companion (vetted daytime helpers in recurring pairs) and **G**ain & give back (a flat monthly coin thank-you for kept pairings, spendable only in SDP malls). The headline AI is a multilingual voice assistant. The MVP runs entirely in the SDP App, and WhatsApp and full route mapping are deferred to Phase 2\.
+The solution follows the **SIANG framework**: **S**aya OK (daily check-in), **I**nvite out (weekday activities), **A**ccess notes (simple, coordinator-updated access information), **N**eighbour companion (vetted daytime helpers in recurring pairs) and **G**ain & give back (coins after eligible completed activities/helping sessions for elders and helpers, accumulated toward SDP voucher redemption). The headline AI is a multilingual voice assistant. The MVP runs entirely in the SDP App, and WhatsApp and full route mapping are deferred to Phase 2\.
 
 The plan's weakest points are evidence and validation. Before the finale, the team must show through interviews, a Daytime Availability Survey and usability tests that elders want company and outings, accept a self-controlled check-in, and that enough residents are free and willing to help.
 
@@ -109,7 +111,7 @@ Japan calls this situation **日中独居 *nicchū dokkyo*** ("daytime living al
 | **I: Invite out** | Weekday activity calendar: tai chi in Central Park, surau/temple talks, PAWE, community garden, mall walking | No reason to go out |
 | **A: Access notes** (MVP) | Each activity on the calendar shows an **access note** (step-free? toilet? benches? walk time) \+ **one live status line** the coordinator can toggle ("Block C lift under repair, use ramp \+3 min"); plain "report a problem" button. *Full route map, routing and AI photo triage are Phase 2* | Unknown route conditions |
 | **N: Neighbour companion** | **Teman Siang helpers**: verified residents who are home in the daytime (students, homemakers, retirees, shift/remote workers) walk with, sit with, or help the elder with their phone; recurring pairs | No companion; traditional volunteers are scarce |
-| **G: Gain & give back** | Helpers who keep a regular pairing receive a **monthly EmasCare Coins thank-you** (commitment-based, not per task), spendable only in the SDP ecosystem; working children can also help on weekends; elders can earn by helping too; **light gamification** | Supply problem; elders losing roles; stigma of "receiving" |
+| **G: Gain & give back** | **Elders and helpers earn coins after each eligible completed activity/helping session**, accumulate them in their own wallets, and redeem vouchers; exact rates remain pending; family give-back and **light gamification** encourage participation | Supply problem; elders losing roles; stigma of "receiving" |
 
 Cross-cutting: privacy by design under the PDPA; clear task boundaries for helpers; place and helper reporting. **Tanya Dulu** scam questions and AI assistance are future work, outside the current MVP.
 
@@ -161,14 +163,14 @@ The windows are illustrative; each elder sets their own times. This is not an em
 
 *Figure 5\. Flow C: barrier report (Phase 2\)*
 
-**Flow D: a helper's month (a relationship, not gigs)**
+**Flow D: a recurring companion's contribution and rewards**
 
 1. Aisyah, 21, a UM student living in Elmina, sets her availability: Tue/Thu 9am–12pm.  
 2. The coordinator proposes a **regular pairing**: "Be Mr Tan's Teman Siang on Tuesdays, starting with tai chi at Central Park. 中文/BM." There is no open job feed to grab tasks from.  
 3. Aisyah and Mr Tan meet with the coordinator (or by video), and both agree to a **4-week trial**.  
 4. Each Tuesday she checks in at the meeting point; after each session both confirm.  
-5. At month end she has kept the pairing (≥4 sessions), so she gets a **"Terima kasih" from SDP: a fixed 300 EmasCare Coins**. Her impact card reads "4 Tuesdays with Mr Tan; he hasn't missed tai chi."  
-6. On Saturday she spends coins on a meal at Elmina Lakeside Mall, or transfers some to her mum's household wallet. At 3 months she also receives a certificate (co-curricular hours) and a milestone thank-you.
+5. After each eligible verified completion, Aisyah and any eligible elder participant receive the configured coins in their own wallets. Their exact reward values still need agreement. Her factual impact card can read "4 Tuesdays with Mr Tan."
+6. Once either participant has enough coins, they can redeem a voucher. The MVP issues mock vouchers; actual merchant redemption and any later transfer or milestone features require separate implementation.
 
 **Flow E: weekend give-back.** Daniel (the working son) joins the Saturday Central Park walk with other elders. His household's **give-back milestone** counter goes up, and his dad sees "Your son helped Puan Rohani today."
 
@@ -198,67 +200,42 @@ Sources: DOSM Labour Force June 2026; DOSM population 2026; MOHE enrolment 31 De
 
 **Lesson from Papa (US "grandkids on demand"):** paying companions scaled supply, but Bloomberg found dozens of harassment/assault allegations across 1.6m+ visits. Insurers dropped Papa, and it had to add multi-source vetting, identity verification, number anonymisation, an emergency button and visit monitoring. **EmasCare builds those in from day one** (see risk R1).
 
-### EmasCare Coins: a monthly thank-you for commitment (not a gig)
+### EmasCare Coins: rewards after eligible completed contributions
 
-**Design decision (15 Oct 2026):** reward **commitment to a relationship**, not individual tasks. Paying per session is what makes a gig market: it is piece-rate, transactional, and pushes helpers to count tasks instead of caring for the elder. It is also what the Gig Workers Act 2025 targets.
+**Confirmed decision (21 Oct 2026):** elders and helpers earn coins after each eligible completed activity or helping session. Their balances accumulate and can be used for voucher redemption. This replaces the earlier fixed monthly 300-coin award and its four-session threshold.
 
-**Relationship, not gig: the five rules**
+**Exact coin values and eligibility details are still pending.** Do not treat the former 300/150-coin monthly figures, RM conversion, milestone bonuses or related budget estimates as approved rates.
 
-| \# | Rule | What it replaces |
+| Participant / event | Intended reward behavior | Still to agree |
 | :---- | :---- | :---- |
-| 1 | **Monthly thank-you for keeping a regular pairing**, not coins per session | 50 coins per completed session |
-| 2 | **Coordinator-proposed recurring pairs**; helper accepts a relationship (4-week trial, then monthly) | An open job feed / first-come dispatch |
-| 3 | **Same flat amount for everyone**, not negotiable, not linked to task type, ratings or number of elders | Variable rates, bonuses, surge |
-| 4 | **Language of thanks**: "Terima kasih from SDP", never "earnings" or "income" | Wallet showing RM earned per job |
-| 5 | **Recognition alongside coins**: impact stories, certificates, co-curricular hours, the annual "Jiran Emas" award | Coins as the only motivator |
+| Elder participates in an eligible community activity | Credit the elder after verified participation | Attendance verification and activity reward amount |
+| Helper completes an eligible helping session | Credit the helper after the session meets its confirmation requirements | Per-task eligibility and helper reward amount |
+| Elder/helper is an eligible participant in a completed activity/helping session | Each eligible beneficiary receives their own configured reward once | Participant eligibility and role-specific values; equal values are not assumed |
+| Elder contributes by helping or teaching | Can qualify as a contributor under the same per-completion model | Supported contribution types and verification |
+| Elder or helper accumulates enough coins | Redeem from their own wallet; backend deducts the voucher price and records the voucher | Confirm reward rates; the two-day demo retains its illustrative 100-coin mock voucher |
 
-**How the thank-you works (pilot values, to be tested):**
+**How the reward flow works:**
 
-| Commitment in a month | Monthly thank-you |
-| :---- | :---- |
-| **Teman Siang** (T2/T3): kept a regular in-person pairing, ≥4 confirmed sessions | **300 coins** (≈ RM30 voucher value) |
-| **Phone buddy** (T1): kept a regular call pairing, ≥6 confirmed calls | **150 coins** (≈ RM15) |
-| Fewer sessions because the **elder** cancelled or was away | Counts as kept (helpers aren't penalised for the elder's schedule) |
-| Helper stops or misses without notice | No thank-you that month; the coordinator checks in and re-pairs |
+1. The underlying activity/helping event is completed and verified. Accompanied sessions retain separate elder/helper confirmations.
+2. The backend applies the agreed event/participant rule and credits each eligible participant's wallet.
+3. The immutable ledger records the source completion, beneficiary, rule/rate and server time. Repeating the same confirmation or retry does not earn another reward.
+4. A genuinely new eligible completion can add more coins. There is no month-end wait or minimum number of sessions for a monthly award.
+5. When the user has sufficient balance, voucher redemption debits the coins once and adds the issued voucher to My Vouchers.
 
-- **One thank-you per helper per month**, whatever the number of elders or sessions. Doing more sessions doesn't earn more, so there's no incentive to farm.  
-- **Milestones** (relationship length, not volume): 3 months with the same pair → \+200 coins \+ certificate; 6 months → \+300 coins \+ "Jiran Emas" nomination.  
-- Elders who help (teaching a recipe class, being a phone buddy) qualify the same way.  
-- **Weekend family helpers** (working children): household **give-back milestones** (e.g. 4 weekend sessions in a quarter → 200 coins to the household), not per-session coins.  
-- **Sessions are still logged and confirmed by both sides.** That's for safety and impact measurement, not for paying out.
+An activity attended during a companion session must not be credited twice to the same participant under separate activity/session representations. Standalone activity attendance needs an agreed verification path. Requested, cancelled or partly confirmed sessions do not qualify. Saya OK remains outside the confirmed activity/help reward scope.
 
-**Why the value is low on purpose:** ≈RM30/month is a gesture, far below agency care (RM30–55 *per hour*) and JKM home help (RM400/month). Nobody can treat it as income, which keeps it on the appreciation side of the line.
+Recurring pairings remain part of the companionship design. The reward change does not introduce an open job feed or change the coordinator's pairing role.
 
-**Where helpers spend (closed loop, SDP ecosystem only):**
+**Wallet and redemption scope:**
 
-- SDP App voucher wallet → vouchers at **Elmina Lakeside Mall, KL East Mall, KLGCC Mall**  
-- Participating township merchants (e.g. TEMU in Elmina)  
-- SDP community events and facilities
+- Both elders and helpers can hold earned demo coins and redeem their own mock vouchers.
+- The product vision links redemption to participating SDP malls, township merchants, events and facilities; actual acceptance and merchant settlement remain future integration work.
+- The current MVP has no coin purchase, cash-out, household transfer, donation, expiry or milestone-bonus implementation.
+- Coin values, reward coverage and event volume must be agreed before estimating the funding pool. The previous monthly reward budget is obsolete.
 
-**Transfer rules:** helpers may **transfer coins within their own verified SDP household** (e.g. a student gives coins to their mum) or **donate to a township cause** (e.g. a community garden fund). **No transfers to unrelated users, no buying coins, no cash-out, 12-month expiry.**
+**Funding and value to SDP (proposed):** SDP community/marketing funding and participating-merchant offers could support redemption. The intended benefits remain resident participation, app engagement, community contribution and merchant visits. Funding arrangements require pilot agreement.
 
-**Why these limits:**
-
-- **Bank Negara:** e-money needs approval, but the 2024 Exemption Orders (P.U.(A) 463/2024) exempt limited-purpose e-money such as **"e-money for storing rewards"**, subject to conditions. A closed-loop, earned-only, non-cashable design stays within the spirit of that exemption. Buying coins or open P2P transfer would push toward regulated e-money. **Confirm with BNM or a lawyer before the pilot.**  
-- **Gig Workers Act 2025:** a flat monthly thank-you for commitment, with no per-task pay, no job feed and no obligation to accept work, is structurally different from platform gig work. It is **still not a legal guarantee**, so get an opinion (R21).  
-- **Anti-gaming:** a flat monthly amount \+ household-only transfer removes the incentive to fake extra sessions or trade coins.
-
-**Who funds the coins:**
-
-- SDP marketing/CSR budget (the cost of a mall voucher is partly recovered as mall spend)  
-- **Merchant co-funding** (tenants fund discounts in exchange for footfall)  
-- Later: corporate CSR sponsors (e.g. via Yayasan Sime Darby)
-
-Families **cannot** buy coins to pay helpers. That would make it a paid service (e-money and Gig Workers Act implications).
-
-**Value to SDP:**
-
-- Coins pull residents into the SDP App and its malls  
-- They create a measurable ESG "S" programme  
-- Helpers become SDP App users who aren't necessarily owners (students, tenants)  
-- A **neighbourhood scheme** is easier to defend reputationally than a care-labour platform (Papa lesson)
-
-**Future option, not in the pitch:** if SDP later wants paid micro-jobs, that is a separate product. It would need SOCSO SKSPS registration, stronger vetting, and its own pitch.
+**API handoff:** the separately supplied proposed v1 contract's monthly eligibility/award functions and helper-only wallet/redemption permissions are superseded. Revise them for per-completion rewards and both roles before implementation. Exact response JSON remains unconfirmed.
 
 ### Daytime Availability Census (the research built into sign-up)
 
@@ -276,7 +253,7 @@ Helper sign-up doubles as research on **how many people are free in the daytime,
 | Layer | Weeks 1–2 | Weeks 3–10 | Weeks 11–12 |
 | :---- | :---- | :---- | :---- |
 | Elders & families | Recruit 30–50 via Ilham Residence and RA; consent; set check-in times | Daily check-ins, 2 outings per week | Exit interviews; before/after measures |
-| Teman Siang helpers | Recruit 20–30 (students, homemakers, retirees) via RA, school-parent groups, UM/nearby campuses; availability census; tiered onboarding \+ police clearance for T2+ | Recurring pairs; monthly thank-you coins; monthly debrief | Retention survey; availability heatmap report |
+| Teman Siang helpers | Recruit 20–30 (students, homemakers, retirees) via RA, school-parent groups, UM/nearby campuses; availability census; tiered onboarding \+ police clearance for T2+ | Recurring pairs; rewards after eligible verified completions; monthly debrief | Retention survey; availability heatmap report |
 | Coordinators | 1 RA lead \+ 1 SDP community officer | Daily dashboard check (15 min) | Playbook write-up |
 | Access notes | Team site visit: notes for \~5 activity places (MVP) → staff audit adds more | Coordinator updates live status; "report a problem" inbox | Note accuracy spot-check |
 | SDP | App module \+ coin/voucher pool \+ merchant onboarding | Weekly KPI report | Go / no-go for more townships |
@@ -339,9 +316,9 @@ Helper sign-up doubles as research on **how many people are free in the daytime,
 
 | User | Game element | Why | What we avoid |
 | :---- | :---- | :---- | :---- |
-| Elder | **Weekly outing goal** (a ring that fills: "2 of 2 outings this week") \+ optional mascot that "enjoys" outings | Goals work; the mascot is optional and tested | Streaks that "break", guilt messages, points for check-ins (never gamify the safety signal) |
+| Elder | **Weekly outing goal** (a ring that fills: "2 of 2 outings this week") \+ coins for eligible verified activity/help participation \+ optional mascot | Progress, participation and appreciation; coin rates still need agreement | Streaks that "break", guilt messages, points for check-ins (never gamify the safety signal) |
 | Elder \+ family | **Shared progress / cheer**: the son sees "Dad went to tai chi" and taps a clap; Dad sees the cheer | Collaboration \+ support partner \= strongest evidence | Comparing elders with each other |
-| Helper | **Impact story cards** ("You've walked 8 times with Mr Tan; he hasn't missed tai chi since Sept") \+ monthly EmasCare Coins thank-you (flat, for commitment) | Purpose and impact beat badges | Generic badge collections, individual leaderboards |
+| Helper | **Impact story cards** from confirmed sessions \+ coins after each eligible verified helping completion; wallet and voucher redemption | Factual impact and appreciation; coin rates still need agreement | Generic badge collections, individual leaderboards |
 | Household | **Family give-back counter** (weekend helping by any family member) | Reciprocity, "families helping families" | Turning help into a transaction |
 | Township | **Collective goal** ("Elmina this month: 312 of 500 walks together") | Collaboration, community pride, SDP PR value | Ranking townships or people |
 
@@ -507,8 +484,8 @@ Why voice is the headline:
 | R1 | **Safeguarding incident** (abuse, theft, exploitation by a helper). Rewards raise the risk by attracting people motivated only by coins | High | Papa (US): dozens of harassment/assault allegations across 1.6m+ visits; insurers dropped it. Malaysia has no public background-check database; police clearance via PDRM/MyEG takes \~1–2 weeks | **Tiered helpers** (T1 phone → T2 public space with police clearance → T3 regular); number anonymisation; prominent emergency button; ID via SDP resident verification; training; **public-space-first** (meet at door or park, no home entry in pilot); check-in/out per session; block/report; named coordinator; two-person rule for door knocks |
 | R2 | **"Home alone" data leaks** → burglary or scam targeting | High | PDPA treats health as sensitive; amended Act adds breach notification, DPO, fines up to RM1m | Never store or display "alone" as an attribute; helpers see task \+ meeting point only; role-based access \+ audit log; data minimisation; SDP as data controller with a named DPO |
 | R3 | **Elders reject check-ins as surveillance** | High | FPF 2026: look-ins feel like surveillance; \~79% reject caregivers consenting for them | Elder-owned consent and settings; daily status only (no location, camera or content); "pause today" button; position it as "Saya OK", not "monitoring" |
-| R4 | **Not enough weekday helpers** | Medium (was High) | Large national pools: ≈3.08m homemakers, ≈2.87m in schooling/training, ≈2.9m aged 65+; KampungKakis struggled with volunteer time; Nanjing intention–action gap | Invite people who are home in the daytime \+ monthly coin thank-you; availability census to target recruitment; recurring small commitments (2 × 1 hr/week); group activities (1 helper : 3–4 elders at tai chi); weekend reciprocity; honest "no helper available" with coordinator fallback |
-| R5 | **Coins crowd out goodwill**, feel like underpayment, or attract coin-farmers | Medium | Motivation crowding ("pay enough or don't pay at all", Gneezy & Rustichini 2000); Nanjing: personal growth was the strongest motive | **Commitment-based flat monthly thank-you** (no per-session pay, so no farming); "Terima kasih" language; impact stories \+ certificates; two-sided confirmation; household-only transfer |
+| R4 | **Not enough weekday helpers** | Medium (was High) | Large national pools: ≈3.08m homemakers, ≈2.87m in schooling/training, ≈2.9m aged 65+; KampungKakis struggled with volunteer time; Nanjing intention–action gap | Invite people who are home in the daytime with the revised per-completion rewards; availability census to target recruitment; recurring small commitments (2 × 1 hr/week); group activities (1 helper : 3–4 elders at tai chi); weekend reciprocity; honest "no helper available" with coordinator fallback |
+| R5 | **Coins crowd out goodwill**, feel like underpayment, or attract coin-farmers | Medium | Motivation crowding ("pay enough or don't pay at all", Gneezy & Rustichini 2000); Nanjing: personal growth was the strongest motive | Verify eligible completion and beneficiaries; deduplicate rewards by underlying event and participant; configure agreed rates on the backend; retain factual impact and recognition; test the revised model with elders and helpers |
 | R6 | **Alert fatigue / false alarms** from missed check-ins | Medium | Iwate system worked by pairing automated check-ins with human follow-up | Elder-chosen windows; reminder before escalation; "away today" pre-set; tune thresholds in pilot; track false-alarm rate |
 | R7 | **AI mishears a voice request or misses a concern word** (and, in Phase 2, misclassifies barriers) | Medium | Code-switching is hard for general models; Project Sidewalk photo AI \~81% precision | Always read back \+ confirm; concern flags tuned for high recall; buttons remain the primary path; benchmark Gemini vs ILMU; publish accuracy |
 | R8 | **Reports go nowhere** (SDP doesn't own most public paths) | Medium | After handover, councils maintain roads and walkways | Owner field per asset; SISPAA prefill; monthly digest to SDP and council; show status honestly |
@@ -524,7 +501,7 @@ Why voice is the headline:
 | R18 | Senior Citizens Bill (expected early 2027\) may add duties | Low | Draft ready; tabling delayed | Monitor; design already rights-based |
 | R19 | **WhatsApp policy** (Phase 2 only): Meta bans general-purpose AI chatbots on the Business Platform (from 15 Jan 2026\) | Low | Task-specific bots (bookings, reminders, support) allowed | WhatsApp stays structured (buttons, reminders); voice AI only in the SDP App; human hand-off |
 | R20 | **Gamification backfires**: guilt from broken streaks, competition, or helping feeling transactional | Medium | Badges show no effect for already-motivated volunteers; gamification helps engagement but health effects are mixed | No streak penalties, no leaderboards, no points for check-ins; impact stories over badges; collective goals |
-| R21 | **Gig Workers Act 2025 (Act 872\)**: rewarded helpers via a platform may be read as gig work | Medium | In force March 2026; platforms must register gig workers under SOCSO SKSPS and deduct 1.25% per task; fines up to RM50,000 | **Chosen: commitment-based appreciation**: flat monthly thank-you, no per-task pay, no job feed, no duty to accept, low non-cash value. **Still get a legal opinion.** Fallback: register helpers under SKSPS (tiny cost, and it **gives helpers accident coverage**) |
+| R21 | **Rewarded-helper classification** under the revised per-completion model | Medium | The earlier monthly-appreciation reasoning is superseded; it does not establish the classification of the revised design | Review the revised reward model before a real pilot; do not rely on the previous flat-monthly rationale. The current build uses synthetic demo coins/vouchers |
 | R22 | **Coins treated as regulated e-money** | Medium | BNM: limited-purpose exemption for "e-money for storing rewards" subject to conditions; open-loop or purchasable value needs approval | Earned-only, closed-loop (SDP malls \+ participating merchants), non-cashable, household-only transfer, expiry; confirm with BNM/lawyer |
 | R23 | **Availability data reveals who is home** | Medium | Same burglary/scam risk as "home alone" status | Aggregate heatmaps only (cell ≥5); never show individual schedules; helpers see only their own matches |
 
@@ -535,7 +512,7 @@ Why voice is the headline:
 | Part-time community coordinator | \~RM6,000 | \~RM2,000/month, assumption |
 | Helper police clearance (T2+, \~25 people) | Fee per clearance unconfirmed; pay via MyEG | n/a |
 | Group personal-accident insurance | Quote needed | n/a |
-| EmasCare Coins (voucher value) | \~RM3,000–3,500 | e.g. 25 helpers × RM30/month × 3 months ≈ RM2,250, plus milestones and household give-back ≈ RM1,000; partly merchant-funded and recovered as mall spend |
+| EmasCare Coins (voucher value) | To estimate after reward rates and eligibility are agreed | Model eligible completions × eligible participants × agreed coin value and expected redemption; the former monthly-helper estimate is superseded |
 | AI API \+ cloud | \< RM500 | Pilot scale |
 | WhatsApp Business messaging | RM0 in MVP / pilot | Phase 2 only |
 
@@ -548,8 +525,8 @@ These are the assumptions that would sink EmasCare if wrong, ranked by **impact 
 | **1** | Daytime-alone elders **want** company or outings, not just quiet | Desirability | Interview ≥5 daytime-alone elders (by 28 Oct): "Last weekday, where did you want to go but didn't?" | ≥3 of 5 describe an unmet outing or company need |
 | **2** | Elders **accept a daily check-in** they control (not seen as surveillance) | Desirability | Show the check-in mock to elders and families separately; ask both "who should see what?" | ≥4 of 5 elders accept with their own settings; families accept "daily status only" |
 | **3** | Working children **worry enough to act**: book help, install the module, help on weekends | Desirability / viability | Quick survey of ≥30 working adults with a parent at home (UM/GDGoC networks) \+ 5 interviews | ≥50% would use it; ≥30% would help ≥2 hrs/month on weekends |
-| **4** | Enough residents are **free on weekday daytime** and would commit to a **regular weekly pairing** (≈2 hrs/week) with a monthly thank-you | Feasibility | **Daytime Availability Survey** (n≥50: Elmina/Subang community groups \+ UM students) by 28 Oct: free windows, role, willingness, reward preference | ≥30% free ≥2 hrs on weekdays AND willing; clear peak windows identified |
-| 4b | A **monthly thank-you for commitment** motivates as well as per-task coins would, without crowding out goodwill; SDP-mall vouchers are attractive | Desirability | Same survey: compare "RM30 voucher/month for a regular pairing" vs "RM5 per session" vs certificate vs nothing | Monthly thank-you ≥ per-session preference among students/homemakers; ≥60% would use SDP-mall vouchers |
+| **4** | Enough residents are **free on weekday daytime** and would commit to a **regular weekly pairing** (≈2 hrs/week) with the revised activity/help rewards | Feasibility | **Daytime Availability Survey** (n≥50: Elmina/Subang community groups \+ UM students) by 28 Oct: free windows, role, willingness, reward preference | ≥30% free ≥2 hrs on weekdays AND willing; clear peak windows identified |
+| 4b | Per-completion coins motivate participation by elders and helpers without crowding out goodwill; SDP-mall vouchers are attractive | Desirability | Test eligible action types, reward preferences and proposed rates with both roles; compare coins, recognition and participation without coins | Choose rates and eligibility from feedback; validate interest in SDP-mall vouchers before a pilot |
 | **5** | Elders **trust a vetted neighbour they haven't met** | Desirability | Interview question \+ reaction to the helper profile card | Majority trust with conditions we can meet (SDP-verified, police clearance, same language/gender) |
 | **6** | **SDP sees business value** and can integrate into its app | Viability | Mentor session: pilot interest, app module path, coordinator funding | Mentor confirms a plausible path, or names a blocker we can address |
 | **7** | AI barrier triage is **accurate enough** to save staff time (Phase 2\) | Feasibility | Labelled 100-photo test (by 4 Nov) | ≥80% category accuracy; high-severity precision ≥0.8 |
@@ -585,7 +562,7 @@ These are the assumptions that would sink EmasCare if wrong, ranked by **impact 
 | Helper sign-up with availability census, tier badge, check-in/out, rating, block/report | Background checks API |
 | **Teman voice assistant**: voice → check-in reply / booking, with read-back | Scam-question voice intent (future Tanya Dulu); open-ended AI chat companion |
 | Light gamification: outing goal ring, family cheer, helper impact cards \+ coins, township collective goal | Levels, XP, leaderboards, avatars, tradable tokens |
-| EmasCare Coins wallet mock: month-end "Terima kasih" for a kept pairing → household transfer → redeem at a mock Elmina Lakeside Mall voucher | Real merchant settlement, coin purchase, per-task pay, open job feed |
+| Elder/helper coin wallets: eligible verified completion → configured coin credit → accumulate → redeem a mock Elmina Lakeside Mall voucher | Real merchant settlement, coin purchase/cash-out, household transfers/donations/expiry, cash payments for tasks, open job feed |
 | Availability heatmap (aggregate) on the coordinator dashboard | Predictive staffing |
 | BM \+ EN UI; large-text mode; screen-reader labels | Full 中文/Tamil (show roadmap) |
 | Optional mascot guide toggle | Pet help, transport (deep-link to GrabAssist only) |
@@ -614,7 +591,7 @@ A later release may let elders ask a trusted person about a suspicious call or m
 1. "At 8am, Mr Tan's son leaves for KL. Until 7pm, the ground-floor room SDP designed for him is the only place he goes."  
 2. Data: 74% vs 6%; 69% female LFPR; *nicchū dokkyo*; 1 in 7 falls; 27.9% of scam losses.  
 3. Gap table (Existing solutions and the gap).  
-4. SIANG framework \+ live demo (Flow A): Mr Tan *speaks* his booking to Teman, does the check-in, the outing ring fills, his son taps a clap, Kak Lina's impact card updates, and at month end she gets SDP's "Terima kasih" coins for keeping her pairing.  
+4. SIANG framework \+ live demo (Flow A): Mr Tan *speaks* his booking to Teman, does the check-in, and completes an outing with Kak Lina. Verified completion updates progress and credits eligible participants at the agreed rates; his son sends a cheer, and a participant with sufficient coins redeems a mock voucher.
 5. Evidence: interview quotes \+ survey numbers \+ AI accuracy.  
 6. Why SDP: Value Multiplier; app module; mall vouchers; multigenerational buyers.  
 7. Pilot: Elmina, 12 weeks, KPIs, cost; scale to 26 townships; Phase 2 adds full route mapping \+ OSM export.  

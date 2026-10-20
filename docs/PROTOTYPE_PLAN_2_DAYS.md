@@ -6,6 +6,8 @@
 
 **Scope basis:** the full EmasCare feature set discussed with the user, including coins, wallet, redemption, light gamification, voice booking, and a coordinator view. Tanya Dulu is future work and is not part of this build.
 
+**Confirmed reward update (21 Oct 2026):** both elders and helpers earn coins after each eligible completed activity or helping session. This replaces the monthly 300-coin award and four-session eligibility threshold. The approved timing is after verified completion; rates and the detailed event/participant eligibility table are not yet agreed. The proposed v1 API contract supplied separately still describes the old monthly model and must be revised before implementation. Exact response JSON shapes also remain pending. A reward's completion timestamp may still be used for local reporting, but month boundaries no longer determine eligibility.
+
 **Delivery target:** a small, persistent, hosted demonstration of the connected product journey. Every feature family is represented, but some service setup and timing are seeded or operator-triggered as specified below. This is a high-risk stretch target starting from a documentation-only repository; 32 person-hours cannot establish a pilot-ready service or guarantee every full product requirement.
 
 **Platform:** build one responsive **Flutter Web application**. Residents open the hosted URL in a phone browser; the same app opens on a laptop, with more space for the coordinator view. Elder, family, helper, and coordinator are role-specific views within that app. Firebase provides authentication, storage of app data, and backend functions. The presentation includes a mock SDP home/module entry. Native Android/iOS releases and actual SDP app integration are later work. Flutter supports building and serving a browser application; see the [Flutter Web guide](https://docs.flutter.dev/platform-integration/web/building).
@@ -38,8 +40,8 @@ Assumptions that must hold:
 | Recurring neighbour companion | Coordinator sees an accepted regular trial pairing and assigns a compatible available helper from it. Helper can update availability. | Pair and trial acceptance are seeded and labelled. No matching marketplace, vetting integration, or automatic generation of a recurring calendar. |
 | Session completion | Assigned helper accepts, starts, and finishes; helper and elder each confirm. Only then is the session completed. | One main session is demonstrated live; cancelled and partially confirmed sessions do not count. |
 | Teman voice AI | Short supported BM/EN recording produces an editable booking draft, read-back, and explicit confirmation. A manual form remains available. | Real supported audio and a real API call are the target. No Mandarin/Tamil claim without testing; no concern classifier, AI impact prose, or weekly AI digest in this sprint. |
-| Coins and wallet | Coordinator requests a demo monthly eligibility check; backend awards 300 coins once, writes a ledger entry, and updates the helper wallet. | Three historical qualifying sessions are seeded; one live fourth session qualifies. This previews a month-end award using synthetic data. Phone-buddy awards and cancellation exceptions are outside the demo rules. |
-| Redemption | One mock voucher costs 100 demo coins; redeem atomically; show remaining balance, history, and the issued item in My Vouchers. | No merchant acceptance, purchase of coins, cash-out, household transfers, donations, expiry, or settlement integration. |
+| Coins and wallet | After each eligible verified completion, backend credits the configured coins to eligible elder/helper participants once, records ledger entries, and updates their wallets. | Coin values and the event/participant eligibility table remain pending. No monthly threshold or monthly award action. Unverified, cancelled, or partly confirmed sessions do not earn coins. |
+| Redemption | Both elders and helpers can use their own accumulated coins for a mock voucher; redeem atomically; show remaining balance, history, and My Vouchers. | Retain the illustrative 100-coin demo voucher price; no new exchange rate or reward amounts are approved. No merchant acceptance, coin purchase, cash-out, transfers, donations, expiry, or settlement integration. |
 | Light gamification | Weekly outing progress, consented family cheer, helper impact count/card, household give-back count, and a township goal bar. | Simple counts/templates from confirmed synthetic/live sessions; no AI required. A single seeded weekly goal and township target; no goal editor, leaderboard, or streak penalties. |
 | Coordinator and reporting | A compact coordinator screen shows pair/request actions, check-in exceptions, place warnings, text reports/block actions, and a small aggregate availability table. | Fixed synthetic dataset; suppress availability groups smaller than five people. No uploads, live research export, full case management, or ratings. |
 
@@ -69,7 +71,7 @@ A is primarily the UI developer, owning the resident experience and shared Flutt
 | App shell, navigation, widgets, assets, BM/EN text | Owns | Supplies coordinator copy |
 | Shared Dart models and `EmasRepository` adapter | Owns; creates compiling method stubs first | Supplies payload examples and reviews semantics |
 | Elder and family views | Owns | Supplies authorized data and mutations |
-| Helper session and wallet/redeem views | Owns | Supplies lifecycle/reward commands |
+| Helper sessions and elder/helper wallet/redeem views | Owns | Supplies lifecycle/reward behavior |
 | Gamification UI and family-cheer interaction | Owns | Supplies protected writes and progress summaries |
 | Voice recording, playback/read-back, draft UI | Owns | Owns audio parsing/validation endpoint |
 | Coordinator screen | Registers agreed screen once | Owns screen, reuses A's components/repository |
@@ -96,7 +98,7 @@ The feature rows are stretch targets under the assumptions above. At each checkp
 | 0-1 | Scaffold Flutter Web, register four routes/placeholders, agree repository/models; smoke-test recording and read-back on the presentation browser. | Initialize Firebase/Functions, seed primary identities, verify a callable and an actual audio API request; agree payload examples. | **M0:** compiling shell, agreed contract, infrastructure mode and voice feasibility known. |
 | 1-2.5 | Elder Saya OK/settings and family daily-status view, with loading/consent states. | Auth profiles, scoped reads/rules, settings/check-in commands, phone-response action. | A check-in survives refresh and reaches only the permitted family. |
 | 2.5-4 | Activity/access cards, manual booking and family proxy form; use the same request command. | Request creation, accepted-pair assignment, availability/reservation checks, session transitions and distinct confirmations. | One manual request reaches the assigned helper. |
-| 4-5 | Helper availability and accept/start/finish/confirm actions; wire elder confirmation. | One monthly award transaction, wallet/ledger reads, one voucher redemption transaction. | Completed session and protected reward commands run in the backend. |
+| 4-5 | Helper availability and accept/start/finish/confirm actions; wire elder confirmation and both participants' reward updates. | Connect verified completion to per-participant reward entries, wallet/ledger reads, and one voucher redemption transaction using agreed rates. | Completion credits each eligible participant once; protected reward/redemption behavior runs in the backend. |
 | 5-6 | Integrate elder/family/helper flow against real demo data; expose wallet values for the walkthrough. | Deploy backend/rules/indexes and first hosted build with A; fix contract/permission failures. | **M1:** check-in -> request -> assign -> both confirm works across the role views; award/redemption pass authenticated backend smoke calls before their finished UI. |
 | 6-7.5 | Record -> editable draft -> read-back -> explicit booking confirmation; manual error fallback. | Audio parsing/validation; begin compact coordinator screen using existing commands. | Real audio target exercised; coordinator can operate the main pair/request. |
 | 7.5-8 | Reserve for blockers. | Reserve for blockers. | No new unplanned feature work. |
@@ -105,7 +107,7 @@ The feature rows are stretch targets under the assumptions above. At each checkp
 
 | Working hours | Developer A | Developer B | Checkpoint |
 | --- | --- | --- | --- |
-| 0-1.5 | Finish wallet, Redeem and My Vouchers; add weekly outing ring and helper impact card. | Finish coordinator actions, text report/block command and UI, and progress-summary calculations. | Wallet and redemption persist; coordinator owns the necessary operations. |
+| 0-1.5 | Finish elder/helper wallet, Redeem and My Vouchers; add weekly outing ring and helper impact card. | Finish coordinator actions, text report/block command and UI, and progress-summary calculations. | Both roles can see earned coins and their own redemptions; coordinator owns the necessary operations. |
 | 1.5-2.5 | Family cheer, household give-back count, township goal bar; connect permitted summaries. | Demo due processor, warning expiry/update, small aggregate availability table and supporting commands. | Every feature family has a connected demo path or a declared gap. |
 | 2.5-3.5 | BM/EN core text, large targets, phone/laptop layout, pending/error/insufficient-balance states. | Focused authorization, reservation, completion, award, and redemption checks; fix failures. | **M2:** feature freeze; verify the coverage matrix against actual behavior. |
 | 3.5-5 | Joint integration checks; analyze/build release; verify microphone and read-back on hosted origin. | Joint checks; deploy integrated release; verify persisted data across separate accounts. | **M3:** submission candidate and documented limitations. |
@@ -127,7 +129,7 @@ Keep one short contract file with sample documents, method parameters/results, a
 | Activity/place | Activity date/time and place ID; access details, Maps link, current warning/expiry. |
 | Helper/pairing | Approved/tier/task/language attributes, availability; accepted trial pairing, start/end, cadence. |
 | Request/session | Elder, creator, pairing, helper, task/place/activity, time, state, actor-specific confirmations. |
-| Wallet/ledger/redemption | Server-owned integer balance; immutable credit/debit entries; voucher price, owner, code and creation time. |
+| Wallet/ledger/redemption | Own wallet for eligible elders and helpers; server-owned integer balance; immutable credit/debit entries with source completion, beneficiary, rule/rate used, and server time; voucher price, owner, code and creation time. Exact field names/response shapes remain to be agreed. |
 | Notifications/reports/cheers | Authorized recipient/author, related record, minimal text/status, consent requirements. |
 | Progress/availability summary | Confirmed outing/helping counts and targets; sanitized cohort counts only. |
 
@@ -138,7 +140,7 @@ Keep one short contract file with sample documents, method parameters/results, a
 - `createRequest`, `assignRequest`, `setHelperAvailability`, and `transitionRequest`.
 - `parseVoiceBooking` returning an editable draft and read-back text; it never writes a booking.
 - `setPlaceWarning`, `submitReport`, `blockHelper`, and authorized report review.
-- `awardDemoMonthlyThanks`, `redeemDemoVoucher`, and own-wallet/redemption reads.
+- Verified completion triggers backend reward crediting; remove `awardDemoMonthlyThanks` and any monthly eligibility preview from the proposed contract. No client-supplied reward amount or general-purpose public award command. Retain `redeemDemoVoucher` and own-wallet/redemption reads for both elder and helper roles; agree exact response shapes before wiring them.
 - `sendFamilyCheer` and authorized/sanitized progress-summary reads.
 - Coordinator-only `processDemoDueItems`, restricted to the known demo project/fixtures and current server time.
 
@@ -157,15 +159,19 @@ Session states:
 
 These rules are essential to the requested demo, not decorative UI:
 
-1. Seed three distinct mutually confirmed sessions for the same accepted pair in the selected demo month. The fourth session is completed live.
-2. Coordinator runs the labelled **Demo monthly award** action. Backend verifies four qualifying sessions for that pair/month and grants **300 demo coins once per helper per month**, across all their pairs.
-3. Write the award ledger entry and balance atomically. Use a deterministic helper/month award identity. More sessions never generate extra monthly awards.
-4. The single voucher has a backend-controlled cost of **100 demo coins**. Check funds and create the debit, redemption record/code and retry receipt atomically. A repeated request returns the same voucher; an intentional second purchase uses a new request ID.
-5. The main story is **0 -> 300 coins -> redeem once -> 200 coins**, surviving refresh. My Vouchers shows the owned redemption and its demo label.
-6. Weekly outing progress counts distinct completed sessions. Seed a goal of two; cancelled, requested or partially confirmed sessions do not count. Saya OK never earns coins or outing points.
-7. Only the linked, currently consented family can send/read the related cheer. Repeated taps must not create an accidental flood of duplicate cheers.
-8. Helper impact uses factual counts. Household weekend helping and township totals include clearly labelled synthetic history plus live confirmed sessions. Never invent an impact claim from AI wording.
-9. The aggregate availability view uses synthetic cohorts of at least five; smaller cells show insufficient data. No individual availability is shown to residents.
+1. Eligible completed activity participation and helping sessions earn coins for eligible participating elders and helpers. Each new eligible completion can add another reward. There is no four-session threshold, month-end wait, or fixed monthly 300-coin award.
+2. Agree the action/participant eligibility table and coin values before implementing reward amounts. User confirmation establishes the per-completion model and both roles; it does not approve specific rates or make every task automatically eligible.
+3. Reuse the mutually confirmed session completion event for accompanied activities and help. Activity participation without a companion needs an agreed attendance record and verification rule; do not invent an attendance endpoint or rely on a client-declared completion.
+4. One activity attended during a companion session is one underlying participation event for that participant. Do not credit it once as an activity and again as a session. Deduplicate by the underlying completion plus beneficiary, not helper/month or the caller's retry key.
+5. Backend crediting records the configured rule/rate and verified completion time. Reward entries and balances commit consistently, and recovery/retries finish any missing credit without duplicating an existing one. More eligible completions can earn more coins; repeat confirmation of the same completion cannot.
+6. Both roles have an own wallet and can redeem their own coins. The illustrative demo voucher remains backend-priced at **100 coins**. Check funds and create the debit, redemption record/code and retry receipt atomically. A repeated request returns the same voucher; a genuine second purchase uses a new action key.
+7. The demonstration is **verified completion -> elder/helper reward entries -> balances grow -> redeem when sufficient -> balance decreases**. Numeric balances depend on the agreed reward rates. Use labelled, consistent seed history if needed to demonstrate redemption; there is no four-session qualifying fixture.
+8. Weekly outing progress counts distinct completed physical outings. Phone help may be a rewarding contribution under the agreed eligibility table without counting as an outing. The precise outing treatment of sit-with-me and carry-light-item remains to be specified. Requested/cancelled/partly confirmed sessions do not count. Saya OK is outside the confirmed activity/help reward scope and retains no coin/outing award.
+9. Only the linked, currently consented family can send/read the related cheer. Repeated taps must not create an accidental flood of duplicate cheers.
+10. Helper impact uses factual counts. Household weekend helping and township totals include clearly labelled synthetic history plus live confirmed sessions. Never invent an impact claim from AI wording.
+11. The aggregate availability view uses synthetic cohorts of at least five; smaller cells show insufficient data. No individual availability is shown to residents.
+
+**Contract handoff still required:** replace monthly eligibility/award calls and helper-only wallet permissions in the separately supplied proposed v1 contract. Agree beneficiary wallet access, per-completion reward records, standalone activity-attendance handling, role/action rates, and exact response envelopes. This plan does not approve new JSON field names or overwrite that attachment.
 
 Firestore transactions can retry, so transaction callbacks must not issue external vouchers/messages or mutate UI state. Keep the demo voucher issuance inside persisted transaction results; see [Firestore transaction behavior](https://firebase.google.com/docs/firestore/manage-data/transactions).
 
@@ -177,9 +183,9 @@ Prepare:
 
 - Four main role accounts, a second overdue elder for the exception path, and an unrelated account for permission checks.
 - Enough synthetic helper/elder records for the small aggregate view; no real resident data.
-- One accepted trial pair, compatible availability, a few upcoming activities/places, one warning, one mock voucher, and the three historical sessions.
+- One accepted trial pair, compatible availability, a few upcoming activities/places, one warning and one mock voucher. Any seed reward/participation history must follow the agreed event/rate rules for both roles.
 - A seeded household weekend-helping history and township/weekly targets so all progress components have an understandable state.
-- Demo dates derived from the rehearsal date, avoiding a mismatch between current month and historical reward fixtures.
+- Demo dates derived from the rehearsal date, with matching participation records, reward ledger history and server timestamps. Historical completions illustrate accumulation; they do not qualify a monthly award.
 
 Main demonstration:
 
@@ -189,8 +195,8 @@ Main demonstration:
 4. Coordinator changes a place warning; resident view reflects it.
 5. Helper finishes; helper and elder confirm separately; family receives the permitted completion status.
 6. Outing/helper/township progress updates; family sends a cheer.
-7. Coordinator previews the monthly appreciation award; helper receives 300 coins.
-8. Helper redeems the 100-coin mock voucher; wallet shows 200 and My Vouchers shows the redemption.
+7. The verified completion credits the eligible elder/helper accounts using the agreed rates; show each role's wallet and event-linked ledger entry.
+8. An elder or helper with sufficient accumulated balance redeems the 100-coin mock voucher; wallet decreases by 100 and My Vouchers shows the redemption. Prepare rate-consistent seed history if required, without making up a new reward amount.
 9. Show the separate overdue elder and labelled due-processing action; coordinator records a phone response. Briefly show the reporting and aggregate-availability panels.
 
 Keep short backup clips of voice and the exception path if the live presentation is interrupted. Label recordings and simulations accurately.
@@ -217,7 +223,7 @@ Focused checks protect behavior across accounts and retries; extensive widget/un
 - [ ] Check-in persists; sharing withdrawal blocks family status/history and relevant notification reads; booking withdrawal blocks proxy requests. Family cannot edit either setting.
 - [ ] One request produces one session across double taps/retries; two competing assignments cannot reserve the same helper.
 - [ ] Helper cannot act on another helper's request. One-sided confirmation, cancellation and incomplete sessions do not qualify for progress or rewards.
-- [ ] Repeat/concurrent monthly awards credit once. Repeat redemption debits once. Insufficient balance rejects without issuing a voucher. Refresh preserves wallet and owned voucher.
+- [ ] Each eligible completion credits each eligible beneficiary once, including across concurrent confirmations/retries. A new eligible completion earns another reward. Activity/session representations of one participation do not double-credit it. Repeat redemption debits once; insufficient balance rejects without issuing a voucher. Both elder/helper wallets and owned vouchers survive refresh.
 - [ ] Seeded regular pairing/trial, mock vouchers and operator-triggered due processing are labelled; no unavailable helper or expired warning is presented as successful/safe.
 - [ ] Cheer and progress reads respect consent/role boundaries; no coin award for check-ins; aggregates suppress small cohorts.
 - [ ] Actual BM/EN audio -> validated editable draft -> spoken read-back -> explicit confirmation is demonstrated on the presentation device, or the precise gap is listed. Denied microphone/API failures preserve manual booking.

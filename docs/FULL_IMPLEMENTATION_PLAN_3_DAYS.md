@@ -1,6 +1,8 @@
 # EmasCare: full three-day implementation and merge plan
 
-> For the prelim submission, use the [current two-day prototype plan and task split](PROTOTYPE_PLAN_2_DAYS.md). It defines three role views, automatic demo matching, and a smaller free-tier scope. This document is retained as a reference for the larger build.
+> The current plan is the [two-person, two-day Flutter Web MVP demo plan](PROTOTYPE_PLAN_2_DAYS.md), which replaces the earlier reduced two-day scope. This three-day document is historical reference only; use the current plan for task ownership, schedule, and demo boundaries.
+
+**Scope update (21 Oct 2026):** Tanya Dulu is deferred to a future release and is excluded from this build. Place problems and helper report/block remain in scope under G09.
 
 **Team:** two developers. **Time:** three days, eight working hours per developer per day. **Capacity:** 48 person-hours: 40 planned and eight reserved for fixes.
 
@@ -22,7 +24,7 @@ This document is the source of truth for the three-day implementation scope, tas
 | G06 — Neighbour companion | Helper availability, approved recurring pairing, coordinator assignment, session actions | A compatible helper accepts, starts, finishes, and confirms; the elder separately confirms completion. |
 | G07 — Teman voice | Short BM/EN audio → validated booking draft → spoken read-back → confirmation | AI parsing creates no booking; explicit confirmation creates exactly one. Manual booking remains usable. |
 | G08 — Appreciation | 300-coin monthly demo award, ledger, mock voucher redemption | Three historical fixture sessions plus a fourth live completed session qualify; retries cannot duplicate credit/debit. |
-| G09 — Trusted support | Text-only Tanya Dulu, place issue, helper report/block, authorized inbox | The trusted recipient sees the item; a block prevents a new assignment to that elder. |
+| G09 — Issue reporting | Place issue, helper report/block, authorized coordinator inbox | The coordinator sees the item; a block prevents a new assignment to that elder. |
 | G10 — Usable release | BM/EN copy, large text/targets, error states, tested permissions, reset/runbook | Release builds, passes focused checks, and completes the demo twice from a clean fixture reset. |
 
 **Release assumptions:** browser delivery; developer A is comfortable with Flutter/Dart; developer B is comfortable with Firebase/TypeScript and basic Flutter forms. Use one Firebase demo project, synthetic people, seeded household links, and seeded approved recurring pairings. No real SDP integration is required to run the demo. Native builds are additional work only after the browser release passes. The estimates are aggressive and assume familiar tools and available cloud access; use the reserved hours and explicit cut rules when those assumptions fail.
@@ -35,7 +37,7 @@ This document is the source of truth for the three-day implementation scope, tas
 | Household linking, resident verification, helper vetting, recurring-pair trial | Seed accepted synthetic examples. Build permission enforcement, not real verification integrations. |
 | Coins and vouchers | Persist simulated monthly awards and mock redemption. No cash, purchases, settlement, transfers, donations, expiry, or phone-buddy reward variants. |
 | Gamification | Factual completed-session impact count only. Rings, cheers, collective goals, and milestones are optional later. |
-| AI | Real booking parser only. Check-in concern analysis, scam classification, AI prose, and digests are deferred. Tanya Dulu sends the question to a trusted human. |
+| AI | Real booking parser only. Check-in concern analysis, AI prose, and digests are deferred. Tanya Dulu, including its human-question flow and scam classification, is future work. |
 | Notifications | Persistent in-app alerts required. Background FCM is optional and must be demonstrated separately. |
 | Places and reports | Five illustrative seeded places and text reports. Field verification, photo uploads/triage, and routing are deferred. |
 | Remaining roadmap | SDP embedding/SSO, merchant integration, WhatsApp/SMS, heatmap, ratings, mascot, production read-access auditing, and app stores are outside this sprint. |
@@ -155,13 +157,13 @@ At M0, every method exists with its final signature, and the coordinator placeho
 | `requests/{id}` | `elderId`, `householdId`, `createdBy`, `placeId`, `activityId?`, `startsAt`, `endsAt`, `taskType`, preferences, `pairingId?`, `helperId?`, `state`, session/confirmation timestamps | Elder, consented linked family, assigned helper, coordinator. Only non-private meeting/session data is stored here. |
 | `helperReservations/{helperId_localDate}` | Helper/date and active request intervals | Backend/coordinator only. Assignment/cancellation transitions update this document transactionally to prevent concurrent overlapping assignments. |
 | `notifications/{id}` | `recipientUid`, `kind`, `entityId`, `elderId?`, `requiredConsent?`, `createdAt`, `readAt?`, minimal message parameters | Recipient only, plus the current elder consent required by the notification kind (`daily_sharing` or `proxy_booking`). Read markers are the only narrowly allowed direct client mutation. |
-| `reports/{id}` | `createdBy`, `elderId?`, `kind`, `text`, related IDs, `recipientUids`, `state`, `createdAt` | Author, listed trusted recipients, coordinator. Family readership requires current consent. |
+| `reports/{id}` | `createdBy`, `elderId?`, `kind` (place problem, helper report, or block), `text`, related IDs, `recipientUids`, `state`, `createdAt` | Author, listed authorized recipients, coordinator. Family readership requires current consent. |
 | `helperBlocks/{elderId_helperId}` | `elderId`, `helperId`, `createdBy`, `createdAt` | Elder and coordinator; assignment service checks it. No public block list. |
 | `wallets/{uid}` + `wallets/{uid}/entries/{entryId}` | Server-owned `balance`; immutable `type`, `amount`, `month?`, related IDs, `createdAt` | Own helper and coordinator. |
 | `auditEvents/{id}` | `actorUid`, `action`, `entityId`, `createdAt`, small mutation metadata | Coordinator. Backend-only writes; this is a mutation log, not complete read auditing. |
 | `commandReceipts/{id}` | Actor/command/key, payload hash, stored result, timestamp | Backend only; records transactional duplicate protection. |
 
-Consent checks apply to Firestore reads as well as commands. `familySharingEnabled` gates daily-status and related check-in-alert reads, including old records; `familyBookingEnabled` gates family request reads and proxy booking/cancellation. Support questions go to a linked family recipient only when sharing is enabled; otherwise route to the coordinator. Existing support readership and related notification reads also check current sharing consent. Helpers never receive private elder settings, household status, or a home address. Firestore cannot hide selected fields within an otherwise readable document, hence the separate `dailyStatuses` collection. Backend libraries bypass client rules; B validates permissions within every function as explained in [Firebase's rules guide](https://firebase.google.com/docs/firestore/security/rules-conditions).
+Consent checks apply to Firestore reads as well as commands. `familySharingEnabled` gates daily-status and related check-in-alert reads, including old records; `familyBookingEnabled` gates family request reads and proxy booking/cancellation. Place problems and helper reports route to the coordinator. Any family readership of reports and related notifications also checks current sharing consent. Tanya Dulu questions are outside this build. Helpers never receive private elder settings, household status, or a home address. Firestore cannot hide selected fields within an otherwise readable document, hence the separate `dailyStatuses` collection. Backend libraries bypass client rules; B validates permissions within every function as explained in [Firebase's rules guide](https://firebase.google.com/docs/firestore/security/rules-conditions).
 
 ### Callable commands
 
@@ -176,7 +178,7 @@ All commands include `contractVersion`. All domain writes also include `idempote
 | `transitionRequest` | `requestId`, `action`, assignment-only `helperId?` | `{requestId, state}` | Server action/actor matrix below. |
 | `parseVoiceIntent` | Authorized `elderId`; either `audioBase64` + `mimeType`, or `text`; `locale` | `{draft, readBackText, missingFields[]}` | Actual elder or linked family with booking consent. Server attaches the authorized elder ID to the draft; AI never chooses it. Confirmation rechecks authorization. |
 | `setPlaceStatus` | `placeId`, `level`, `text`, `expiresAt`; `level` is `warning`, `closed`, or `clear` | Updated status or null | Coordinator only; expiry required for a non-clear status. |
-| `createSupportReport` | `kind`, `text`, optional related `elderId`, `placeId`, `requestId`, `helperId` | `{reportId}` | Authorized participant; server determines trusted recipients. Only the actual elder or coordinator may use `block`, which also writes `helperBlocks`. |
+| `createSupportReport` | `kind` (place problem, helper report, or block), `text`, optional related `elderId`, `placeId`, `requestId`, `helperId` | `{reportId}` | Authorized participant; server determines authorized recipients and rejects other report kinds. Only the actual elder or coordinator may use `block`, which also writes `helperBlocks`. |
 | `awardMonthlyThanks` | `helperId`, `month` | `{entryId, credited, balance}` | Coordinator; month is Malaysia-local; eligibility checked server-side. |
 | `redeemDemoVoucher` | `voucherId` | `{entryId, voucherCode, balance}` | Own helper wallet; backend fixes voucher cost. |
 | `reviewSupportReport` | `reportId`, `state: seen` or `done` | Updated report | Coordinator or authorized trusted recipient. |
@@ -273,7 +275,7 @@ Every task must include its task ID in the PR, respect its owned paths, and sati
 **A02 — Identity/check-in/family screens, 2 h; supports G02/G03.** Depends on M0; develops against fixtures until B02/B03 are ready.
 
 - [ ] Implement actual Auth login/logout and role routing from server-owned profile data.
-- [ ] Build the elder four-button home: Saya OK, Jom Keluar, Minta Teman, Tanya Dulu.
+- [ ] Build the elder three-button home: Saya OK, Jom Keluar, Minta Teman. Tanya Dulu is future work.
 - [ ] Build check-in/settings with separate daily-sharing and proxy-booking consent, due/grace time, and pause-today; disable duplicate submissions and preserve retry keys.
 - [ ] Build family daily status with consent-aware access handling; subscribe to recipient alerts.
 
@@ -369,12 +371,12 @@ Every task must include its task ID in the PR, respect its owned paths, and sati
 
 **A07 — Support and demo wallet UI, 2 h; supports G08/G09.** Depends on A01/A05; uses B04/B07 commands.
 
-- [ ] Build shared text-support form variants for Tanya Dulu, place problem, helper report/block; author can see submission status.
+- [ ] Build shared text-report form variants for place problem and helper report/block; author can see submission status. Exclude Tanya Dulu questions.
 - [ ] Build recipient inbox entries/read markers and authorized support review where needed.
 - [ ] Show wallet balance, immutable entries, monthly thanks, factual completion count, and fixed mock voucher redemption.
 - [ ] Clearly label simulated coins/vouchers; preserve idempotency keys and surface insufficient balance/retry errors.
 
-**Done:** support goes to a trusted recipient; blocked helper cannot be newly assigned; award/redemption updates from server streams survive refresh.
+**Done:** reports reach the coordinator; blocked helper cannot be newly assigned; award/redemption updates from server streams survive refresh.
 
 **B07 — Reward transactions, 1 h; supports G08.** Depends on completed-session state from B05 and seeded history from B02.
 
@@ -601,7 +603,7 @@ Mark a goal complete only with an integrated deployed result and the evidence li
 | G06 | Approved compatible assignment; distinct helper/elder completion; overlap/block failures | [ ] |
 | G07 | Live BM/EN recording, validated editable read-back, explicit confirmation, AI results/fallback | [ ] |
 | G08 | Fourth qualifying session, one 300 credit, one mock debit, retry tests | [ ] |
-| G09 | Trusted support/report inbox and enforced helper block | [ ] |
+| G09 | Coordinator place/helper report inbox and enforced helper block | [ ] |
 | G10 | Green release checks, text scaling, two rehearsals, runbook and backup recording | [ ] |
 
 **Five-minute demo:** Saya OK → family update → speak activity request → edit/read-back/confirm → coordinator assigns approved companion → helper accepts/starts → coordinator changes access warning → helper finishes → both participants confirm → family completion → monthly thanks/mock redemption. Show the second elder's overdue alert and support inbox if time permits.

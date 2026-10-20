@@ -1,5 +1,7 @@
 # EmasCare: Teman Siang Project Plan
 
+**Scope update (21 Oct 2026):** Tanya Dulu is a future feature, excluded from the current MVP and prototype builds. The current elder home has three main actions: Saya OK, Jom Keluar, and Minta Teman.
+
 ## Executive summary
 
 EmasCare should be built as a module inside the Sime Darby Property (SDP) App that gives older parents who are home alone on weekdays a daily check-in, a reason and a companion to go out, and simple access information, with company provided by neighbours who are free in the daytime and thanked with SDP-only coins. We recommend SDP pilot it for 12 weeks in City of Elmina, starting with the multigenerational households of Ilham Residence.
@@ -109,7 +111,7 @@ Japan calls this situation **日中独居 *nicchū dokkyo*** ("daytime living al
 | **N: Neighbour companion** | **Teman Siang helpers**: verified residents who are home in the daytime (students, homemakers, retirees, shift/remote workers) walk with, sit with, or help the elder with their phone; recurring pairs | No companion; traditional volunteers are scarce |
 | **G: Gain & give back** | Helpers who keep a regular pairing receive a **monthly EmasCare Coins thank-you** (commitment-based, not per task), spendable only in the SDP ecosystem; working children can also help on weekends; elders can earn by helping too; **light gamification** | Supply problem; elders losing roles; stigma of "receiving" |
 
-Cross-cutting: **"Tanya dulu"** scam check; privacy by design under the PDPA; clear task boundaries for helpers.
+Cross-cutting: privacy by design under the PDPA; clear task boundaries for helpers; place and helper reporting. **Tanya Dulu** scam questions and AI assistance are future work, outside the current MVP.
 
 **Priority for the hackathon:** S, I, N and G are the core demo. A is built as simple **access notes on activities**, about 1–2 days of work, with one live status change in the demo.
 
@@ -285,7 +287,7 @@ Helper sign-up doubles as research on **how many people are free in the daytime,
 
 | Principle | Why (evidence) | How |
 | :---- | :---- | :---- |
-| **Simple mode for elders** | Usability and perceived usefulness drive (non-)adoption; intention ≠ behaviour (Coventry & Briggs 2016\) | Home \= 4 big buttons: **Saya OK · Jom Keluar · Minta Teman · Tanya Dulu**. ≤3 taps per task |
+| **Simple mode for elders** | Usability and perceived usefulness drive (non-)adoption; intention ≠ behaviour (Coventry & Briggs 2016\) | Home \= 3 big buttons: **Saya OK · Jom Keluar · Minta Teman**. ≤3 taps per task. Tanya Dulu is reserved for a future release. |
 | **Readable and tappable** | Age-related vision and dexterity changes; WCAG 2.2 | Body text ≥18–20 pt, scales with system font; contrast ≥7:1 for key text (WCAG AAA); targets ≥48×48 dp; icon \+ text label; no swipe-only actions; no time-outs |
 | **Voice-first option** | Literacy and typing barriers; Malay, dialects, code-switching | Hold-to-talk in BM/EN/中文/Tamil; AI turns speech into a structured request, then reads it back for confirmation |
 | **Their language** | Multilingual households; PLOS ONE finds lower volunteering odds among Chinese Malaysians | BM, EN, 中文, Tamil; match helpers by language |
@@ -349,7 +351,7 @@ Helper sign-up doubles as research on **how many people are free in the daytime,
 
 **Decision (16 Oct 2026):** the MVP runs **entirely inside the SDP App**. There is no WhatsApp integration and no WhatsApp mock.
 
-- **Elder:** "Simple mode" view of the SDP App module, with the 4 big buttons, check-in, voice and activity cards.  
+- **Elder:** "Simple mode" view of the SDP App module, with the 3 main buttons, check-in, voice and activity cards.
 - **Family:** the same module; the parent is added as a **household nominee** (an existing SDP App feature). In the demo, the family types the parent's details. No one-time-code verification (pilot-phase security).  
 - **Helpers:** "Helper mode" in the same app. **Coordinator:** a web dashboard.  
 - **Notifications:** SDP App push only.  
@@ -466,7 +468,7 @@ Why voice is the headline:
 | **A**: Access notes | None in the MVP; **photo triage of barrier reports in Phase 2** | n/a | No (Phase 2\) | Human verifies; never certifies a route as safe |
 | **N**: Neighbour companion | **Voice → booking**: extract activity, day, time, task type, language and gender preference | "Selasa pukul 10 nak ke klinik" (Tuesday 10am, clinic) → walk-with-me request, Tue 10:00, clinic | Yes (headline) | Read back \+ confirm; matching itself is **rule-based**, not AI |
 | **G**: Give back | Write the helper's **impact story card** from completed sessions (template \+ LLM wording) | "8 walks with Mr Tan since Sept" | Yes (simple) | Facts come from the database only; no invented claims |
-| Tanya dulu | Highlight scam red flags in a pasted message or screenshot | "Asks for OTP, claims to be police, urgent tone → be careful" | Yes | **Always** forwarded to a trusted human too; never says "safe" |
+| Tanya Dulu (future) | Highlight scam red flags in a pasted message or screenshot | "Asks for OTP, claims to be police, urgent tone → be careful" | No — future release | If built later, **always** forwarded to a trusted human too; never says "safe" |
 | Coordinator | Weekly digest: missed check-ins, unmatched requests, concern flags | "3 concern flags this week; 2 requests unmatched on Wed mornings" | Yes (simple) | De-identified where possible |
 
 **Where AI is deliberately not used:**
@@ -494,8 +496,8 @@ Why voice is the headline:
   - Metric: % of requests with all fields (activity, day, time, task) correct **after one read-back**. Target **≥85%**.  
 - **Concern-flag test:** 40 sample check-in replies (half neutral, half with concern words).  
   - Target recall **≥90%**. Missing a concern is worse than a false flag.  
-- **Scam red-flag test:** 20 real scam messages (from PDRM/MCMC awareness material) \+ 20 normal messages.  
-  - Report precision and recall, and position the feature as "be careful", never "safe".  
+- **Future Tanya Dulu evaluation (outside the current MVP):** 20 real scam messages (from PDRM/MCMC awareness material) \+ 20 normal messages.
+  - If the feature is built later, report precision and recall, and position it as "be careful", never "safe".
 - **Phase 2 photo triage benchmark:** Project Sidewalk AI reached 81.3% precision / 77.2% recall.
 
 ## Open questions & risks, with prevention
@@ -512,7 +514,7 @@ Why voice is the headline:
 | R8 | **Reports go nowhere** (SDP doesn't own most public paths) | Medium | After handover, councils maintain roads and walkways | Owner field per asset; SISPAA prefill; monthly digest to SDP and council; show status honestly |
 | R9 | **Liability & insurance** for helper injuries or incidents | Medium | No national volunteer accident scheme found; SOCSO SKSPS covers registered gig workers (see R21) | Group personal-accident policy via SDP/YSD, or SKSPS if helpers are classified as gig workers; partner NGO umbrella (e.g. MPKSM); waiver \+ clear task boundaries |
 | R10 | **Cross-border data** to a foreign AI API | Medium | PDPA s129 \+ 2025 Guidelines: equivalent protection or exceptions; Transfer Impact Assessment | Redact before sending; no names or addresses to the AI; consent notice; evaluate Malaysia-hosted ILMU; do a TIA |
-| R11 | **EmasCare becomes a scam vector** (fake helpers) | Medium | Elderly bear 27.9% of fraud losses | Verified identities only; helpers can't initiate contact outside the app; "never ask for money/OTP" rule in UI; Tanya Dulu |
+| R11 | **EmasCare becomes a scam vector** (fake helpers) | Medium | Elderly bear 27.9% of fraud losses | Verified identities only; helpers can't initiate contact outside the app; "never ask for money/OTP" rule in UI; helper report/block. Tanya Dulu is a future addition. |
 | R12 | **Digital literacy**, especially elders who won't open a new app | Medium | 92.3% of 60+ use the internet, but app habits are WhatsApp-centred | Simple mode \+ voice; family-assisted onboarding; **phone-buddy call fallback**; KRT smartphone classes; WhatsApp channel in Phase 2 if pilot data shows need |
 | R13 | **Cultural and gender norms** (e.g. Muslim women preferring female companions) | Medium | Malaysian multi-ethnic context | Gender preference in matching; same-language matching; respect prayer times in the calendar |
 | R14 | **Dependency / loss of roles** | Low | Daytime-alone elders lose IADL roles (Uehara 2018\) | Design for contribution: elders as helpers, teachers, garden keepers |
@@ -574,19 +576,23 @@ These are the assumptions that would sink EmasCare if wrong, ranked by **impact 
 | Daily check-in ("Saya OK") with escalation to the family if missed | Wearables, cameras, live tracking |
 | Weekday activity calendar (park tai chi, PAWE, surau/temple talks, garden, mall walk) | Event ticketing |
 | Family (adult child) view: book help, see check-in and completion, with the parent's consent | Remote monitoring dashboards |
-| "Tanya dulu": one tap to ask a trusted person "is this call real?" | Any payments in the app |
+| Place/access problem reports and helper report/block to the coordinator | **Tanya Dulu** suspicious-call/message questions and scam-checking AI; any payments in the app |
 | **Everything inside the SDP App module** (elder simple mode, family view, helper mode) \+ coordinator web dashboard | WhatsApp / SMS channels, WhatsApp mock (Phase 2\) |
 | **Access notes** on \~5 activity places (icons, photo, walk time, toilet) \+ coordinator-set live status with auto-expiry \+ "Open in Google Maps" | Map engine, route planning, whole-township mapping |
 | Simple accessibility filter on activities ("step-free only") | Mobility-profile routing, indoor navigation |
 | "Report a problem" button (text/photo to coordinator, no AI); coordinator sets route status | AI photo triage, walk & report, owner routing (Phase 2\) |
 | Request help: walk-with-me, sit-with-me, phone help, carry light item | Personal care, driving, home entry |
 | Helper sign-up with availability census, tier badge, check-in/out, rating, block/report | Background checks API |
-| **Teman voice assistant**: voice → check-in reply / booking / scam question, with read-back | Open-ended AI chat companion |
+| **Teman voice assistant**: voice → check-in reply / booking, with read-back | Scam-question voice intent (future Tanya Dulu); open-ended AI chat companion |
 | Light gamification: outing goal ring, family cheer, helper impact cards \+ coins, township collective goal | Levels, XP, leaderboards, avatars, tradable tokens |
 | EmasCare Coins wallet mock: month-end "Terima kasih" for a kept pairing → household transfer → redeem at a mock Elmina Lakeside Mall voucher | Real merchant settlement, coin purchase, per-task pay, open job feed |
 | Availability heatmap (aggregate) on the coordinator dashboard | Predictive staffing |
 | BM \+ EN UI; large-text mode; screen-reader labels | Full 中文/Tamil (show roadmap) |
 | Optional mascot guide toggle | Pet help, transport (deep-link to GrabAssist only) |
+
+### Future feature: Tanya Dulu (not in the current MVP)
+
+A later release may let elders ask a trusted person about a suspicious call or message, with AI highlighting possible red flags and a human helping them decide what to do. Do not build its home action, question inbox, scam-question voice intent, or scam-checking AI integration in the current MVP or prototype. Revisit it after the core check-in, activity, companionship, and appreciation journeys are working and validated.
 
 ### Pilot KPIs
 

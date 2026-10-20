@@ -1,0 +1,12 @@
+node_modules/
+functions/lib/
+.cache/
+.firebase/
+*-debug.log
+*-debug.*.log
+.env
+.env.*
+!.env.example
+functions/.secret.local
+coverage/
+emulator-data/

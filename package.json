@@ -1,0 +1,25 @@
+{
+  "name": "emascare-backend",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["functions"],
+  "engines": {"node": ">=22 <25"},
+  "scripts": {
+    "build": "tsc -p functions/tsconfig.json",
+    "test:unit": "node --test tests/unit.test.mjs",
+    "test": "npm run build && npm run test:unit && node scripts/emulators.mjs test",
+    "emulators": "npm run build && node scripts/emulators.mjs start",
+    "demo:seed": "node scripts/demo.mjs seed",
+    "demo:reset": "node scripts/demo.mjs reset",
+    "demo:smoke": "node --test tests/backend.test.mjs",
+    "test:integration": "node --test --test-concurrency=1 tests/backend.test.mjs tests/rules.test.mjs"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
+    "@types/node": "22.19.0",
+    "firebase": "12.19.0",
+    "firebase-tools": "15.34.0",
+    "node": "22.23.3",
+    "typescript": "5.9.3"
+  }
+}

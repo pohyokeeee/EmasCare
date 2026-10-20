@@ -1,0 +1,66 @@
+import {Timestamp} from 'firebase-admin/firestore';
+
+export const townshipId = 'township_demo';
+export const demoPassword = 'EmasCare-local-2026!';
+export const demoAccounts = [
+  {uid:'elder_demo', email:'elder@emascare.test', displayName:'Demo Elder', role:'elder', householdId:'household_demo'},
+  {uid:'family_demo', email:'family@emascare.test', displayName:'Demo Family', role:'family', householdId:'household_demo'},
+  {uid:'helper_demo', email:'helper@emascare.test', displayName:'Demo Helper', role:'helper', householdId:'household_helper'},
+  {uid:'coordinator_demo', email:'coordinator@emascare.test', displayName:'Demo Coordinator', role:'coordinator', householdId:null},
+  {uid:'elder_solo', email:'solo@emascare.test', displayName:'Standalone Elder', role:'elder', householdId:'household_solo'},
+  {uid:'family_unrelated', email:'unrelated@emascare.test', displayName:'Unrelated Family', role:'family', householdId:'household_other'},
+];
+
+// Executable emulator data, independent of the ignored UI-only contract examples.
+// No completed history or earning amounts are invented while policy is pending.
+export function fixtureDocuments(now = new Date()) {
+  const at = Timestamp.fromDate(now);
+  const metadata = {createdAt:at, updatedAt:at};
+  const future = (days, hour) => {
+    const date = new Date(now);
+    date.setUTCDate(date.getUTCDate() + days);
+    date.setUTCHours(hour, 0, 0, 0);
+    return Timestamp.fromDate(date);
+  };
+  const documents = [];
+  const add = (path, data) => documents.push({path, data});
+  for (const account of demoAccounts) {
+    const {uid, email: _email, ...profile} = account;
+    add(`users/${uid}`, {...profile, townshipId, locale:'en', ...metadata});
+    if (['elder','helper'].includes(account.role)) {
+      add(`wallets/${uid}`, {ownerUid:uid, townshipId, balance:0, updatedAt:at});
+    }
+    if (account.role === 'elder') {
+      add(`elderSettings/${uid}`, {familySharingEnabled:uid === 'elder_demo', familyBookingEnabled:uid === 'elder_demo',
+        dueLocalTime:'09:00', graceMinutes:30, pausedOn:null, ...metadata});
+    }
+  }
+  add('households/household_demo', {townshipId, memberUids:['elder_demo','family_demo'], elderIds:['elder_demo'],
+    familyUids:['family_demo'], elderAccess:{elder_demo:{displayName:'Demo Elder', familySharingEnabled:true, familyBookingEnabled:true}}, ...metadata});
+  for (const [id, member, elders, family] of [
+    ['household_helper','helper_demo',[],[]],
+    ['household_solo','elder_solo',['elder_solo'],[]],
+    ['household_other','family_unrelated',[],['family_unrelated']],
+  ]) add(`households/${id}`, {townshipId, memberUids:[member], elderIds:elders, familyUids:family,
+    elderAccess:id === 'household_solo' ? {elder_solo:{displayName:'Standalone Elder', familySharingEnabled:false, familyBookingEnabled:false}} : {}, ...metadata});
+  const slots = Array.from({length:7}, (_, i) => ({weekday:i+1, startMinute:480, endMinute:1080}));
+  const tasks = ['walk_with_me','sit_with_me','phone_help','carry_light_item'];
+  add('helperProfiles/helper_demo', {approved:true, tier:'T3', languages:['bm','en'], gender:'female',
+    allowedTasks:tasks, available:true, availabilitySlots:slots, ...metadata});
+  const localDate = (date) => new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Kuala_Lumpur', year:'numeric', month:'2-digit', day:'2-digit'}).format(date);
+  add('pairings/pairing_demo', {townshipId, elderId:'elder_demo', helperId:'helper_demo', active:true,
+    elderAccepted:true, helperAccepted:true, trialStartsOn:localDate(new Date(now.getTime()-86400000)),
+    trialEndsOn:localDate(new Date(now.getTime()+14*86400000)), cadence:slots, allowedTasks:tasks, isDemoSeed:true, ...metadata});
+  for (const [id,name,minutes] of [['place_garden','Community Garden',10],['place_hall','Community Hall',5]]) {
+    add(`places/${id}`, {townshipId, name, stepFree:true, accessibleToilet:true, seating:true, walkMinutes:minutes,
+      notes:{bm:'Nota akses contoh; semak keadaan semasa.',en:'Illustrative access notes; check current conditions.'},
+      mapsUrl:'https://maps.google.com/?q=community+hall', imageAsset:null,
+      liveStatus:id === 'place_garden' ? {level:'warning',text:'Demo: wet path; coordinator review required.',updatedAt:at,expiresAt:future(1,12),setBy:'coordinator_demo'} : null, ...metadata});
+  }
+  for (const [id,placeId,title,days] of [
+    ['activity_garden','place_garden',{bm:'Jalan di taman',en:'Garden walk'},1],
+    ['activity_hall','place_hall',{bm:'Pertemuan komuniti',en:'Community gathering'},2],
+  ]) add(`activities/${id}`, {townshipId,title,placeId,participationMode:'in_person',startsAt:future(days,1),endsAt:future(days,2),language:'en',...metadata});
+  add('voucherCatalog/voucher_demo', {townshipId,title:{bm:'Baucar contoh',en:'Mock voucher'},costCoins:100,active:true,isDemo:true,...metadata});
+  return documents;
+}

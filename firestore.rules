@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function sameTownship(townshipId) { return signedIn() && profile().townshipId == townshipId; }
+    function coordinator(townshipId) { return sameTownship(townshipId) && profile().role == 'coordinator'; }
+    function ownElder(elderId) {
+      return signedIn() && request.auth.uid == elderId && profile().role == 'elder';
+    }
+    function elderProfile(elderId) { return get(/databases/$(database)/documents/users/$(elderId)).data; }
+    function familyAccess(elderId, householdId, flag) {
+      let household = get(/databases/$(database)/documents/households/$(householdId)).data;
+      let settings = get(/databases/$(database)/documents/elderSettings/$(elderId)).data;
+      return signedIn() && profile().role == 'family'
+        && profile().householdId == householdId
+        && sameTownship(household.townshipId)
+        && elderProfile(elderId).role == 'elder'
+        && elderProfile(elderId).householdId == householdId
+        && elderProfile(elderId).townshipId == household.townshipId
+        && request.auth.uid in household.memberUids
+        && request.auth.uid in household.familyUids
+        && elderId in household.elderIds
+        && settings[flag] == true;
+    }
+    function financialOwner(ownerUid, townshipId) {
+      return sameTownship(townshipId) && request.auth.uid == ownerUid
+        && profile().role in ['elder', 'helper'];
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || coordinator(resource.data.townshipId));
+    }
+    match /households/{id} {
+      allow read: if coordinator(resource.data.townshipId)
+        || (sameTownship(resource.data.townshipId) && profile().householdId == id
+          && request.auth.uid in resource.data.memberUids);
+    }
+    match /elderSettings/{elderId} {
+      allow read: if ownElder(elderId) || coordinator(elderProfile(elderId).townshipId);
+    }
+    match /dailyStatuses/{id} {
+      allow read: if ownElder(resource.data.elderId)
+        || coordinator(elderProfile(resource.data.elderId).townshipId)
+        || familyAccess(resource.data.elderId, resource.data.householdId, 'familySharingEnabled');
+    }
+    match /activities/{id} { allow read: if sameTownship(resource.data.townshipId); }
+    match /places/{id} { allow read: if sameTownship(resource.data.townshipId); }
+    match /voucherCatalog/{id} { allow read: if sameTownship(resource.data.townshipId); }
+    match /helperProfiles/{uid} {
+      allow read: if signedIn() && ((request.auth.uid == uid && profile().role == 'helper')
+        || coordinator(get(/databases/$(database)/documents/users/$(uid)).data.townshipId));
+    }
+    match /pairings/{id} {
+      allow read: if coordinator(resource.data.townshipId)
+        || (sameTownship(resource.data.townshipId)
+          && ((profile().role == 'elder' && request.auth.uid == resource.data.elderId)
+            || (profile().role == 'helper' && request.auth.uid == resource.data.helperId)));
+    }
+    match /wallets/{ownerUid} {
+      allow read: if resource.data.ownerUid == ownerUid
+        && (financialOwner(ownerUid, resource.data.townshipId) || coordinator(resource.data.townshipId));
+      match /entries/{entryId} {
+        allow read: if resource.data.ownerUid == ownerUid
+          && (financialOwner(ownerUid, resource.data.townshipId) || coordinator(resource.data.townshipId));
+      }
+    }
+
+    // Domain commands and remaining scoped read policies arrive in their stages.
+    // No browser may write roles, consent, balances, receipts or backend locks.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

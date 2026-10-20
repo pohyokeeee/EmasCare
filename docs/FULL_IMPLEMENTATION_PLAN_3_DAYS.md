@@ -1,5 +1,7 @@
 # EmasCare: full three-day implementation and merge plan
 
+> For the prelim submission, use the [current two-day prototype plan and task split](PROTOTYPE_PLAN_2_DAYS.md). It defines three role views, automatic demo matching, and a smaller free-tier scope. This document is retained as a reference for the larger build.
+
 **Team:** two developers. **Time:** three days, eight working hours per developer per day. **Capacity:** 48 person-hours: 40 planned and eight reserved for fixes.
 
 **Outcome:** one deployed Flutter Web application with elder, family, helper, and coordinator views; Firebase authentication and persistence; check-in escalation; activities and access notes; companion booking and completion; real voice-to-booking AI; and a persisted demo rewards wallet.

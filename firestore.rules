@@ -83,6 +83,9 @@ service cloud.firestore {
           && (financialOwner(ownerUid, resource.data.townshipId) || coordinator(resource.data.townshipId));
       }
     }
+    match /redemptions/{id} {
+      allow read: if financialOwner(resource.data.ownerUid, resource.data.townshipId) || coordinator(resource.data.townshipId);
+    }
 
     // Domain commands and remaining scoped read policies arrive in their stages.
     // No browser may write roles, consent, balances, receipts or backend locks.

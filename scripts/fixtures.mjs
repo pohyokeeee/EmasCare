@@ -96,5 +96,6 @@ export function fixtureDocuments(now = new Date()) {
     placeId:'place_hall',participationMode:'in_person',startsAt:Timestamp.fromMillis(startsAt.toMillis()-60*60000),
     endsAt:startsAt,language:'en',...metadata});
   add('voucherCatalog/voucher_demo', {townshipId,title:{bm:'Baucar contoh',en:'Mock voucher'},costCoins:100,active:true,isDemo:true,...metadata});
+  add(`rewardPolicies/${townshipId}`, {townshipId,activeVersionId:null,updatedAt:at});
   return documents;
 }

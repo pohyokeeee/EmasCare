@@ -2,7 +2,7 @@ import {pathToFileURL} from 'node:url';
 import {localEnvironment, projectId} from './local.mjs';
 import {demoAccounts, demoPassword, fixtureDocuments} from './fixtures.mjs';
 const resettableCommands = new Set(['foundationProbe','saveElderSettings','submitCheckIn','recordPhoneResponse',
-  'setHelperAvailability','createRequest','assignRequest','transitionRequest','submitActivityAttendance','reviewActivityAttendance']);
+  'setHelperAvailability','createRequest','assignRequest','transitionRequest','submitActivityAttendance','reviewActivityAttendance','redeemDemoVoucher']);
 
 export async function demoClients() {
   const env = localEnvironment();
@@ -27,8 +27,15 @@ export async function seedDemo({auth, db}, now = new Date()) {
   }
   const batch = db.batch();
   const fixtures = fixtureDocuments(now);
-  for (const {path,data} of fixtures) if (!path.startsWith('helperReservations/')) batch.set(db.doc(path), data);
+  for (const {path,data} of fixtures) if (!path.startsWith('helperReservations/') && !path.startsWith('wallets/')) batch.set(db.doc(path), data);
   await batch.commit();
+  // Seeding must never erase earned balances while leaving their ledger intact.
+  for (const {path,data} of fixtures.filter((item) => item.path.startsWith('wallets/'))) {
+    await db.runTransaction(async (tx) => {
+      const ref=db.doc(path);
+      if (!(await tx.get(ref)).exists) tx.create(ref,data);
+    });
+  }
   // A reservation document can also contain unrelated bookings. Preserve them.
   for (const {path,data} of fixtures.filter((item) => item.path.startsWith('helperReservations/'))) {
     await db.runTransaction(async (tx) => {
@@ -41,6 +48,10 @@ export async function seedDemo({auth, db}, now = new Date()) {
 export async function resetDemo({auth, db}) {
   assertClientsLocal(auth, db);
   await resetCompanions(db);
+  for (const {uid,role} of demoAccounts) if (role === 'elder' || role === 'helper') {
+    await deleteOwnedDocuments(db,(await db.collection(`wallets/${uid}/entries`).get()).docs);
+    await deleteOwnedDocuments(db,(await db.collection('redemptions').where('ownerUid','==',uid).get()).docs);
+  }
   // Explicit fixtures plus check-in history owned by the known demo elders;
   // no database flush or recursive delete. Other actors' data is untouched.
   const batch = db.batch();
@@ -84,9 +95,13 @@ async function resetCompanions(db) {
   }
   for (const [id,snapshot] of participants) {
     const data = snapshot.data(), remaining = (data.sourceRequestIds ?? []).filter((requestId) => !requests.has(requestId));
-    if (!actors.has(data.beneficiaryUid) && remaining.length) {
-      await snapshot.ref.update({sourceRequestIds:remaining});
-      continue;
+    if (!actors.has(data.beneficiaryUid)) {
+      const claim=(await db.doc(`rewardClaims/${id}`).get()).data();
+      const entries=await db.collection(`wallets/${data.beneficiaryUid}/entries`).where('participationId','==',id).limit(1).get();
+      if (remaining.length || claim?.status === 'credited' || !entries.empty) {
+        if (remaining.length) await snapshot.ref.update({sourceRequestIds:remaining});
+        continue;
+      }
     }
     events.add(data.completionEventId);
     const cleanup = db.batch();

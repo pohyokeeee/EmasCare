@@ -1,0 +1,105 @@
+{
+  "description": "Default demo wallets are zero and awards remain pending policy. Successful examples below are ISOLATED UI ONLY with a hypothetical opening balance equal to the existing voucher price. NOT FOR SEEDING; they establish no earning rate or approved financial history.",
+  "serverTime": "2026-10-22T00:00:00.000Z",
+  "zeroBalanceScenario": {
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage5-no-balance-001",
+      "voucherId": "voucher_demo"
+    },
+    "error": {
+      "code": "failed-precondition",
+      "reason": "INSUFFICIENT_BALANCE"
+    }
+  },
+  "isolatedRedemptionUiScenarios": {
+    "elder": {
+      "callerUid": "elder_demo",
+      "hypotheticalOpeningBalance": 100,
+      "isUiOnly": true,
+      "notForSeeding": true,
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage5-elder-redeem-001",
+        "voucherId": "voucher_demo"
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "redemption": {
+            "id": "8d9829ee327ac10f42be1058eda2226b9805902af2eb628c0d83e37eb0e1742a",
+            "ownerUid": "elder_demo",
+            "townshipId": "township_demo",
+            "voucherId": "voucher_demo",
+            "costCoins": 100,
+            "code": "DEMO-8D9829EE327AC10F42BE1058",
+            "ledgerEntryId": "d060839f9f6782eadc94b963934dbbca8d383fabdfd71904d0ba80dfdf45d265",
+            "issuedAt": "2026-10-22T00:00:00.000Z",
+            "isDemo": true
+          },
+          "entryId": "d060839f9f6782eadc94b963934dbbca8d383fabdfd71904d0ba80dfdf45d265",
+          "balance": 0
+        }
+      },
+      "debitEntry": {
+        "id": "d060839f9f6782eadc94b963934dbbca8d383fabdfd71904d0ba80dfdf45d265",
+        "ownerUid": "elder_demo",
+        "townshipId": "township_demo",
+        "type": "voucher_redemption",
+        "amount": -100,
+        "balanceAfter": 0,
+        "participationId": null,
+        "completionEventId": null,
+        "ruleId": null,
+        "ruleVersion": null,
+        "rateCoins": null,
+        "referenceId": "8d9829ee327ac10f42be1058eda2226b9805902af2eb628c0d83e37eb0e1742a",
+        "createdAt": "2026-10-22T00:00:00.000Z"
+      }
+    },
+    "helper": {
+      "callerUid": "helper_demo",
+      "hypotheticalOpeningBalance": 100,
+      "isUiOnly": true,
+      "notForSeeding": true,
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage5-helper-redeem-001",
+        "voucherId": "voucher_demo"
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "redemption": {
+            "id": "837745ed32c82bb76d577e8388de93398538fed027654bfdaffd9330ef94ba47",
+            "ownerUid": "helper_demo",
+            "townshipId": "township_demo",
+            "voucherId": "voucher_demo",
+            "costCoins": 100,
+            "code": "DEMO-837745ED32C82BB76D577E83",
+            "ledgerEntryId": "d6181f1f832c209fa737eeec6d3021cbb7308563a54fa492debaf66dd6575d9e",
+            "issuedAt": "2026-10-22T00:00:00.000Z",
+            "isDemo": true
+          },
+          "entryId": "d6181f1f832c209fa737eeec6d3021cbb7308563a54fa492debaf66dd6575d9e",
+          "balance": 0
+        }
+      },
+      "debitEntry": {
+        "id": "d6181f1f832c209fa737eeec6d3021cbb7308563a54fa492debaf66dd6575d9e",
+        "ownerUid": "helper_demo",
+        "townshipId": "township_demo",
+        "type": "voucher_redemption",
+        "amount": -100,
+        "balanceAfter": 0,
+        "participationId": null,
+        "completionEventId": null,
+        "ruleId": null,
+        "ruleVersion": null,
+        "rateCoins": null,
+        "referenceId": "837745ed32c82bb76d577e8388de93398538fed027654bfdaffd9330ef94ba47",
+        "createdAt": "2026-10-22T00:00:00.000Z"
+      }
+    }
+  }
+}

@@ -1,0 +1,521 @@
+{
+  "description": "Synthetic alternative UI states. Do not seed these as verified attendance or rewards. UTC strings represent callable responses; Firestore uses Timestamp.",
+  "serverTime": "2026-10-21T00:00:00.000Z",
+  "availability": {
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage3-availability-001",
+      "available": true,
+      "slots": [
+        {
+          "weekday": 1,
+          "startMinute": 0,
+          "endMinute": 1440
+        },
+        {
+          "weekday": 2,
+          "startMinute": 0,
+          "endMinute": 1440
+        },
+        {
+          "weekday": 3,
+          "startMinute": 0,
+          "endMinute": 1440
+        },
+        {
+          "weekday": 4,
+          "startMinute": 0,
+          "endMinute": 1440
+        },
+        {
+          "weekday": 5,
+          "startMinute": 0,
+          "endMinute": 1440
+        },
+        {
+          "weekday": 6,
+          "startMinute": 0,
+          "endMinute": 1440
+        },
+        {
+          "weekday": 7,
+          "startMinute": 0,
+          "endMinute": 1440
+        }
+      ]
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "helperProfile": {
+          "id": "helper_demo",
+          "approved": true,
+          "tier": "T3",
+          "languages": [
+            "bm",
+            "en"
+          ],
+          "gender": "female",
+          "allowedTasks": [
+            "walk_with_me",
+            "sit_with_me",
+            "phone_help",
+            "carry_light_item"
+          ],
+          "available": true,
+          "availabilitySlots": [
+            {
+              "weekday": 1,
+              "startMinute": 0,
+              "endMinute": 1440
+            },
+            {
+              "weekday": 2,
+              "startMinute": 0,
+              "endMinute": 1440
+            },
+            {
+              "weekday": 3,
+              "startMinute": 0,
+              "endMinute": 1440
+            },
+            {
+              "weekday": 4,
+              "startMinute": 0,
+              "endMinute": 1440
+            },
+            {
+              "weekday": 5,
+              "startMinute": 0,
+              "endMinute": 1440
+            },
+            {
+              "weekday": 6,
+              "startMinute": 0,
+              "endMinute": 1440
+            },
+            {
+              "weekday": 7,
+              "startMinute": 0,
+              "endMinute": 1440
+            }
+          ],
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-21T00:00:00.000Z"
+        }
+      }
+    }
+  },
+  "create": {
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage3-request-001",
+      "elderId": "elder_demo",
+      "activityId": "activity_garden",
+      "placeId": "place_garden",
+      "startsAt": "2026-10-22T01:00:00.000Z",
+      "endsAt": "2026-10-22T02:00:00.000Z",
+      "taskType": "walk_with_me",
+      "preferredLanguage": "en",
+      "preferredHelperGender": "female"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "request": {
+          "id": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+          "elderId": "elder_demo",
+          "activityId": "activity_garden",
+          "placeId": "place_garden",
+          "startsAt": "2026-10-22T01:00:00.000Z",
+          "endsAt": "2026-10-22T02:00:00.000Z",
+          "taskType": "walk_with_me",
+          "preferredLanguage": "en",
+          "preferredHelperGender": "female",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "createdBy": "elder_demo",
+          "state": "requested",
+          "pairingId": null,
+          "helperId": null,
+          "elderDisplayName": "Demo Elder",
+          "helperDisplay": null,
+          "assignedAt": null,
+          "acceptedAt": null,
+          "startedAt": null,
+          "finishedAt": null,
+          "elderConfirmation": null,
+          "helperConfirmation": null,
+          "completedAt": null,
+          "cancelledAt": null,
+          "completionEventId": null,
+          "participationIds": {
+            "elder": null,
+            "helper": null
+          },
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-21T00:00:00.000Z"
+        }
+      }
+    }
+  },
+  "assign": {
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage3-assign-001",
+      "requestId": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+      "pairingId": "pairing_demo"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "request": {
+          "id": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+          "elderId": "elder_demo",
+          "activityId": "activity_garden",
+          "placeId": "place_garden",
+          "startsAt": "2026-10-22T01:00:00.000Z",
+          "endsAt": "2026-10-22T02:00:00.000Z",
+          "taskType": "walk_with_me",
+          "preferredLanguage": "en",
+          "preferredHelperGender": "female",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "createdBy": "elder_demo",
+          "state": "assigned",
+          "pairingId": "pairing_demo",
+          "helperId": "helper_demo",
+          "elderDisplayName": "Demo Elder",
+          "helperDisplay": {
+            "displayName": "Demo Helper",
+            "tier": "T3"
+          },
+          "assignedAt": "2026-10-21T00:00:00.000Z",
+          "acceptedAt": null,
+          "startedAt": null,
+          "finishedAt": null,
+          "elderConfirmation": null,
+          "helperConfirmation": null,
+          "completedAt": null,
+          "cancelledAt": null,
+          "completionEventId": null,
+          "participationIds": {
+            "elder": null,
+            "helper": null
+          },
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-21T00:00:00.000Z"
+        }
+      }
+    }
+  },
+  "accept": {
+    "callerUid": "helper_demo",
+    "at": "2026-10-21T00:00:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage3-accept-001",
+      "requestId": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+      "action": "accept"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "request": {
+          "id": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+          "elderId": "elder_demo",
+          "activityId": "activity_garden",
+          "placeId": "place_garden",
+          "startsAt": "2026-10-22T01:00:00.000Z",
+          "endsAt": "2026-10-22T02:00:00.000Z",
+          "taskType": "walk_with_me",
+          "preferredLanguage": "en",
+          "preferredHelperGender": "female",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "createdBy": "elder_demo",
+          "state": "accepted",
+          "pairingId": "pairing_demo",
+          "helperId": "helper_demo",
+          "elderDisplayName": "Demo Elder",
+          "helperDisplay": {
+            "displayName": "Demo Helper",
+            "tier": "T3"
+          },
+          "assignedAt": "2026-10-21T00:00:00.000Z",
+          "acceptedAt": "2026-10-21T00:00:00.000Z",
+          "startedAt": null,
+          "finishedAt": null,
+          "elderConfirmation": null,
+          "helperConfirmation": null,
+          "completedAt": null,
+          "cancelledAt": null,
+          "completionEventId": null,
+          "participationIds": {
+            "elder": null,
+            "helper": null
+          },
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-21T00:00:00.000Z"
+        }
+      }
+    }
+  },
+  "start": {
+    "callerUid": "helper_demo",
+    "at": "2026-10-22T01:00:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage3-start-001",
+      "requestId": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+      "action": "start"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "request": {
+          "id": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+          "elderId": "elder_demo",
+          "activityId": "activity_garden",
+          "placeId": "place_garden",
+          "startsAt": "2026-10-22T01:00:00.000Z",
+          "endsAt": "2026-10-22T02:00:00.000Z",
+          "taskType": "walk_with_me",
+          "preferredLanguage": "en",
+          "preferredHelperGender": "female",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "createdBy": "elder_demo",
+          "state": "in_progress",
+          "pairingId": "pairing_demo",
+          "helperId": "helper_demo",
+          "elderDisplayName": "Demo Elder",
+          "helperDisplay": {
+            "displayName": "Demo Helper",
+            "tier": "T3"
+          },
+          "assignedAt": "2026-10-21T00:00:00.000Z",
+          "acceptedAt": "2026-10-21T00:00:00.000Z",
+          "startedAt": "2026-10-22T01:00:00.000Z",
+          "finishedAt": null,
+          "elderConfirmation": null,
+          "helperConfirmation": null,
+          "completedAt": null,
+          "cancelledAt": null,
+          "completionEventId": null,
+          "participationIds": {
+            "elder": null,
+            "helper": null
+          },
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-22T01:00:00.000Z"
+        }
+      }
+    }
+  },
+  "finish": {
+    "callerUid": "helper_demo",
+    "at": "2026-10-22T02:00:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage3-finish-001",
+      "requestId": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+      "action": "finish"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "request": {
+          "id": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+          "elderId": "elder_demo",
+          "activityId": "activity_garden",
+          "placeId": "place_garden",
+          "startsAt": "2026-10-22T01:00:00.000Z",
+          "endsAt": "2026-10-22T02:00:00.000Z",
+          "taskType": "walk_with_me",
+          "preferredLanguage": "en",
+          "preferredHelperGender": "female",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "createdBy": "elder_demo",
+          "state": "awaiting_confirmation",
+          "pairingId": "pairing_demo",
+          "helperId": "helper_demo",
+          "elderDisplayName": "Demo Elder",
+          "helperDisplay": {
+            "displayName": "Demo Helper",
+            "tier": "T3"
+          },
+          "assignedAt": "2026-10-21T00:00:00.000Z",
+          "acceptedAt": "2026-10-21T00:00:00.000Z",
+          "startedAt": "2026-10-22T01:00:00.000Z",
+          "finishedAt": "2026-10-22T02:00:00.000Z",
+          "elderConfirmation": null,
+          "helperConfirmation": null,
+          "completedAt": null,
+          "cancelledAt": null,
+          "completionEventId": null,
+          "participationIds": {
+            "elder": null,
+            "helper": null
+          },
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-22T02:00:00.000Z"
+        }
+      }
+    }
+  },
+  "helperConfirm": {
+    "callerUid": "helper_demo",
+    "at": "2026-10-22T02:00:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage3-helper-confirm-001",
+      "requestId": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+      "action": "confirm"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "request": {
+          "id": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+          "elderId": "elder_demo",
+          "activityId": "activity_garden",
+          "placeId": "place_garden",
+          "startsAt": "2026-10-22T01:00:00.000Z",
+          "endsAt": "2026-10-22T02:00:00.000Z",
+          "taskType": "walk_with_me",
+          "preferredLanguage": "en",
+          "preferredHelperGender": "female",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "createdBy": "elder_demo",
+          "state": "awaiting_confirmation",
+          "pairingId": "pairing_demo",
+          "helperId": "helper_demo",
+          "elderDisplayName": "Demo Elder",
+          "helperDisplay": {
+            "displayName": "Demo Helper",
+            "tier": "T3"
+          },
+          "assignedAt": "2026-10-21T00:00:00.000Z",
+          "acceptedAt": "2026-10-21T00:00:00.000Z",
+          "startedAt": "2026-10-22T01:00:00.000Z",
+          "finishedAt": "2026-10-22T02:00:00.000Z",
+          "elderConfirmation": null,
+          "helperConfirmation": {
+            "uid": "helper_demo",
+            "at": "2026-10-22T02:00:00.000Z"
+          },
+          "completedAt": null,
+          "cancelledAt": null,
+          "completionEventId": null,
+          "participationIds": {
+            "elder": null,
+            "helper": null
+          },
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-22T02:00:00.000Z"
+        }
+      }
+    }
+  },
+  "elderConfirm": {
+    "callerUid": "elder_demo",
+    "at": "2026-10-22T02:01:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage3-elder-confirm-001",
+      "requestId": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+      "action": "confirm"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "request": {
+          "id": "9b3880c0fba4cbd36336b61c36527513b9f1437b9147a472b6556d7db22ba973",
+          "elderId": "elder_demo",
+          "activityId": "activity_garden",
+          "placeId": "place_garden",
+          "startsAt": "2026-10-22T01:00:00.000Z",
+          "endsAt": "2026-10-22T02:00:00.000Z",
+          "taskType": "walk_with_me",
+          "preferredLanguage": "en",
+          "preferredHelperGender": "female",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "createdBy": "elder_demo",
+          "state": "completed",
+          "pairingId": "pairing_demo",
+          "helperId": "helper_demo",
+          "elderDisplayName": "Demo Elder",
+          "helperDisplay": {
+            "displayName": "Demo Helper",
+            "tier": "T3"
+          },
+          "assignedAt": "2026-10-21T00:00:00.000Z",
+          "acceptedAt": "2026-10-21T00:00:00.000Z",
+          "startedAt": "2026-10-22T01:00:00.000Z",
+          "finishedAt": "2026-10-22T02:00:00.000Z",
+          "elderConfirmation": {
+            "uid": "elder_demo",
+            "at": "2026-10-22T02:01:00.000Z"
+          },
+          "helperConfirmation": {
+            "uid": "helper_demo",
+            "at": "2026-10-22T02:00:00.000Z"
+          },
+          "completedAt": "2026-10-22T02:01:00.000Z",
+          "cancelledAt": null,
+          "completionEventId": "debbcaf8e0af7b29220368e651216860f2d2a3b90d059ceb3487f0904086769a",
+          "participationIds": {
+            "elder": "9cc09004c77bcb9e82323c546d74617dc7572b428562d83ffcf5fb8e152f3466",
+            "helper": "d41cfdb0ce36ae00d375af13ecb2bbdf47b0186581935ac6a614d1e149114227"
+          },
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-22T02:01:00.000Z"
+        }
+      }
+    }
+  },
+  "claimExamples": [
+    {
+      "id": "9cc09004c77bcb9e82323c546d74617dc7572b428562d83ffcf5fb8e152f3466",
+      "participationId": "9cc09004c77bcb9e82323c546d74617dc7572b428562d83ffcf5fb8e152f3466",
+      "completionEventId": "debbcaf8e0af7b29220368e651216860f2d2a3b90d059ceb3487f0904086769a",
+      "beneficiaryUid": "elder_demo",
+      "beneficiaryRole": "elder",
+      "townshipId": "township_demo",
+      "status": "pending_policy",
+      "eligible": null,
+      "amountCoins": null,
+      "ruleId": null,
+      "ruleVersion": null,
+      "rateCoins": null,
+      "ledgerEntryId": null,
+      "reason": "REWARD_POLICY_PENDING",
+      "verifiedAt": "2026-10-22T02:01:00.000Z",
+      "createdAt": "2026-10-22T02:01:00.000Z",
+      "updatedAt": "2026-10-22T02:01:00.000Z"
+    },
+    {
+      "id": "d41cfdb0ce36ae00d375af13ecb2bbdf47b0186581935ac6a614d1e149114227",
+      "participationId": "d41cfdb0ce36ae00d375af13ecb2bbdf47b0186581935ac6a614d1e149114227",
+      "completionEventId": "debbcaf8e0af7b29220368e651216860f2d2a3b90d059ceb3487f0904086769a",
+      "beneficiaryUid": "helper_demo",
+      "beneficiaryRole": "helper",
+      "townshipId": "township_demo",
+      "status": "pending_policy",
+      "eligible": null,
+      "amountCoins": null,
+      "ruleId": null,
+      "ruleVersion": null,
+      "rateCoins": null,
+      "ledgerEntryId": null,
+      "reason": "REWARD_POLICY_PENDING",
+      "verifiedAt": "2026-10-22T02:01:00.000Z",
+      "createdAt": "2026-10-22T02:01:00.000Z",
+      "updatedAt": "2026-10-22T02:01:00.000Z"
+    }
+  ]
+}

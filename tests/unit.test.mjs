@@ -10,7 +10,39 @@ const {tupleId, payloadHash} = require('../functions/lib/commands.js');
 const {inputObject, documentId} = require('../functions/lib/validation.js');
 const {authenticatedUid, requireRole, requireTownship} = require('../functions/lib/auth.js');
 const {malaysiaDate, dailySchedule, unsubmittedState, createCheckInService} = require('../functions/lib/checkins.js');
+const {slotsInput,isoTime,daySegments,covers} = require('../functions/lib/scheduling.js');
+const {createSessionService} = require('../functions/lib/sessions.js');
 const reason = (expected) => (error) => error.details?.reason === expected;
+
+test('weekly slots cover whole Malaysian intervals, including adjacent slots, midnight and Sunday to Monday', () => {
+  const start=isoTime('2026-10-25T15:30:00Z'), end=isoTime('2026-10-25T16:30:00.000Z');
+  assert.deepEqual(daySegments(start,end),[
+    {localDate:'2026-10-25',weekday:7,startMinute:1410,endMinute:1440},
+    {localDate:'2026-10-26',weekday:1,startMinute:0,endMinute:30},
+  ]);
+  const slots=slotsInput([{weekday:7,startMinute:1380,endMinute:1440},{weekday:1,startMinute:0,endMinute:15},{weekday:1,startMinute:15,endMinute:60}]);
+  assert.equal(covers(slots,start,end),true);
+  assert.equal(covers(slots.filter((s)=>s.startMinute!==15),start,end),false);
+  assert.equal(daySegments(start,isoTime('2026-10-25T16:00:00Z')).length,1);
+  for (const value of ['0000-01-01T00:00:00Z','2026-02-30T01:00:00Z','2026-10-25T16:00:01Z','2026-10-25T16:00:00+08:00','invalid',null]) {
+    assert.throws(()=>isoTime(value),reason('INVALID_TIME_RANGE'));
+  }
+  for (const slots of [[{weekday:0,startMinute:0,endMinute:10}],[{weekday:1,startMinute:0,endMinute:0}],
+    [{weekday:1,startMinute:0,endMinute:1441}],[{weekday:1,startMinute:0,endMinute:10,approved:true}]]) {
+    assert.throws(()=>slotsInput(slots),reason('INVALID_AVAILABILITY'));
+  }
+});
+
+test('booking rejects forged identities, states, rates and invalid times before touching Firestore', async () => {
+  const service=createSessionService({});
+  const input={contractVersion:1,idempotencyKey:'validation',elderId:'elder_demo',activityId:null,placeId:'place_garden',
+    startsAt:'2026-10-22T01:00:00Z',endsAt:'2026-10-22T02:00:00Z',taskType:'walk_with_me',preferredLanguage:'en',preferredHelperGender:'any'};
+  for (const extra of [{helperId:'helper_demo'},{state:'completed'},{amountCoins:100},{completedAt:input.startsAt}]) {
+    await assert.rejects(service.createRequest('elder_demo',{...input,...extra}),reason('UNKNOWN_FIELD'));
+  }
+  for (const endsAt of [input.startsAt,'2026-10-23T02:00:00Z']) await assert.rejects(service.createRequest('elder_demo',{...input,endsAt}),reason('INVALID_TIME_RANGE'));
+  await assert.rejects(service.createRequest('elder_demo',{...input,taskType:'unknown'}),reason('INVALID_TASK'));
+});
 
 test('local scripts refuse real projects, missing hosts and remote or malformed endpoints', () => {
   const valid = {GCLOUD_PROJECT:projectId,...hosts};

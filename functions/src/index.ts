@@ -7,15 +7,21 @@ import {runCommand} from "./commands";
 import {fail} from "./errors";
 import {documentId, envelope, inputObject, stringField} from "./validation";
 import {createCheckInService} from "./checkins";
+import {createSessionService} from "./sessions";
 
 initializeApp();
 setGlobalOptions({region: "asia-southeast1", maxInstances: 3});
 const db = getFirestore();
 const checkins = createCheckInService(db);
+const sessions = createSessionService(db);
 
 export const saveElderSettings = onCall((request) => checkins.saveElderSettings(authenticatedUid(request.auth), request.data));
 export const submitCheckIn = onCall((request) => checkins.submitCheckIn(authenticatedUid(request.auth), request.data));
 export const recordPhoneResponse = onCall((request) => checkins.recordPhoneResponse(authenticatedUid(request.auth), request.data));
+export const setHelperAvailability = onCall((request) => sessions.setHelperAvailability(authenticatedUid(request.auth), request.data));
+export const createRequest = onCall((request) => sessions.createRequest(authenticatedUid(request.auth), request.data));
+export const assignRequest = onCall((request) => sessions.assignRequest(authenticatedUid(request.auth), request.data));
+export const transitionRequest = onCall((request) => sessions.transitionRequest(authenticatedUid(request.auth), request.data));
 
 // Foundation diagnostics only; not replacements for agreed domain callables.
 export const getBackendContext = onCall(async (request) => {

@@ -92,6 +92,9 @@ export function fixtureDocuments(now = new Date()) {
     ['activity_garden','place_garden',{bm:'Jalan di taman',en:'Garden walk'},1],
     ['activity_hall','place_hall',{bm:'Pertemuan komuniti',en:'Community gathering'},2],
   ]) add(`activities/${id}`, {townshipId,title,placeId,participationMode:'in_person',startsAt:future(days,1),endsAt:future(days,2),language:'en',...metadata});
+  add('activities/activity_demo_attendance', {townshipId,title:{bm:'Aktiviti komuniti lalu (demo)',en:'Past community activity (demo)'},
+    placeId:'place_hall',participationMode:'in_person',startsAt:Timestamp.fromMillis(startsAt.toMillis()-60*60000),
+    endsAt:startsAt,language:'en',...metadata});
   add('voucherCatalog/voucher_demo', {townshipId,title:{bm:'Baucar contoh',en:'Mock voucher'},costCoins:100,active:true,isDemo:true,...metadata});
   return documents;
 }

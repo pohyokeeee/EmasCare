@@ -61,7 +61,7 @@ test('Firestore foundation policies against the real rules emulator', {timeout:1
     await t.test('catalog queries must be constrained to the current township', async () => {
       const elder = user('elder_demo');
       const snapshot = await assertSucceeds(getDocs(query(collection(elder,'activities'),where('townshipId','==',townshipId),orderBy('startsAt'))));
-      assert.equal(snapshot.size,2);
+      assert.equal(snapshot.size,3);
       await assertFails(getDocs(collection(elder,'activities')));
       await assertFails(read(elder,'activities/rules_other_activity'));
       await assertSucceeds(read(elder,'places/place_garden'));

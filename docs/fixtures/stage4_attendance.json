@@ -1,0 +1,169 @@
+{
+  "description": "Synthetic UI examples checked against real service responses. Submission is not verified attendance; pending-policy claims contain no coin amounts. Firestore uses Timestamp while callables use UTC ISO strings.",
+  "serverTime": "2026-10-21T00:00:00.000Z",
+  "submit": {
+    "functionName": "submitActivityAttendance",
+    "callerUid": "elder_demo",
+    "at": "2026-10-21T00:00:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage4-submit-001",
+      "activityId": "activity_demo_attendance"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "attendance": {
+          "id": "a73b0a16137abcdcd135ead10f0e8375750dce9c1a457651ce1cf3b51f3acd7a",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "activityId": "activity_demo_attendance",
+          "elderId": "elder_demo",
+          "mode": "standalone",
+          "status": "submitted",
+          "linkedRequestId": null,
+          "submittedAt": "2026-10-21T00:00:00.000Z",
+          "verifiedAt": null,
+          "verificationMethod": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reviewNote": null,
+          "completionEventId": null,
+          "participationId": null,
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-21T00:00:00.000Z"
+        }
+      }
+    }
+  },
+  "verify": {
+    "functionName": "reviewActivityAttendance",
+    "callerUid": "coordinator_demo",
+    "at": "2026-10-21T00:01:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage4-review-001",
+      "attendanceId": "a73b0a16137abcdcd135ead10f0e8375750dce9c1a457651ce1cf3b51f3acd7a",
+      "decision": "verify",
+      "verificationMethod": "organizer_roster",
+      "note": "Matched the organizer attendance roster."
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "attendance": {
+          "id": "a73b0a16137abcdcd135ead10f0e8375750dce9c1a457651ce1cf3b51f3acd7a",
+          "townshipId": "township_demo",
+          "householdId": "household_demo",
+          "activityId": "activity_demo_attendance",
+          "elderId": "elder_demo",
+          "mode": "standalone",
+          "status": "verified",
+          "linkedRequestId": null,
+          "submittedAt": "2026-10-21T00:00:00.000Z",
+          "verifiedAt": "2026-10-21T00:01:00.000Z",
+          "verificationMethod": "organizer_roster",
+          "reviewedBy": "coordinator_demo",
+          "reviewedAt": "2026-10-21T00:01:00.000Z",
+          "reviewNote": "Matched the organizer attendance roster.",
+          "completionEventId": "5c072a4fd8a36e604dc0a084bdda9d00d0463db0d38174a0a81a74de8f21120f",
+          "participationId": "b6373d845bb48ffa39c1b110f6175ae0582359b6272b4845d9ac7048b17fbf97",
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-21T00:01:00.000Z"
+        }
+      }
+    }
+  },
+  "submitForRejection": {
+    "functionName": "submitActivityAttendance",
+    "callerUid": "elder_solo",
+    "at": "2026-10-21T00:00:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage4-submit-solo-001",
+      "activityId": "activity_demo_attendance"
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "attendance": {
+          "id": "d05e0acb23ab545aa9605b7112eb0d713f29137ea25b8cd687234be0ac1563d7",
+          "townshipId": "township_demo",
+          "householdId": "household_solo",
+          "activityId": "activity_demo_attendance",
+          "elderId": "elder_solo",
+          "mode": "standalone",
+          "status": "submitted",
+          "linkedRequestId": null,
+          "submittedAt": "2026-10-21T00:00:00.000Z",
+          "verifiedAt": null,
+          "verificationMethod": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reviewNote": null,
+          "completionEventId": null,
+          "participationId": null,
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-21T00:00:00.000Z"
+        }
+      }
+    }
+  },
+  "reject": {
+    "functionName": "reviewActivityAttendance",
+    "callerUid": "coordinator_demo",
+    "at": "2026-10-21T00:02:00.000Z",
+    "input": {
+      "contractVersion": 1,
+      "idempotencyKey": "stage4-reject-001",
+      "attendanceId": "d05e0acb23ab545aa9605b7112eb0d713f29137ea25b8cd687234be0ac1563d7",
+      "decision": "reject",
+      "verificationMethod": null,
+      "note": "Attendance could not be confirmed against the roster."
+    },
+    "output": {
+      "contractVersion": 1,
+      "data": {
+        "attendance": {
+          "id": "d05e0acb23ab545aa9605b7112eb0d713f29137ea25b8cd687234be0ac1563d7",
+          "townshipId": "township_demo",
+          "householdId": "household_solo",
+          "activityId": "activity_demo_attendance",
+          "elderId": "elder_solo",
+          "mode": "standalone",
+          "status": "rejected",
+          "linkedRequestId": null,
+          "submittedAt": "2026-10-21T00:00:00.000Z",
+          "verifiedAt": null,
+          "verificationMethod": null,
+          "reviewedBy": "coordinator_demo",
+          "reviewedAt": "2026-10-21T00:02:00.000Z",
+          "reviewNote": "Attendance could not be confirmed against the roster.",
+          "completionEventId": null,
+          "participationId": null,
+          "createdAt": "2026-10-21T00:00:00.000Z",
+          "updatedAt": "2026-10-21T00:02:00.000Z"
+        }
+      }
+    }
+  },
+  "pendingClaim": {
+    "id": "b6373d845bb48ffa39c1b110f6175ae0582359b6272b4845d9ac7048b17fbf97",
+    "participationId": "b6373d845bb48ffa39c1b110f6175ae0582359b6272b4845d9ac7048b17fbf97",
+    "completionEventId": "5c072a4fd8a36e604dc0a084bdda9d00d0463db0d38174a0a81a74de8f21120f",
+    "beneficiaryUid": "elder_demo",
+    "beneficiaryRole": "elder",
+    "townshipId": "township_demo",
+    "status": "pending_policy",
+    "eligible": null,
+    "amountCoins": null,
+    "ruleId": null,
+    "ruleVersion": null,
+    "rateCoins": null,
+    "ledgerEntryId": null,
+    "reason": "REWARD_POLICY_PENDING",
+    "verifiedAt": "2026-10-21T00:01:00.000Z",
+    "createdAt": "2026-10-21T00:01:00.000Z",
+    "updatedAt": "2026-10-21T00:01:00.000Z"
+  }
+}

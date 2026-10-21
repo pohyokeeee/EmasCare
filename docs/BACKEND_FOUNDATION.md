@@ -140,7 +140,7 @@ npm.cmd run demo:reset
 npm.cmd run demo:smoke
 ```
 
-Reset deletes/recreates the explicit fixture documents/accounts, removes known demo elders' check-ins/daily statuses across dates, and clears known demo actors' implemented-stage receipts. Stage 3 adds selective request, reservation and completion cleanup; see [the current reset scope and walkthrough](BACKEND_SESSIONS.md). Other elders' records, unrelated Auth accounts and unimplemented-domain receipts remain. This is a scoped demo reset. Never use it to repair real financial history; expand cleanup deliberately as later stages introduce demo-owned data. Seed alone upserts the current fixture snapshot and restores its default settings/balances; use reset before repeating an entire walkthrough.
+Reset deletes/recreates the explicit fixture documents/accounts, removes known demo elders' check-ins/daily statuses across dates, and clears known demo actors' implemented-stage receipts. Stage 3 adds selective request, reservation and completion cleanup; Stage 4 includes standalone attendance. See [the current reset scope and walkthrough](BACKEND_ATTENDANCE.md). Other elders' records, unrelated Auth accounts and unimplemented-domain receipts remain. This is a scoped demo reset. Never use it to repair real financial history; expand cleanup deliberately as later stages introduce demo-owned data. Seed alone upserts the current fixture snapshot and restores its default settings/balances; use reset before repeating an entire walkthrough.
 
 Both scripts validate the exact demo project and loopback emulator hosts before Admin client initialization. Existing conflicting project or host environment variables cause failure. They cannot target a live Firebase project.
 

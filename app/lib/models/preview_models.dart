@@ -1,4 +1,4 @@
-/// UI view models only. Wire JSON is pending agreement with Developer B.
+/// Fixture UI models. Approved Stage 2 wire records live in backend_models.dart.
 enum AppRole { elder, family, helper, coordinator }
 
 enum Destination { today, activities, companion, rewards }

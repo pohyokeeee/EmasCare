@@ -2,7 +2,7 @@ param(
     [ValidateSet('preview', 'build', 'serve', 'check', 'dev')]
     [string]$Mode = 'preview',
     [ValidateRange(1024, 65535)]
-    [int]$Port = 8080,
+    [int]$Port = 8090,
     [string]$FlutterRoot = ''
 )
 $ErrorActionPreference = 'Stop'
@@ -33,6 +33,8 @@ try {
             Invoke-LocalFlutter test --no-pub
             & node 'tool/browser_bridge.test.cjs'
             if ($LASTEXITCODE -ne 0) { throw 'Browser bridge tests failed.' }
+            & node --test 'tool/firebase_bootstrap.test.cjs'
+            if ($LASTEXITCODE -ne 0) { throw 'Firebase initialization tests failed.' }
         } elseif ($Mode -eq 'dev') {
             Invoke-LocalFlutter run -d web-server --web-hostname 127.0.0.1 --web-port $Port
         } else {

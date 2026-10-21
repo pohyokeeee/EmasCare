@@ -1,6 +1,6 @@
-# EmasCare — Phase 1
+# EmasCare — Flutter Web
 
-A responsive Flutter Web interface preview for Developer A. All four Flutter role views, including coordinator, belong to A; Developer B supplies the backend. This follows the ownership override in the supplied contract.
+A responsive Flutter Web app owned by Developer A, connected to Developer B's local Stage 2 Firebase backend. **Read [LOCAL_BACKEND.md](LOCAL_BACKEND.md) first** for exact emulator startup, accounts, connected features and manual verification. The default app requires the emulators. Account → design preview retains the original sample screens described below.
 
 ## Run on this Windows computer
 
@@ -11,7 +11,7 @@ cd "C:\Users\user\Documents\PROJECTS\EmasCare\app"
 .\preview.ps1
 ```
 
-Open **http://127.0.0.1:8080** after the server prints its address. Keep the terminal open. Press Ctrl+C to stop it.
+Start/reset the backend as described in [LOCAL_BACKEND.md](LOCAL_BACKEND.md), then open **http://127.0.0.1:8090** after the app server prints its address. Keep the terminal open. Press Ctrl+C to stop it. Firestore uses 8080.
 
 The script builds the app and serves it on the loopback address. It finds Flutter via `FLUTTER_ROOT`, your PATH, or this computer's existing `Documents/VS CODE/flutter` folder. To use another SDK, pass `-FlutterRoot 'C:\path\to\flutter'`. Flutter must already be initialized, and Node.js must be installed. Verified with Flutter 3.38.5 / Dart 3.10.4.
 
@@ -27,10 +27,12 @@ The helper uses Flutter's installed Dart/snapshot entry point because this machi
 
 ```powershell
 flutter pub get
-flutter run -d chrome --web-port 8080
+flutter run -d chrome --web-port 8090
 ```
 
-## Try it
+## Try the explicit design preview
+
+Use **Explore the design preview** from sign-in, or Account → **Open design preview** while connected (signs out first). The following interactions use fixtures only:
 
 1. Press **Saya OK**. The sample check-in updates locally. Open the role menu near the top right and select **Family** to see the same sample status.
 2. Select **Helper** and toggle availability. It changes only the sample repository.
@@ -55,7 +57,7 @@ Hash routes such as `/#/family/today`, `/#/helper/rewards` and `/#/coordinator/a
 
 ## Still pending
 
-This is an interface foundation, not the full two-day MVP. There is no sign-in, Firebase connection, saved consent, real check-in/reminder/escalation, booking, session transition, reward credit, redemption, live Maps/warnings, coordinator mutation, family cheer write, or AI voice parsing. Sample status changes disappear on reload. Progress rings, pairings, dates, requests and participant names are synthetic. The SDP entry is a mock module entry.
+Connected mode has sign-in/out, saved independent consent, due/grace/pause settings, real local-emulator check-ins, family status and coordinator phone reporting. Booking, availability mutations, sessions, rewards/redemption, notifications/automatic reminders, live Maps/warnings, family cheers and AI voice parsing remain pending. In design-preview mode, sample changes disappear on reload; progress rings, pairings, dates, requests and participant names are synthetic. The SDP entry remains a mock module entry.
 
 The reward decision remains **coins for elders and helpers after each eligible verified completion**. Rates, detailed eligibility and exact response JSON still require agreement. This app does not implement the superseded monthly award or fabricate wallet balances. Tanya Dulu is future work and has no screen here.
 
@@ -67,16 +69,18 @@ Browser API availability is not proof of successful microphone capture or audibl
 | --- | --- |
 | `lib/app/` | App/router, shared preview state and responsive shell |
 | `lib/shared/` | Theme, reusable components, spring feedback and illustrations |
-| `lib/models/` | UI view models; no approved wire serialization |
+| `lib/models/` | Separate fixture UI models and approved Stage 2 backend records |
 | `lib/data/emas_repository.dart` | Repository interface and local mock |
 | `lib/features/role_views.dart` | Four role previews and activity/companion/reward views |
 | `lib/platform/`, `web/preview_bridge.js` | Conditional web bridge and local audio/device check |
 | `test/preview_test.dart` | Interactions, role navigation and responsive larger-text checks |
 | `tool/browser_bridge.test.cjs` | Audio permission, track cleanup, playback and speech fallbacks |
 
-Replace the mock through `EmasCareApp(repository: ...)` after agreeing response shapes with B. Real auth must select a server-owned role; the preview role selector must not authorize backend actions. Keep reward amounts, permission checks and session completion in the backend. Preview methods are deliberately named `preview*` and do not establish callable signatures.
+Connected code lives in `lib/data/firebase_backend_repository.dart`, `lib/models/backend_models.dart`, `lib/app/session_controller.dart` and `lib/features/connected/`. It uses B's Stage 2 guide/fixtures. `EmasCareApp(backend: ...)` injects the live adapter; `EmasCareApp(repository: ...)` remains available for fixture-only tests. Live roles are server-owned and cannot be switched with the preview selector. Reward policy and permission checks remain in the backend.
 
 ## Verification
+
+See [the Stage 2 verification record](STAGE2_VERIFICATION.md) for connected-mode tests, real emulator/browser results and remaining limits. [LOCAL_BACKEND.md](LOCAL_BACKEND.md) contains the full restart and manual walkthrough.
 
 See [the Phase 1 verification record](PHASE1_VERIFICATION.md) for observed browser results, screenshots and device-audio limits.
 
@@ -85,7 +89,8 @@ flutter analyze
 flutter test
 node --test tool/browser_bridge.test.cjs
 flutter build web --release --no-web-resources-cdn --no-wasm-dry-run --pwa-strategy=none
-node tool/serve.cjs 8080
+node --test tool/firebase_bootstrap.test.cjs
+node tool/serve.cjs 8090
 ```
 
 The Flutter tests exercise 320, 390, 768 and 1440-pixel layouts across every role and navigation section with BM and larger text, plus check-in/family sharing in the local mock, availability, activity filtering/details, preferences and wallet boundaries. These tests do not establish live backend or device-audio acceptance.

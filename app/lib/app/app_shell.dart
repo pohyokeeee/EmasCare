@@ -63,10 +63,15 @@ class AppShell extends StatelessWidget {
                               const RoleContent(),
                               const SizedBox(height: 30),
                               Text(
-                                c.t(
-                                  'Design preview · Sample people, places and progress. Changes reset on reload.',
-                                  'Pratonton reka bentuk · Ahli, tempat dan kemajuan contoh. Muat semula untuk menetapkan semula.',
-                                ),
+                                c.session?.connected == true
+                                    ? c.t(
+                                        'Local Firebase demo · Connected features save on the emulator. Other modules are pending.',
+                                        'Demo Firebase setempat · Ciri tersambung disimpan pada emulator. Modul lain belum tersedia.',
+                                      )
+                                    : c.t(
+                                        'Design preview · Sample people, places and progress. Changes reset on reload.',
+                                        'Pratonton reka bentuk · Ahli, tempat dan kemajuan contoh. Muat semula untuk menetapkan semula.',
+                                      ),
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ],
@@ -203,7 +208,9 @@ class _Sidebar extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'City of Elmina',
+                      c.session?.connected == true
+                          ? c.session!.profile!.townshipId
+                          : 'City of Elmina',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -321,7 +328,9 @@ class _Toolbar extends StatelessWidget {
                 TextButton(
                   onPressed: () => showPreviewInfo(context),
                   child: Pill(
-                    c.t('Design preview', 'Pratonton reka bentuk'),
+                    c.session?.connected == true
+                        ? c.t('Local backend', 'Pelayan setempat')
+                        : c.t('Design preview', 'Pratonton reka bentuk'),
                     icon: CupertinoIcons.circle_grid_3x3,
                   ),
                 ),
@@ -344,7 +353,8 @@ class _Toolbar extends StatelessWidget {
                 icon: const Icon(CupertinoIcons.slider_horizontal_3, size: 20),
               ),
               if (wide) const SizedBox(width: 10),
-              if (wide)
+              if (c.session != null) const _AccountMenu(),
+              if (wide && c.session?.connected != true)
                 PopupMenuButton<AppRole>(
                   key: const ValueKey('role-selector'),
                   tooltip: c.t(
@@ -394,7 +404,9 @@ class _Toolbar extends StatelessWidget {
                     child: TextButton(
                       onPressed: () => showPreviewInfo(context),
                       child: Text(
-                        c.t('Design preview', 'Pratonton reka bentuk'),
+                        c.session?.connected == true
+                            ? '${c.roleName(c.role)} · ${c.t("Local backend", "Pelayan setempat")}'
+                            : c.t('Design preview', 'Pratonton reka bentuk'),
                         style: const TextStyle(
                           fontSize: 11,
                           color: Palette.muted,
@@ -402,54 +414,98 @@ class _Toolbar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: 140,
-                    child: PopupMenuButton<AppRole>(
-                      key: const ValueKey('role-selector'),
-                      tooltip: c.t(
-                        'Switch preview role',
-                        'Tukar peranan pratonton',
-                      ),
-                      onSelected: (r) => c.navigate(role: r),
-                      itemBuilder: (_) => [
-                        for (final r in AppRole.values)
-                          PopupMenuItem(value: r, child: Text(c.roleName(r))),
-                      ],
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              CupertinoIcons.person_crop_circle,
-                              size: 24,
-                              color: Palette.green,
-                            ),
-                            const SizedBox(width: 7),
-                            Expanded(
-                              child: Text(
-                                c.roleName(c.role),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Palette.green,
+                  if (c.session?.connected != true)
+                    SizedBox(
+                      width: 140,
+                      child: PopupMenuButton<AppRole>(
+                        key: const ValueKey('role-selector'),
+                        tooltip: c.t(
+                          'Switch preview role',
+                          'Tukar peranan pratonton',
+                        ),
+                        onSelected: (r) => c.navigate(role: r),
+                        itemBuilder: (_) => [
+                          for (final r in AppRole.values)
+                            PopupMenuItem(value: r, child: Text(c.roleName(r))),
+                        ],
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                CupertinoIcons.person_crop_circle,
+                                size: 24,
+                                color: Palette.green,
+                              ),
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: Text(
+                                  c.roleName(c.role),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Palette.green,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Icon(
-                              CupertinoIcons.chevron_down,
-                              size: 10,
-                              color: Palette.green,
-                            ),
-                          ],
+                              const Icon(
+                                CupertinoIcons.chevron_down,
+                                size: 10,
+                                color: Palette.green,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
         ],
       ),
+    );
+  }
+}
+
+class _AccountMenu extends StatelessWidget {
+  const _AccountMenu();
+  @override
+  Widget build(BuildContext context) {
+    final c = PreviewScope.of(context), s = c.session!;
+    return PopupMenuButton<String>(
+      tooltip: c.t('Account', 'Akaun'),
+      icon: const Icon(CupertinoIcons.person_crop_circle),
+      enabled: !s.authBusy,
+      onSelected: (value) {
+        if (value == 'preview') s.signOut(enterPreview: true);
+        if (value == 'out') s.signOut();
+        if (value == 'in') s.leavePreview();
+      },
+      itemBuilder: (_) => s.connected
+          ? [
+              PopupMenuItem<String>(
+                enabled: false,
+                child: Text(
+                  '${s.profile!.displayName} · ${c.roleName(c.role)}',
+                ),
+              ),
+              PopupMenuItem(
+                value: 'out',
+                child: Text(c.t('Sign out', 'Log keluar')),
+              ),
+              PopupMenuItem(
+                value: 'preview',
+                child: Text(
+                  c.t('Open design preview', 'Buka pratonton reka bentuk'),
+                ),
+              ),
+            ]
+          : [
+              PopupMenuItem(
+                value: 'in',
+                child: Text(c.t('Back to sign in', 'Kembali ke log masuk')),
+              ),
+            ],
     );
   }
 }
@@ -525,8 +581,8 @@ class _Preferences extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           c.t(
-            'Your preferences apply to this preview.',
-            'Keutamaan anda digunakan dalam pratonton ini.',
+            'Your preferences apply to this tab.',
+            'Keutamaan anda digunakan dalam tab ini.',
           ),
           style: const TextStyle(color: Palette.muted),
         ),
@@ -669,21 +725,31 @@ void showPreviewInfo(BuildContext context) {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          c.t('A first look at EmasCare', 'Pratonton pertama EmasCare'),
+          c.session?.connected == true
+              ? c.t(
+                  'Your connected local demo',
+                  'Demo setempat tersambung anda',
+                )
+              : c.t('A first look at EmasCare', 'Pratonton pertama EmasCare'),
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 14),
         Text(
-          c.t(
-            'Phase 1 is a local interface preview. You can explore four roles, activities and preferences. Check-in and availability changes only update the sample data in this tab.',
-            'Fasa 1 ialah pratonton antara muka setempat. Terokai empat peranan, aktiviti dan keutamaan. Daftar masuk dan ketersediaan hanya mengemas kini data contoh dalam tab ini.',
-          ),
+          c.session?.connected == true
+              ? c.t(
+                  'Sign-in, check-ins, consent settings, permitted family status and coordinator phone reports use your local Firebase emulators. Your role comes from your server profile.',
+                  'Log masuk, daftar masuk, tetapan kebenaran, status keluarga yang dibenarkan dan laporan telefon penyelaras menggunakan emulator Firebase setempat. Peranan anda datang daripada profil pelayan.',
+                )
+              : c.t(
+                  'Phase 1 is a local interface preview. You can explore four roles, activities and preferences. Check-in and availability changes only update the sample data in this tab.',
+                  'Fasa 1 ialah pratonton antara muka setempat. Terokai empat peranan, aktiviti dan keutamaan. Daftar masuk dan ketersediaan hanya mengemas kini data contoh dalam tab ini.',
+                ),
         ),
         const SizedBox(height: 14),
         Text(
           c.t(
-            'Sign-in, consent, bookings, session completion, coins and redemption will connect to Developer B’s backend in later phases. No messages are sent.',
-            'Log masuk, persetujuan, tempahan, pengesahan sesi, syiling dan penebusan akan disambung ke pelayan Developer B dalam fasa seterusnya. Tiada mesej dihantar.',
+            'Sign in to the local demo for saved check-ins and consent. Bookings, session completion, coins and redemption connect in later stages. No messages are sent.',
+            'Log masuk ke demo setempat untuk daftar masuk dan kebenaran tersimpan. Tempahan, pengesahan sesi, syiling dan penebusan akan disambungkan kemudian. Tiada mesej dihantar.',
           ),
         ),
         const SizedBox(height: 22),

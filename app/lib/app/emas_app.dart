@@ -7,11 +7,20 @@ import '../models/preview_models.dart';
 import '../shared/design_system.dart';
 import 'preview_controller.dart';
 import 'app_shell.dart';
+import '../data/backend_repository.dart';
+import '../features/auth/sign_in_screen.dart';
+import 'session_controller.dart';
 
 class EmasCareApp extends StatefulWidget {
-  const EmasCareApp({super.key, this.repository, this.controller});
+  const EmasCareApp({
+    super.key,
+    this.repository,
+    this.controller,
+    this.backend,
+  });
   final EmasRepository? repository;
   final PreviewController? controller;
+  final BackendRepository? backend;
   @override
   State<EmasCareApp> createState() => _EmasCareAppState();
 }
@@ -23,7 +32,10 @@ class _EmasCareAppState extends State<EmasCareApp> {
       widget.repository ??
       MockEmasRepository();
   late final PreviewController controller =
-      widget.controller ?? PreviewController(repository);
+      widget.controller ?? PreviewController(repository, session: session);
+  late final SessionController? session = widget.backend == null
+      ? null
+      : SessionController(widget.backend!);
   late final _PreviewRouter router = _PreviewRouter(controller);
   @override
   void initState() {
@@ -39,6 +51,7 @@ class _EmasCareAppState extends State<EmasCareApp> {
     _semantics?.dispose();
     router.dispose();
     if (widget.controller == null) controller.dispose();
+    session?.dispose();
     if (widget.repository == null && widget.controller == null) {
       repository.dispose();
     }
@@ -103,7 +116,18 @@ class _PreviewRouter extends RouterDelegate<AppLocation>
   @override
   Widget build(BuildContext context) => Navigator(
     key: navigatorKey,
-    pages: const [MaterialPage(child: AppShell())],
+    pages: [
+      MaterialPage(
+        child:
+            controller.session != null &&
+                !controller.session!.preview &&
+                !controller.session!.connected
+            ? const SignInScreen()
+            : AppShell(
+                key: ValueKey(controller.session?.profile?.uid ?? 'preview'),
+              ),
+      ),
+    ],
     onDidRemovePage: (_) {},
   );
   @override

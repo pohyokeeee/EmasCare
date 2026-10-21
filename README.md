@@ -1,10 +1,10 @@
 # EmasCare
 
-Phase 1 local Flutter Web preview is in [`app/`](app/README.md). It includes four role previews, responsive navigation, BM/EN core text and local sample interactions. It is not connected to Firebase yet.
+The Flutter Web app in [`app/`](app/README.md) now connects to the local Firebase backend for sign-in, elder check-ins/settings, consent-gated family status and coordinator phone responses. It preserves responsive navigation, BM/EN and accessibility controls, with the original sample screens available in an explicit design-preview mode.
 
-On Windows, run `app/preview.ps1` from PowerShell, then open `http://127.0.0.1:8080`. Flutter and Node.js are required. See the app README for development commands and the exact preview boundaries.
+On Windows, start and seed the backend first, then run `app/preview.ps1` and open `http://127.0.0.1:8090`. Flutter, Node.js and a JDK are required. Follow the [exact local startup and manual verification steps](app/LOCAL_BACKEND.md).
 
-When running the preview alongside the backend, use `app/preview.ps1 -Port 8090` and open `http://127.0.0.1:8090`; Firestore uses port 8080. The preview remains a local mock until Developer A connects the Firebase adapter.
+Port 8090 is the app's default; Firestore uses 8080. Booking, sessions, rewards, redemption and voice APIs remain pending. No cloud services have been deployed.
 
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)

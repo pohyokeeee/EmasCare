@@ -57,7 +57,9 @@ Hash routes such as `/#/family/today`, `/#/helper/rewards` and `/#/coordinator/a
 
 ## Still pending
 
-Connected mode has sign-in/out, saved independent consent, due/grace/pause settings, real local-emulator check-ins, family status and coordinator phone reporting. Booking, availability mutations, sessions, rewards/redemption, notifications/automatic reminders, live Maps/warnings, family cheers and AI voice parsing remain pending. In design-preview mode, sample changes disappear on reload; progress rings, pairings, dates, requests and participant names are synthetic. The SDP entry remains a mock module entry.
+Connected mode has sign-in/out, saved independent consent, due/grace/pause settings, real local-emulator check-ins, family status and coordinator phone reporting. Phase 2 also reads township activities/places, permitted pairings and the helper's own saved availability. Place details show recorded accessibility, expiring notices and approved HTTPS Google Maps links; seeded access information is illustrative.
+
+Booking, availability mutations, session mutations, rewards/redemption, notifications/automatic reminders, family cheers and AI voice parsing remain pending. In design-preview mode, the complete request → assignment → helper session → two-participant confirmation journey uses in-memory samples that disappear on reload. Live request forms stop at **Not sent**. Sample completions credit no coins. The SDP entry remains a mock module entry. See [PHASE2_HANDOVER.md](PHASE2_HANDOVER.md) for review steps and B's integration prerequisites.
 
 The reward decision remains **coins for elders and helpers after each eligible verified completion**. Rates, detailed eligibility and exact response JSON still require agreement. This app does not implement the superseded monthly award or fabricate wallet balances. Tanya Dulu is future work and has no screen here.
 
@@ -71,6 +73,9 @@ Browser API availability is not proof of successful microphone capture or audibl
 | `lib/shared/` | Theme, reusable components, spring feedback and illustrations |
 | `lib/models/` | Separate fixture UI models and approved Stage 2 backend records |
 | `lib/data/emas_repository.dart` | Repository interface and local mock |
+| `lib/data/community_repository.dart`, `lib/models/community_models.dart` | Scoped read-only catalogue, place, pairing and helper records |
+| `lib/features/community/` | Phase 2 catalogue, access details, request/review and companion/session UI |
+| `lib/app/companion_demo_controller.dart`, `lib/models/companion_ui_models.dart` | Explicitly local sample workflow; no Stage 3 wire contract |
 | `lib/features/role_views.dart` | Four role previews and activity/companion/reward views |
 | `lib/platform/`, `web/preview_bridge.js` | Conditional web bridge and local audio/device check |
 | `test/preview_test.dart` | Interactions, role navigation and responsive larger-text checks |
@@ -81,6 +86,8 @@ Connected code lives in `lib/data/firebase_backend_repository.dart`, `lib/models
 ## Verification
 
 See [the Stage 2 verification record](STAGE2_VERIFICATION.md) for connected-mode tests, real emulator/browser results and remaining limits. [LOCAL_BACKEND.md](LOCAL_BACKEND.md) contains the full restart and manual walkthrough.
+
+See [the Phase 2 handover](PHASE2_HANDOVER.md) for the 41-test check run, read-only checks against all six emulator accounts, browser walkthrough and screenshots.
 
 See [the Phase 1 verification record](PHASE1_VERIFICATION.md) for observed browser results, screenshots and device-audio limits.
 

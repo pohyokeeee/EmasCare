@@ -65,8 +65,8 @@ class AppShell extends StatelessWidget {
                               Text(
                                 c.session?.connected == true
                                     ? c.t(
-                                        'Local Firebase demo · Connected features save on the emulator. Other modules are pending.',
-                                        'Demo Firebase setempat · Ciri tersambung disimpan pada emulator. Modul lain belum tersedia.',
+                                        'Local Firebase demo · Check-ins save on the emulator. Activities and pairings are read-only; bookings and sessions are pending.',
+                                        'Demo Firebase setempat · Daftar masuk disimpan pada emulator. Aktiviti dan pasangan untuk bacaan sahaja; tempahan dan sesi belum tersedia.',
                                       )
                                     : c.t(
                                         'Design preview · Sample people, places and progress. Changes reset on reload.',
@@ -677,13 +677,13 @@ class _Preferences extends StatelessWidget {
         const SizedBox(height: 20),
         TextButton(
           onPressed: () {
-            c.repository.resetPreview();
+            c.resetPreview();
             Navigator.pop(context);
           },
           child: Text(
             c.t(
-              'Reset sample check-in & availability',
-              'Tetap semula daftar masuk & ketersediaan contoh',
+              'Reset sample check-in, availability & requests',
+              'Tetap semula daftar masuk, ketersediaan & permintaan contoh',
             ),
           ),
         ),
@@ -741,8 +741,8 @@ void showPreviewInfo(BuildContext context) {
                   'Log masuk, daftar masuk, tetapan kebenaran, status keluarga yang dibenarkan dan laporan telefon penyelaras menggunakan emulator Firebase setempat. Peranan anda datang daripada profil pelayan.',
                 )
               : c.t(
-                  'Phase 1 is a local interface preview. You can explore four roles, activities and preferences. Check-in and availability changes only update the sample data in this tab.',
-                  'Fasa 1 ialah pratonton antara muka setempat. Terokai empat peranan, aktiviti dan keutamaan. Daftar masuk dan ketersediaan hanya mengemas kini data contoh dalam tab ini.',
+                  'Explore four roles, activities and a sample companion journey: request, assignment, session and separate participant confirmations. Sample changes stay in this tab and disappear on reload.',
+                  'Terokai empat peranan, aktiviti dan perjalanan teman contoh: permintaan, penugasan, sesi dan pengesahan peserta berasingan. Perubahan contoh kekal dalam tab ini dan hilang apabila dimuat semula.',
                 ),
         ),
         const SizedBox(height: 14),

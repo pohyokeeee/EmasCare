@@ -4,6 +4,8 @@ import '../../models/backend_models.dart';
 import '../../models/preview_models.dart';
 import '../../shared/design_system.dart';
 import '../../shared/park_art.dart';
+import '../community/activity_catalog.dart';
+import '../community/companion_workspace.dart';
 
 String statusLabel(CheckInState? state, bool bm) => switch (state) {
   CheckInState.ok => bm ? 'Saya OK diterima' : 'Saya OK received',
@@ -22,6 +24,25 @@ class ConnectedHome extends StatelessWidget {
     final c = PreviewScope.of(context), s = c.session!;
     final p = s.profile;
     if (p == null) return const SizedBox.shrink();
+    if (c.role == AppRole.coordinator &&
+        c.destination == Destination.activities) {
+      return const CompanionWorkspace();
+    }
+    if (c.role == AppRole.coordinator &&
+        c.destination == Destination.companion) {
+      return const CommunityPlaces();
+    }
+    if (c.role != AppRole.coordinator &&
+        c.destination == Destination.activities) {
+      return const CommunityActivities();
+    }
+    if (c.role != AppRole.coordinator &&
+        c.destination == Destination.companion) {
+      return const CompanionWorkspace();
+    }
+    if (c.role == AppRole.helper && c.destination == Destination.today) {
+      return const CompanionWorkspace();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

@@ -104,7 +104,7 @@ npm.cmd run emulators
 npm.cmd run demo:reset
 ```
 
-Reset remains local-only and refuses conflicting project/emulator settings. It clears all check-in/daily-status dates for `elder_demo` and `elder_solo`, clears the known demo actors' Stage 1/2 receipts, and restores the six demo accounts/settings/catalogs/zero wallets. Other elders' records and later-domain command receipts are preserved. Seed alone upserts today's fixture snapshot; use reset for an entire fresh walkthrough.
+Reset remains local-only and refuses conflicting project/emulator settings. It clears all check-in/daily-status dates for `elder_demo` and `elder_solo`, clears the known demo actors' implemented-stage receipts, and restores the six demo accounts/settings/catalogs/zero wallets. Stage 3 adds selective companion cleanup; see [its reset scope](BACKEND_SESSIONS.md). Other elders' records and unimplemented-domain command receipts are preserved. Seed alone upserts today's fixture snapshot; use reset for an entire fresh walkthrough.
 
 The standalone elder has a local-midnight, zero-grace overdue fixture so the coordinator can exercise `recordPhoneResponse`. It is synthetic, not a live missed alert. Both elders have today's safe status, with sharing disabled for the standalone elder.
 

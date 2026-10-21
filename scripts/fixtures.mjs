@@ -1,4 +1,7 @@
 import {Timestamp} from 'firebase-admin/firestore';
+import {createHash} from 'node:crypto';
+
+const tupleId = (...parts) => createHash('sha256').update(JSON.stringify(parts)).digest('hex');
 
 export const townshipId = 'township_demo';
 export const demoPassword = 'EmasCare-local-2026!';
@@ -54,13 +57,31 @@ export function fixtureDocuments(now = new Date()) {
     ['household_other','family_unrelated',[],['family_unrelated']],
   ]) add(`households/${id}`, {townshipId, memberUids:[member], elderIds:elders, familyUids:family,
     elderAccess:id === 'household_solo' ? {elder_solo:{displayName:'Standalone Elder', familySharingEnabled:false, familyBookingEnabled:false}} : {}, ...metadata});
-  const slots = Array.from({length:7}, (_, i) => ({weekday:i+1, startMinute:480, endMinute:1080}));
+  // Synthetic full-day demo schedule lets the same walkthrough run at any hour.
+  const slots = Array.from({length:7}, (_, i) => ({weekday:i+1, startMinute:0, endMinute:1440}));
   const tasks = ['walk_with_me','sit_with_me','phone_help','carry_light_item'];
   add('helperProfiles/helper_demo', {approved:true, tier:'T3', languages:['bm','en'], gender:'female',
     allowedTasks:tasks, available:true, availabilitySlots:slots, ...metadata});
   add('pairings/pairing_demo', {townshipId, elderId:'elder_demo', helperId:'helper_demo', active:true,
     elderAccepted:true, helperAccepted:true, trialStartsOn:localDate(new Date(now.getTime()-86400000)),
     trialEndsOn:localDate(new Date(now.getTime()+14*86400000)), cadence:slots, allowedTasks:tasks, isDemoSeed:true, ...metadata});
+  // Explicit assigned-state fixture: no fake completion or rewards. The helper
+  // can accept/start/finish now, followed by separate participant confirmations.
+  const startsAt = Timestamp.fromMillis(Math.floor(now.getTime()/60000)*60000-15*60000);
+  const endsAt = Timestamp.fromMillis(startsAt.toMillis()+10*60000);
+  const assignedAt = Timestamp.fromMillis(startsAt.toMillis()-60000);
+  add('requests/request_demo_ready', {townshipId,householdId:'household_demo',elderId:'elder_demo',createdBy:'elder_demo',
+    activityId:null,placeId:null,startsAt,endsAt,taskType:'phone_help',preferredLanguage:'en',preferredHelperGender:'any',
+    state:'assigned',pairingId:'pairing_demo',helperId:'helper_demo',elderDisplayName:'Demo Elder',
+    helperDisplay:{displayName:'Demo Helper',tier:'T3'},assignedAt,acceptedAt:null,startedAt:null,finishedAt:null,
+    elderConfirmation:null,helperConfirmation:null,completedAt:null,cancelledAt:null,completionEventId:null,
+    participationIds:{elder:null,helper:null},createdAt:assignedAt,updatedAt:assignedAt});
+  for (let cursor=startsAt.toMillis();cursor<endsAt.toMillis();) {
+    const date = localDate(new Date(cursor));
+    add(`helperReservations/${tupleId('helper-date','helper_demo',date)}`, {helperId:'helper_demo',townshipId,localDate:date,
+      slots:[{requestId:'request_demo_ready',startsAt,endsAt}],updatedAt:assignedAt});
+    cursor = new Date(`${date}T00:00:00+08:00`).getTime()+86400000;
+  }
   for (const [id,name,minutes] of [['place_garden','Community Garden',10],['place_hall','Community Hall',5]]) {
     add(`places/${id}`, {townshipId, name, stepFree:true, accessibleToilet:true, seating:true, walkMinutes:minutes,
       notes:{bm:'Nota akses contoh; semak keadaan semasa.',en:'Illustrative access notes; check current conditions.'},

@@ -4,7 +4,14 @@
     {"collectionGroup":"dailyStatuses","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"householdId","order":"ASCENDING"},{"fieldPath":"localDate","order":"DESCENDING"}]},
     {"collectionGroup":"pairings","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"active","order":"ASCENDING"}]},
     {"collectionGroup":"checkins","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"localDate","order":"DESCENDING"}]},
-    {"collectionGroup":"checkins","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"localDate","order":"ASCENDING"},{"fieldPath":"state","order":"ASCENDING"},{"fieldPath":"dueAt","order":"ASCENDING"}]}
+    {"collectionGroup":"checkins","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"localDate","order":"ASCENDING"},{"fieldPath":"state","order":"ASCENDING"},{"fieldPath":"dueAt","order":"ASCENDING"}]},
+    {"collectionGroup":"requests","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"startsAt","order":"DESCENDING"}]},
+    {"collectionGroup":"requests","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"householdId","order":"ASCENDING"},{"fieldPath":"startsAt","order":"DESCENDING"}]},
+    {"collectionGroup":"requests","queryScope":"COLLECTION","fields":[{"fieldPath":"helperId","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"startsAt","order":"ASCENDING"}]},
+    {"collectionGroup":"requests","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"state","order":"ASCENDING"},{"fieldPath":"startsAt","order":"ASCENDING"}]},
+    {"collectionGroup":"activityAttendances","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"householdId","order":"ASCENDING"},{"fieldPath":"verifiedAt","order":"DESCENDING"}]},
+    {"collectionGroup":"participations","queryScope":"COLLECTION","fields":[{"fieldPath":"beneficiaryUid","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"verifiedAt","order":"DESCENDING"}]},
+    {"collectionGroup":"rewardClaims","queryScope":"COLLECTION","fields":[{"fieldPath":"beneficiaryUid","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"verifiedAt","order":"DESCENDING"}]}
   ],
   "fieldOverrides": []
 }

@@ -1,7 +1,8 @@
 import {pathToFileURL} from 'node:url';
 import {localEnvironment, projectId} from './local.mjs';
 import {demoAccounts, demoPassword, fixtureDocuments} from './fixtures.mjs';
-const resettableCommands = new Set(['foundationProbe','saveElderSettings','submitCheckIn','recordPhoneResponse']);
+const resettableCommands = new Set(['foundationProbe','saveElderSettings','submitCheckIn','recordPhoneResponse',
+  'setHelperAvailability','createRequest','assignRequest','transitionRequest']);
 
 export async function demoClients() {
   const env = localEnvironment();
@@ -25,16 +26,25 @@ export async function seedDemo({auth, db}, now = new Date()) {
     }
   }
   const batch = db.batch();
-  for (const {path,data} of fixtureDocuments(now)) batch.set(db.doc(path), data);
+  const fixtures = fixtureDocuments(now);
+  for (const {path,data} of fixtures) if (!path.startsWith('helperReservations/')) batch.set(db.doc(path), data);
   await batch.commit();
+  // A reservation document can also contain unrelated bookings. Preserve them.
+  for (const {path,data} of fixtures.filter((item) => item.path.startsWith('helperReservations/'))) {
+    await db.runTransaction(async (tx) => {
+      const ref = db.doc(path), before = (await tx.get(ref)).data();
+      tx.set(ref,{...data,slots:[...(before?.slots ?? []).filter((slot) => slot.requestId !== 'request_demo_ready'),...data.slots]});
+    });
+  }
 }
 
 export async function resetDemo({auth, db}) {
   assertClientsLocal(auth, db);
+  await resetCompanions(db);
   // Explicit fixtures plus check-in history owned by the known demo elders;
   // no database flush or recursive delete. Other actors' data is untouched.
   const batch = db.batch();
-  for (const {path} of fixtureDocuments()) batch.delete(db.doc(path));
+  for (const {path} of fixtureDocuments()) if (!path.startsWith('helperReservations/')) batch.delete(db.doc(path));
   for (const {uid} of demoAccounts) batch.delete(db.doc(`foundationProbes/${uid}`));
   await batch.commit();
   for (const {uid,role} of demoAccounts) {
@@ -51,6 +61,51 @@ export async function resetDemo({auth, db}) {
   for (const {uid} of demoAccounts) {
     try { await auth.deleteUser(uid); }
     catch (error) { if (error.code !== 'auth/user-not-found') throw error; }
+  }
+}
+
+async function resetCompanions(db) {
+  const actors = new Set(demoAccounts.map((account) => account.uid));
+  const requests = new Map(), participants = new Map(), events = new Set(), helpers = new Set();
+  for (const {uid,role} of demoAccounts) {
+    if (role === 'elder') {
+      for (const snapshot of (await db.collection('requests').where('elderId','==',uid).get()).docs) requests.set(snapshot.id,snapshot);
+      for (const collection of ['activityElderLocks','activityAttendances']) {
+        await deleteOwnedDocuments(db,(await db.collection(collection).where('elderId','==',uid).get()).docs);
+      }
+    }
+    for (const snapshot of (await db.collection('participations').where('beneficiaryUid','==',uid).get()).docs) participants.set(snapshot.id,snapshot);
+  }
+  for (const [id,snapshot] of requests) {
+    if (snapshot.data().helperId) helpers.add(snapshot.data().helperId);
+    for (const row of (await db.collection('participations').where('sourceRequestIds','array-contains',id).get()).docs) participants.set(row.id,row);
+  }
+  for (const [id,snapshot] of participants) {
+    const data = snapshot.data(), remaining = (data.sourceRequestIds ?? []).filter((requestId) => !requests.has(requestId));
+    if (!actors.has(data.beneficiaryUid) && remaining.length) {
+      await snapshot.ref.update({sourceRequestIds:remaining});
+      continue;
+    }
+    events.add(data.completionEventId);
+    const cleanup = db.batch();
+    cleanup.delete(snapshot.ref);
+    cleanup.delete(db.doc(`rewardClaims/${id}`));
+    cleanup.delete(db.doc(`completionMarkers/${id}`));
+    await cleanup.commit();
+  }
+  for (const helperId of helpers) {
+    for (const row of (await db.collection('helperReservations').where('helperId','==',helperId).get()).docs) {
+      const slots = row.data().slots.filter((slot) => !requests.has(slot.requestId));
+      if (slots.length) await row.ref.update({slots});
+      else await row.ref.delete();
+    }
+    const ref = db.doc(`helperSessions/${helperId}`), active = (await ref.get()).data();
+    if (active && (!active.requestId || requests.has(active.requestId))) await ref.delete();
+  }
+  await deleteOwnedDocuments(db,[...requests.values()]);
+  // Activity events can be shared with other elders: remove only empty ones.
+  for (const id of events) {
+    if ((await db.collection('participations').where('completionEventId','==',id).limit(1).get()).empty) await db.doc(`completionEvents/${id}`).delete();
   }
 }
 

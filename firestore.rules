@@ -47,6 +47,21 @@ service cloud.firestore {
     match /checkins/{id} {
       allow read: if ownElder(resource.data.elderId) || coordinator(resource.data.townshipId);
     }
+    match /requests/{id} {
+      allow read: if coordinator(resource.data.townshipId) || ownElder(resource.data.elderId)
+        || (sameTownship(resource.data.townshipId) && profile().role == 'helper' && request.auth.uid == resource.data.helperId)
+        || familyAccess(resource.data.elderId, resource.data.householdId, 'familyBookingEnabled');
+    }
+    match /activityAttendances/{id} {
+      allow read: if coordinator(resource.data.townshipId) || ownElder(resource.data.elderId)
+        || familyAccess(resource.data.elderId, resource.data.householdId, 'familySharingEnabled');
+    }
+    match /participations/{id} {
+      allow read: if coordinator(resource.data.townshipId) || financialOwner(resource.data.beneficiaryUid, resource.data.townshipId);
+    }
+    match /rewardClaims/{id} {
+      allow read: if coordinator(resource.data.townshipId) || financialOwner(resource.data.beneficiaryUid, resource.data.townshipId);
+    }
     match /activities/{id} { allow read: if sameTownship(resource.data.townshipId); }
     match /places/{id} { allow read: if sameTownship(resource.data.townshipId); }
     match /voucherCatalog/{id} { allow read: if sameTownship(resource.data.townshipId); }

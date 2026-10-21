@@ -2,7 +2,9 @@
   "indexes": [
     {"collectionGroup":"activities","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"startsAt","order":"ASCENDING"}]},
     {"collectionGroup":"dailyStatuses","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"householdId","order":"ASCENDING"},{"fieldPath":"localDate","order":"DESCENDING"}]},
-    {"collectionGroup":"pairings","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"active","order":"ASCENDING"}]}
+    {"collectionGroup":"pairings","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"active","order":"ASCENDING"}]},
+    {"collectionGroup":"checkins","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"localDate","order":"DESCENDING"}]},
+    {"collectionGroup":"checkins","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"localDate","order":"ASCENDING"},{"fieldPath":"state","order":"ASCENDING"},{"fieldPath":"dueAt","order":"ASCENDING"}]}
   ],
   "fieldOverrides": []
 }

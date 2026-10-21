@@ -44,6 +44,9 @@ service cloud.firestore {
         || coordinator(elderProfile(resource.data.elderId).townshipId)
         || familyAccess(resource.data.elderId, resource.data.householdId, 'familySharingEnabled');
     }
+    match /checkins/{id} {
+      allow read: if ownElder(resource.data.elderId) || coordinator(resource.data.townshipId);
+    }
     match /activities/{id} { allow read: if sameTownship(resource.data.townshipId); }
     match /places/{id} { allow read: if sameTownship(resource.data.townshipId); }
     match /voucherCatalog/{id} { allow read: if sameTownship(resource.data.townshipId); }

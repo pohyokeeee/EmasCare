@@ -1,0 +1,48 @@
+{
+  "contractVersion": 1,
+  "syntheticAlternatives": true,
+  "notForSeeding": true,
+  "saveElderSettings": {
+    "callerUid": "elder_demo",
+    "input": {"contractVersion":1,"idempotencyKey":"settings-demo-001","familySharingEnabled":true,"familyBookingEnabled":true,"dueLocalTime":"09:00","graceMinutes":30,"pauseToday":false},
+    "response": {
+      "contractVersion": 1,
+      "data": {"settings":{"id":"elder_demo","familySharingEnabled":true,"familyBookingEnabled":true,"dueLocalTime":"09:00","graceMinutes":30,"pausedOn":null,"createdAt":"2026-10-21T00:00:00.000Z","updatedAt":"2026-10-21T00:05:00.000Z"}}
+    }
+  },
+  "submitCheckIn": {
+    "callerUid": "elder_demo",
+    "input": {"contractVersion":1,"idempotencyKey":"checkin-demo-001"},
+    "response": {
+      "contractVersion": 1,
+      "data": {
+        "checkin": {"id":"elder_demo_2026-10-21","elderId":"elder_demo","townshipId":"township_demo","localDate":"2026-10-21","state":"ok","dueAt":"2026-10-21T01:00:00.000Z","graceEndsAt":"2026-10-21T01:30:00.000Z","submittedAt":"2026-10-21T00:06:00.000Z","recordedBy":"elder_demo","source":"app","createdAt":"2026-10-21T00:00:00.000Z","updatedAt":"2026-10-21T00:06:00.000Z"},
+        "dailyStatus": {"id":"elder_demo_2026-10-21","elderId":"elder_demo","householdId":"household_demo","localDate":"2026-10-21","state":"ok","submittedAt":"2026-10-21T00:06:00.000Z","updatedAt":"2026-10-21T00:06:00.000Z"}
+      }
+    }
+  },
+  "recordPhoneResponse": {
+    "callerUid": "coordinator_demo",
+    "input": {"contractVersion":1,"idempotencyKey":"phone-demo-001","elderId":"elder_solo"},
+    "response": {
+      "contractVersion": 1,
+      "data": {
+        "checkin": {"id":"elder_solo_2026-10-21","elderId":"elder_solo","townshipId":"township_demo","localDate":"2026-10-21","state":"ok","dueAt":"2026-10-20T16:00:00.000Z","graceEndsAt":"2026-10-20T16:00:00.000Z","submittedAt":"2026-10-21T00:07:00.000Z","recordedBy":"coordinator_demo","source":"coordinator_phone","createdAt":"2026-10-21T00:00:00.000Z","updatedAt":"2026-10-21T00:07:00.000Z"},
+        "dailyStatus": {"id":"elder_solo_2026-10-21","elderId":"elder_solo","householdId":"household_solo","localDate":"2026-10-21","state":"ok","submittedAt":"2026-10-21T00:07:00.000Z","updatedAt":"2026-10-21T00:07:00.000Z"}
+      }
+    }
+  },
+  "pauseToday": {
+    "callerUid": "elder_demo",
+    "input": {"contractVersion":1,"idempotencyKey":"pause-demo-001","familySharingEnabled":true,"familyBookingEnabled":false,"dueLocalTime":"09:00","graceMinutes":30,"pauseToday":true},
+    "response": {"contractVersion":1,"data":{"settings":{"id":"elder_demo","familySharingEnabled":true,"familyBookingEnabled":false,"dueLocalTime":"09:00","graceMinutes":30,"pausedOn":"2026-10-21","createdAt":"2026-10-21T00:00:00.000Z","updatedAt":"2026-10-21T00:05:00.000Z"}}},
+    "unsubmittedDailyStatus": {"id":"elder_demo_2026-10-21","elderId":"elder_demo","householdId":"household_demo","localDate":"2026-10-21","state":"paused","submittedAt":null,"updatedAt":"2026-10-21T00:05:00.000Z"}
+  },
+  "errors": {
+    "paused": {"code":"failed-precondition","details":{"reason":"CHECKIN_PAUSED"}},
+    "familyCannotSubmit": {"code":"permission-denied","details":{"reason":"ROLE_NOT_ALLOWED"}},
+    "changedPayloadWithSameKey": {"code":"already-exists","details":{"reason":"IDEMPOTENCY_KEY_REUSED"}},
+    "invalidTime": {"code":"invalid-argument","details":{"reason":"INVALID_DUE_TIME"}},
+    "withdrawnFamilyStream": {"firestoreCode":"permission-denied"}
+  }
+}

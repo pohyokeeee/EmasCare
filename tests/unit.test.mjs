@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {assertLocalEnvironment, localEnvironment, projectId, hosts} from '../scripts/local.mjs';
 import {fixtureDocuments, demoAccounts} from '../scripts/fixtures.mjs';
+import {Timestamp} from 'firebase-admin/firestore';
 
 const require = createRequire(import.meta.url);
 const {tupleId, payloadHash} = require('../functions/lib/commands.js');
 const {inputObject, documentId} = require('../functions/lib/validation.js');
 const {authenticatedUid, requireRole, requireTownship} = require('../functions/lib/auth.js');
+const {malaysiaDate, dailySchedule, unsubmittedState, createCheckInService} = require('../functions/lib/checkins.js');
 const reason = (expected) => (error) => error.details?.reason === expected;
 
 test('local scripts refuse real projects, missing hosts and remote or malformed endpoints', () => {
@@ -68,5 +70,44 @@ test('write probe is absent from the non-emulator function exports', () => {
     assert.equal(functions.foundationProbe,undefined);
   } finally {
     if (saved !== undefined) process.env.FUNCTIONS_EMULATOR = saved;
+  }
+});
+
+test('check-in dates and due times follow Malaysia at midnight, year rollover and leap day', () => {
+  const at = (iso) => Timestamp.fromDate(new Date(iso));
+  assert.equal(malaysiaDate(at('2026-12-31T15:59:59.999Z')),'2026-12-31');
+  assert.equal(malaysiaDate(at('2026-12-31T16:00:00.000Z')),'2027-01-01');
+  assert.equal(malaysiaDate(at('2028-02-28T16:00:00.000Z')),'2028-02-29');
+  const day = dailySchedule(at('2026-10-20T16:00:00Z'),'09:00',30);
+  assert.equal(day.localDate,'2026-10-21');
+  assert.equal(day.dueAt.toDate().toISOString(),'2026-10-21T01:00:00.000Z');
+  assert.equal(day.graceEndsAt.toDate().toISOString(),'2026-10-21T01:30:00.000Z');
+});
+
+test('pending, reminded, missed and pause boundaries are deterministic', () => {
+  const settings = {dueLocalTime:'09:00',graceMinutes:30,pausedOn:null};
+  const state = (iso,options = settings) => unsubmittedState(Timestamp.fromDate(new Date(iso)),options);
+  assert.equal(state('2026-10-21T00:59:59Z'),'pending');
+  assert.equal(state('2026-10-21T01:00:00Z'),'reminded');
+  assert.equal(state('2026-10-21T01:29:59Z'),'reminded');
+  assert.equal(state('2026-10-21T01:30:00Z'),'missed');
+  assert.equal(state('2026-10-21T01:00:00Z',{...settings,graceMinutes:0}),'missed');
+  assert.equal(state('2026-10-21T01:30:00Z',{...settings,pausedOn:'2026-10-21'}),'paused');
+  assert.notEqual(state('2026-10-21T16:00:00Z',{...settings,pausedOn:'2026-10-21'}),'paused');
+});
+
+test('settings validation rejects invalid times, noninteger grace and caller-owned identity/time fields', async () => {
+  const service = createCheckInService({});
+  const settings = {contractVersion:1,idempotencyKey:'validation',familySharingEnabled:true,familyBookingEnabled:false,
+    dueLocalTime:'09:00',graceMinutes:30,pauseToday:false};
+  for (const dueLocalTime of ['24:00','9:00','09:60','09:00:00',null]) {
+    await assert.rejects(service.saveElderSettings('elder_demo',{...settings,dueLocalTime}),reason('INVALID_DUE_TIME'));
+  }
+  for (const graceMinutes of [-1,1.5,1441,'30',null]) {
+    await assert.rejects(service.saveElderSettings('elder_demo',{...settings,graceMinutes}),reason('INVALID_GRACE_MINUTES'));
+  }
+  await assert.rejects(service.saveElderSettings('elder_demo',{...settings,pauseToday:'true'}),reason('INVALID_SETTINGS'));
+  for (const extra of [{elderId:'other'},{source:'coordinator_phone'},{localDate:'2026-01-01'},{submittedAt:'2026-01-01T00:00:00Z'}]) {
+    await assert.rejects(service.submitCheckIn('elder_demo',{contractVersion:1,idempotencyKey:'validation',...extra}),reason('UNKNOWN_FIELD'));
   }
 });

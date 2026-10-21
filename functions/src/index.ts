@@ -6,10 +6,16 @@ import {authenticatedUid, authorizeElder, loadActor, requireRole, requireTownshi
 import {runCommand} from "./commands";
 import {fail} from "./errors";
 import {documentId, envelope, inputObject, stringField} from "./validation";
+import {createCheckInService} from "./checkins";
 
 initializeApp();
 setGlobalOptions({region: "asia-southeast1", maxInstances: 3});
 const db = getFirestore();
+const checkins = createCheckInService(db);
+
+export const saveElderSettings = onCall((request) => checkins.saveElderSettings(authenticatedUid(request.auth), request.data));
+export const submitCheckIn = onCall((request) => checkins.submitCheckIn(authenticatedUid(request.auth), request.data));
+export const recordPhoneResponse = onCall((request) => checkins.recordPhoneResponse(authenticatedUid(request.auth), request.data));
 
 // Foundation diagnostics only; not replacements for agreed domain callables.
 export const getBackendContext = onCall(async (request) => {

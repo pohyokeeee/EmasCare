@@ -346,8 +346,8 @@ class _SettingsFormState extends State<_SettingsForm> {
               ),
               subtitle: Text(
                 c.t(
-                  'Consent only. Booking is a future feature.',
-                  'Kebenaran sahaja. Tempahan ialah ciri akan datang.',
+                  'Allows linked family to arrange companion requests.',
+                  'Membenarkan keluarga terpaut mengatur permintaan teman.',
                 ),
               ),
               value: booking,
@@ -599,8 +599,8 @@ class _FamilyView extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               c.t(
-                'Booking permission is independent of daily sharing. Booking will connect in a later stage.',
-                'Kebenaran tempahan berasingan daripada perkongsian harian. Tempahan akan disambungkan kemudian.',
+                'Booking permission is independent of daily sharing. Open My companion to view permitted requests.',
+                'Kebenaran tempahan berasingan daripada perkongsian harian. Buka Teman saya untuk melihat permintaan yang dibenarkan.',
               ),
               style: const TextStyle(color: Palette.muted),
             ),

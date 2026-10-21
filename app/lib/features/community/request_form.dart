@@ -7,6 +7,7 @@ import '../../models/companion_ui_models.dart';
 import '../../models/preview_models.dart';
 import '../../shared/design_system.dart';
 import 'community_ui.dart';
+import 'live_request_form.dart';
 
 void openCompanionRequest(BuildContext context) {
   final c = PreviewScope.of(context);
@@ -121,6 +122,9 @@ class _CompanionRequestFormState extends State<CompanionRequestForm> {
   Widget build(BuildContext context) {
     final c = PreviewScope.of(context);
     final live = c.session?.connected == true;
+    if (live && c.sessions != null) {
+      return LiveRequestForm(activity: widget.activity, onBack: widget.onBack);
+    }
     if (!_permitted(c)) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

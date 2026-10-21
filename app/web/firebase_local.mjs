@@ -28,4 +28,7 @@ export async function prepareLocalFirebase({
   });
   // No await or other Auth operation between initialization and connection.
   authSdk.connectAuthEmulator(auth, 'http://127.0.0.1:9099');
+  // Finish the preconnected Auth restore before FlutterFire installs its own
+  // initial-state listener. This avoids a startup race in the pinned web SDK.
+  await auth.authStateReady();
 }

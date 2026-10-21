@@ -24,6 +24,75 @@ class BackendFailure implements Exception {
   }
   String message(bool bm) {
     final pair = switch (reason ?? code) {
+      'HELPER_UNAVAILABLE' => (
+        'This companion is unavailable for the whole session. Choose another pairing or change the time.',
+        'Teman ini tidak tersedia sepanjang sesi. Pilih pasangan lain atau ubah masa.',
+      ),
+      'HELPER_BUSY' => (
+        'The companion is still helping in another session. Try again after it finishes.',
+        'Teman masih membantu dalam sesi lain. Cuba selepas sesi itu tamat.',
+      ),
+      'PAIRING_NOT_ELIGIBLE' || 'HELPER_BLOCKED' => (
+        'This pairing cannot take this request. Review the pairing, task and preferences.',
+        'Pasangan ini tidak boleh menerima permintaan. Semak pasangan, tugas dan pilihan.',
+      ),
+      'SESSION_NOT_STARTED' => (
+        'The scheduled start time has not arrived yet.',
+        'Masa mula yang dijadualkan belum tiba.',
+      ),
+      'ACTIVITY_NOT_FINISHED' => (
+        'Wait until the activity ends before finishing this session.',
+        'Tunggu sehingga aktiviti tamat sebelum menamatkan sesi.',
+      ),
+      'ACTIVITY_ALREADY_FINISHED' => (
+        'This activity has ended and the session can no longer be started.',
+        'Aktiviti ini telah tamat dan sesi tidak boleh dimulakan lagi.',
+      ),
+      'INVALID_TRANSITION' => (
+        'This session has changed. Review its latest status before continuing.',
+        'Sesi ini telah berubah. Semak status terkini sebelum meneruskan.',
+      ),
+      'ACTIVITY_REQUEST_EXISTS' => (
+        'An active request already exists for this activity. Find it in My companion.',
+        'Permintaan aktif untuk aktiviti ini sudah wujud. Lihat dalam Teman saya.',
+      ),
+      'ACTIVITY_ALREADY_COMPLETED' || 'ATTENDANCE_ALREADY_REVIEWED' => (
+        'Participation in this activity has already been recorded.',
+        'Penyertaan aktiviti ini sudah direkodkan.',
+      ),
+      'ATTENDANCE_ALREADY_SUBMITTED' => (
+        'An attendance record already exists for this activity. Ask the coordinator to review it.',
+        'Rekod kehadiran aktiviti ini sudah wujud. Minta penyelaras menyemaknya.',
+      ),
+      'INVALID_TIME_RANGE' || 'ACTIVITY_SCHEDULE_MISMATCH' => (
+        'Choose a future session with a valid duration. Activity requests use the full activity schedule.',
+        'Pilih sesi akan datang dengan tempoh sah. Permintaan aktiviti mengikut jadual penuh aktiviti.',
+      ),
+      'INVALID_AVAILABILITY' => (
+        'Check the weekly hours. Each interval must end after it starts and cannot overlap another interval.',
+        'Semak waktu mingguan. Setiap selang mesti tamat selepas bermula dan tidak boleh bertindih.',
+      ),
+      'REQUEST_NOT_FOUND' || 'PLACE_NOT_FOUND' || 'ACTIVITY_NOT_FOUND' => (
+        'This record is no longer available. Refresh the list and choose again.',
+        'Rekod ini tidak lagi tersedia. Muat semula senarai dan pilih semula.',
+      ),
+      'INVALID_PLACE' ||
+      'INVALID_PREFERENCES' ||
+      'INVALID_TASK' ||
+      'INVALID_PAYLOAD' ||
+      'UNKNOWN_FIELD' ||
+      'invalid-argument' => (
+        'Review the request details and try again.',
+        'Semak butiran permintaan dan cuba lagi.',
+      ),
+      'ELDER_HOUSEHOLD_REQUIRED' || 'HELPER_PROFILE_REQUIRED' => (
+        'Your account needs a configured household or helper profile. Ask the coordinator to check it.',
+        'Akaun memerlukan isi rumah atau profil pembantu yang lengkap. Minta penyelaras menyemaknya.',
+      ),
+      'failed-precondition' => (
+        'This action is not available in the current state. Review the latest details.',
+        'Tindakan ini tidak tersedia dalam keadaan semasa. Semak butiran terkini.',
+      ),
       'CHECKIN_PAUSED' => (
         'Today is paused. Unpause before checking in.',
         'Hari ini dijeda. Nyahjeda sebelum daftar masuk.',

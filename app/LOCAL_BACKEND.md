@@ -1,6 +1,6 @@
-# Flutter local backend and Phase 2 UI
+# Flutter local backend and Phase 3 UI
 
-The default app connects to the local `demo-emascare` Firebase emulators. The Stage 2 Flutter integration was merged through PR #4. Phase 2 UI is on `ui-phase-2`, based on merged main `a751ee9`. No cloud deployment is configured. See [PHASE2_HANDOVER.md](PHASE2_HANDOVER.md) for the new UI walkthrough.
+The default app connects to the local `demo-emascare` Firebase emulators. Phase 3 implementation is on `ui-phase-3`, based on merged main `adb1b63`. It connects B's Stage 3 companion APIs and preserves the Stage 2 integration. No cloud deployment is configured. See [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) for the live booking/session walkthrough.
 
 ## Start on this Windows computer
 
@@ -21,7 +21,7 @@ npm.cmd run emulators
 
 `EBADENGINE` warnings under system Node 24 refer to the Functions target of Node 22. This project installs its own pinned Node 22 for backend npm scripts. An `EPERM` error replacing `node_modules/re2/.../re2.node` can occur when a running Firebase process holds the file open: stop the project's emulator suite, then retry `npm.cmd ci`.
 
-Wait for **all five function definitions** to load, including `getBackendContext`, `saveElderSettings`, `submitCheckIn` and `recordPhoneResponse`. The generic “all emulators ready” banner alone does not establish Functions readiness. This machine needed the 60-second discovery allowance on its first launch.
+Wait for function definitions to load, including `getBackendContext`, `saveElderSettings`, `submitCheckIn`, `recordPhoneResponse`, `setHelperAvailability`, `createRequest`, `assignRequest` and `transitionRequest`. The current backend also includes Stage 4 attendance functions. The generic “all emulators ready” banner alone does not establish Functions readiness. This machine needed the 60-second discovery allowance on its first launch.
 
 The workspace cache contains the official Firestore 1.22.0 runtime, verified against Firebase CLI's SHA-256 manifest. If the cache is absent, the CLI downloads it. On another computer, use your installed JDK 21+ path instead. Node/npm and the Flutter SDK must already be installed.
 
@@ -31,7 +31,7 @@ Terminal 2, repository root:
 npm.cmd run demo:reset
 ```
 
-Reset is for disposable emulator fixtures. It restores both elders' settings/statuses and the six demo accounts, and clears their Stage 1/2 receipts. Emulator data is in memory; restart and reset again for a fresh rehearsal.
+Reset is for disposable emulator fixtures. It restores both elders' settings/statuses and the six demo accounts, clears their known receipts/session-derived history and seeds `request_demo_ready` for an immediate phone-help walkthrough. Emulator data is in memory; restart and reset again for a fresh rehearsal.
 
 Terminal 3:
 
@@ -67,11 +67,11 @@ The release entry point configures the Auth emulator immediately after JS Auth i
 
 1. Sign in as elder in one tab and family in a separate tab. Press **Saya OK** in the elder tab. Both should show **Saya OK received** with the same MYT submission time. Repeated responses preserve the first response.
 2. In elder settings, turn off **Share daily status with family** and save. Leave booking enabled. The family tab must immediately remove the rendered status and show **Daily status is private** while **Booking consent: on** remains visible. Refresh the family tab: it must still have no status. Backend rules additionally deny new/active daily-status reads after withdrawal.
-3. Restore sharing and turn booking off, then save. Family status should return while **Booking consent: off** remains visible. Booking itself is not implemented.
+3. Restore sharing and turn booking off, then save. Family status should return while **Booking consent: off** remains visible. My companion must hide requests and disable family creation until booking is restored.
 4. Refresh elder. The signed-in account, settings and today's response must persist from the server. Sign out: private views clear immediately. Re-entering a different role in the hash URL must not change the server-owned role.
 5. For an unsubmitted pause scenario, use the standalone elder **before** recording its phone response. Enable **Pause today**, change due time/grace if desired, and save. Saya OK is disabled and the saved pause survives refresh. Unpause and save before submitting. A pause on an already successful record retains its first OK response, as specified by the backend.
 6. Sign in as coordinator. Only today's same-township `reminded`/`missed` records appear. The fresh standalone fixture is overdue. Click **Record phone response**, confirm that you actually spoke to the elder in this synthetic demo, and confirm the report. The row disappears; the standalone elder sees the stored OK response. This never initiates a phone call.
-7. Sign in as unrelated family. It must show no linked elder/status and must not issue a daily-status query for the demo elder. Sign in as helper to verify the helper role; availability and other later APIs remain pending.
+7. Sign in as unrelated family. It must show no linked elder/status/requests and must not query the demo elder's records. Sign in as helper to edit saved availability and follow assigned sessions; use the [Stage 3 walkthrough](STAGE3_VERIFICATION.md).
 8. Test BM/EN, Preferences → Larger text / Gentler motion / Solid navigation, phone widths and desktop. Account → **Open design preview** signs out and opens clearly labelled fixtures; **Back to sign in** returns to the connected entry.
 
 For a fresh repeat, stop test interactions and run `demo:reset` again. Do not reset while demonstrating a saved response.
@@ -90,9 +90,9 @@ For backend checks while development emulators are already running, use `npm.cmd
 
 ## Current limits
 
-Authentication, elder settings/check-ins, family consent-gated daily status and coordinator phone reporting are connected. Phase 2 adds read-only township activities/places, permitted pairings and the helper's own saved availability. Participant pairing queries require both the participant ID and township constraints. All domain writes use the four supplied callables, with version 1 envelopes and action-specific retry keys. Stream snapshots remain authoritative, so replayed settings responses cannot overwrite newer consent.
+Authentication, elder settings/check-ins, family consent-gated daily status, coordinator phone reporting, companion requests/assignment, helper availability and session actions are connected. Township activities/places and permitted pairings are read-only. Participant pairing queries require both the participant ID and township constraints. All domain writes use the supplied Stage 2/3 callables, with version 1 envelopes and action-specific retry keys. Stream snapshots remain authoritative, so replayed responses cannot overwrite newer state.
 
-Pending live destinations explain their status. Connected request forms remain unsent drafts. Account → design preview includes a labelled in-memory request/assignment/session journey with independent participant confirmations. There are no booking, availability-mutation, session-mutation, reward, redemption, voice/model, automatic reminder, notification or scheduler APIs in this integration. No check-in or sample completion earns coins. Tanya Dulu remains future work. Backend Functions, rules, indexes and scripts were not modified.
+Account → design preview retains a labelled in-memory journey. Connected mode uses real persisted requests and sessions. Coin awards/redemption, voice/model, automatic reminders/notifications, standalone attendance UI and scheduler features remain outside this integration. No check-in, sample or live session directly credits coins; live completion creates pending-policy claims through the backend. Tanya Dulu remains future work. Backend Functions, rules, indexes and scripts were not modified.
 
 Run `node app/tool/verify_community.mjs` from the repository root for read-only catalogue/companion permission checks against the running emulators. It signs into the six demo accounts without resetting or changing domain data.
 

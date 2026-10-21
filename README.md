@@ -2,11 +2,11 @@
 
 The Flutter Web app in [`app/`](app/README.md) now connects to the local Firebase backend for sign-in, elder check-ins/settings, consent-gated family status and coordinator phone responses. It preserves responsive navigation, BM/EN and accessibility controls, with the original sample screens available in an explicit design-preview mode.
 
-Phase 2 adds a connected, read-only activity/access catalogue and permitted companion/availability summaries. A separate labelled sample journey covers requests, coordinator assignment, helper session steps and both participant confirmations while Developer B finishes Stage 3. See [Phase 2 handover and review steps](app/PHASE2_HANDOVER.md).
+Phase 3 connects companion booking, helper availability, coordinator assignment and the session lifecycle to B's Stage 3 emulator APIs. Elders and helpers confirm separately, and family request visibility follows current booking consent. The labelled design preview remains available. See [Stage 3 verification and review steps](app/STAGE3_VERIFICATION.md); [Phase 2 handover](app/PHASE2_HANDOVER.md) records the earlier sample-only delivery.
 
 On Windows, start and seed the backend first, then run `app/preview.ps1` and open `http://127.0.0.1:8090`. Flutter, Node.js and a JDK are required. Follow the [exact local startup and manual verification steps](app/LOCAL_BACKEND.md).
 
-Port 8090 is the app's default; Firestore uses 8080. Booking, sessions, rewards, redemption and voice APIs remain pending. No cloud services have been deployed.
+Port 8090 is the app's default; Firestore uses 8080. Reward awards/redemption, voice and standalone-attendance UI remain pending. No cloud services have been deployed.
 
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)

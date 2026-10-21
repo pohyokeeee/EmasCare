@@ -136,8 +136,14 @@ class HelperProfileRecord {
       tasks = List<String>.from(data['allowedTasks'] as List),
       slots = [
         for (final s in data['availabilitySlots'] as List) jsonObject(s),
-      ];
+      ],
+      tier = data['tier'] as String?,
+      gender = data['gender'] as String?,
+      createdAt = utcTimestamp(data['createdAt']),
+      updatedAt = utcTimestamp(data['updatedAt']);
   final String id;
+  final String? tier, gender;
+  final DateTime? createdAt, updatedAt;
   final bool approved, available;
   final List<String> languages, tasks;
   final List<Json> slots;

@@ -5,12 +5,14 @@ import 'package:firebase_core/firebase_core.dart';
 import '../models/backend_models.dart';
 import 'backend_repository.dart';
 import 'community_repository.dart';
+import 'session_repository.dart';
+import '../models/session_models.dart';
 import '../models/community_models.dart';
 import '../models/preview_models.dart';
 
 /// Local-only adapter. No SDK read, listener or callable starts before connect.
 class FirebaseBackendRepository
-    implements BackendRepository, CommunityRepository {
+    implements BackendRepository, CommunityRepository, SessionRepository {
   FirebaseBackendRepository._(this.auth, this.db, this.functions);
   final FirebaseAuth auth;
   final FirebaseFirestore db;
@@ -239,4 +241,73 @@ class FirebaseBackendRepository
             ? HelperProfileRecord.fromJson({...s.data()!, 'id': s.id})
             : null,
       );
+
+  @override
+  Stream<List<SessionRequest>> watchRequests(
+    BackendProfile profile, {
+    String? elderId,
+    RequestState queue = RequestState.requested,
+  }) {
+    Query<Json> q = db.collection('requests');
+    q = switch (profile.role) {
+      AppRole.elder =>
+        q
+            .where('elderId', isEqualTo: profile.uid)
+            .orderBy('startsAt', descending: true),
+      AppRole.family =>
+        q
+            .where('elderId', isEqualTo: elderId!)
+            .where('householdId', isEqualTo: profile.householdId!)
+            .orderBy('startsAt', descending: true),
+      AppRole.helper =>
+        q
+            .where('helperId', isEqualTo: profile.uid)
+            .where('townshipId', isEqualTo: profile.townshipId)
+            .orderBy('startsAt'),
+      AppRole.coordinator =>
+        q
+            .where('townshipId', isEqualTo: profile.townshipId)
+            .where('state', isEqualTo: queue.wire)
+            .orderBy('startsAt'),
+    };
+    return q
+        .snapshots(includeMetadataChanges: true)
+        .where((s) => !s.metadata.isFromCache)
+        .map(
+          (s) => s.docs
+              .map((d) => SessionRequest.fromJson({...d.data(), 'id': d.id}))
+              .toList(),
+        );
+  }
+
+  @override
+  Future<HelperProfileRecord> setHelperAvailability(
+    Json fields,
+    String key,
+  ) async => HelperProfileRecord.fromJson(
+    jsonObject(
+      (await _call('setHelperAvailability', {
+        ...fields,
+        'idempotencyKey': key,
+      }))['helperProfile'],
+    ),
+  );
+  Future<SessionRequest> _requestCall(
+    String name,
+    Json fields,
+    String key,
+  ) async => SessionRequest.fromJson(
+    jsonObject(
+      (await _call(name, {...fields, 'idempotencyKey': key}))['request'],
+    ),
+  );
+  @override
+  Future<SessionRequest> createRequest(Json fields, String key) =>
+      _requestCall('createRequest', fields, key);
+  @override
+  Future<SessionRequest> assignRequest(Json fields, String key) =>
+      _requestCall('assignRequest', fields, key);
+  @override
+  Future<SessionRequest> transitionRequest(Json fields, String key) =>
+      _requestCall('transitionRequest', fields, key);
 }

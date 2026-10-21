@@ -380,16 +380,33 @@ class _ActivityDetailState extends State<_ActivityDetail> {
         const SizedBox(height: 24),
         if (c.role == AppRole.elder || c.role == AppRole.family)
           EmasButton(
-            label: c.session?.connected == true
+            label: c.session?.connected == true && c.sessions == null
                 ? c.t(
                     'Preview a companion request',
                     'Pratonton permintaan teman',
                   )
                 : c.t('Request a companion', 'Minta teman'),
             icon: Icons.people_outline,
-            onPressed: a.endsAt.isAfter(communityNow(c))
+            onPressed:
+                (c.session?.connected == true && c.sessions != null
+                    ? a.startsAt.isAfter(communityNow(c)) &&
+                          a.participationMode == 'in_person'
+                    : a.endsAt.isAfter(communityNow(c)))
                 ? () => setState(() => request = true)
                 : null,
+          ),
+        if (c.session?.connected == true &&
+            c.sessions != null &&
+            (!a.startsAt.isAfter(communityNow(c)) ||
+                a.participationMode != 'in_person'))
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              c.t(
+                'Companion requests must be arranged before an in-person activity starts.',
+                'Permintaan teman mesti diatur sebelum aktiviti bersemuka bermula.',
+              ),
+            ),
           ),
       ],
     );

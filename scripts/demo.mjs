@@ -1,6 +1,7 @@
 import {pathToFileURL} from 'node:url';
 import {localEnvironment, projectId} from './local.mjs';
 import {demoAccounts, demoPassword, fixtureDocuments} from './fixtures.mjs';
+const resettableCommands = new Set(['foundationProbe','saveElderSettings','submitCheckIn','recordPhoneResponse']);
 
 export async function demoClients() {
   const env = localEnvironment();
@@ -30,28 +31,34 @@ export async function seedDemo({auth, db}, now = new Date()) {
 
 export async function resetDemo({auth, db}) {
   assertClientsLocal(auth, db);
-  // Explicit manifest only; no database flush, collection deletion or recursive
-  // delete. Unknown domain records and other developer data remain untouched.
+  // Explicit fixtures plus check-in history owned by the known demo elders;
+  // no database flush or recursive delete. Other actors' data is untouched.
   const batch = db.batch();
   for (const {path} of fixtureDocuments()) batch.delete(db.doc(path));
   for (const {uid} of demoAccounts) batch.delete(db.doc(`foundationProbes/${uid}`));
   await batch.commit();
+  for (const {uid,role} of demoAccounts) {
+    if (role !== 'elder') continue;
+    for (const collection of ['checkins','dailyStatuses']) {
+      const snapshots = await db.collection(collection).where('elderId','==',uid).get();
+      await deleteOwnedDocuments(db, snapshots.docs);
+    }
+  }
   for (const {uid} of demoAccounts) {
     const receipts = await db.collection('commandReceipts').where('actorUid','==',uid).get();
-    let cleanup = db.batch();
-    let count = 0;
-    for (const receipt of receipts.docs) {
-      if (receipt.data().functionName === 'foundationProbe') {
-        cleanup.delete(receipt.ref);
-        count++;
-        if (count === 400) { await cleanup.commit(); cleanup = db.batch(); count = 0; }
-      }
-    }
-    if (count) await cleanup.commit();
+    await deleteOwnedDocuments(db, receipts.docs.filter((receipt) => resettableCommands.has(receipt.data().functionName)));
   }
   for (const {uid} of demoAccounts) {
     try { await auth.deleteUser(uid); }
     catch (error) { if (error.code !== 'auth/user-not-found') throw error; }
+  }
+}
+
+async function deleteOwnedDocuments(db, documents) {
+  for (let offset = 0; offset < documents.length; offset += 400) {
+    const cleanup = db.batch();
+    for (const snapshot of documents.slice(offset,offset+400)) cleanup.delete(snapshot.ref);
+    await cleanup.commit();
   }
 }
 

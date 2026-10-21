@@ -33,6 +33,7 @@ test('Firestore foundation policies against the real rules emulator', {timeout:1
         'dailyStatuses/rules_solo':{elderId:'elder_solo',householdId:'household_solo',localDate:'2026-10-20',state:'ok',submittedAt:new Date()},
         'commandReceipts/rules_private':{actorUid:'elder_demo'},
         'foundationProbes/rules_private':{actorUid:'elder_demo'},
+        'checkins/rules_private':{elderId:'elder_demo',townshipId,localDate:'2026-10-20',state:'missed',dueAt:new Date()},
       };
       for (const [path,data] of Object.entries(testDocs)) { await setDoc(doc(db,path),data); owned.push(path); }
     });
@@ -97,10 +98,23 @@ test('Firestore foundation policies against the real rules emulator', {timeout:1
       await assertFails(read(user('helper_demo'),'wallets/elder_demo'));
       await assertFails(read(user('coordinator_demo'),'wallets/rules_other_wallet'));
     });
+    await t.test('raw check-in history and coordinator exception queries are scoped; family only sees the safe projection', async () => {
+      await assertSucceeds(read(user('elder_demo'),'checkins/rules_private'));
+      await assertSucceeds(read(user('coordinator_demo'),'checkins/rules_private'));
+      for (const uid of ['family_demo','family_unrelated','helper_demo','elder_solo','rules_other_coord']) {
+        await assertFails(read(user(uid),'checkins/rules_private'));
+      }
+      await assertSucceeds(getDocs(query(collection(user('elder_demo'),'checkins'),
+        where('elderId','==','elder_demo'),orderBy('localDate','desc'))));
+      await assertSucceeds(getDocs(query(collection(user('coordinator_demo'),'checkins'),
+        where('townshipId','==',townshipId),where('localDate','==','2026-10-20'),
+        where('state','in',['reminded','missed']),orderBy('dueAt'))));
+      await assertFails(getDocs(collection(user('coordinator_demo'),'checkins')));
+    });
     await t.test('all direct domain writes, self-promotion, deletes and receipt reads are denied', async () => {
       for (const path of ['users/elder_demo','households/household_demo','elderSettings/elder_demo','wallets/elder_demo',
         'wallets/elder_demo/entries/fake','helperProfiles/helper_demo','activities/fake','pairings/fake',
-        'requests/fake','activityAttendances/fake','rewardClaims/fake','commandReceipts/fake']) {
+        'requests/fake','activityAttendances/fake','rewardClaims/fake','commandReceipts/fake','checkins/fake','dailyStatuses/fake']) {
         await assertFails(setDoc(doc(user('elder_demo'),path),{role:'coordinator',balance:100000}));
       }
       await assertFails(updateDoc(doc(user('coordinator_demo'),'users/elder_demo'),{role:'coordinator'}));

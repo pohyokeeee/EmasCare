@@ -24,6 +24,7 @@ export function fixtureDocuments(now = new Date()) {
   };
   const documents = [];
   const add = (path, data) => documents.push({path, data});
+  const localDate = (date) => new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Kuala_Lumpur', year:'numeric', month:'2-digit', day:'2-digit'}).format(date);
   for (const account of demoAccounts) {
     const {uid, email: _email, ...profile} = account;
     add(`users/${uid}`, {...profile, townshipId, locale:'en', ...metadata});
@@ -31,8 +32,18 @@ export function fixtureDocuments(now = new Date()) {
       add(`wallets/${uid}`, {ownerUid:uid, townshipId, balance:0, updatedAt:at});
     }
     if (account.role === 'elder') {
+      const date = localDate(now);
+      const dueLocalTime = uid === 'elder_solo' ? '00:00' : '09:00';
+      const graceMinutes = uid === 'elder_solo' ? 0 : 30;
+      const dueAt = Timestamp.fromDate(new Date(`${date}T${dueLocalTime}:00+08:00`));
+      const graceEndsAt = Timestamp.fromMillis(dueAt.toMillis() + graceMinutes * 60000);
+      const state = at.toMillis() < dueAt.toMillis() ? 'pending' : at.toMillis() < graceEndsAt.toMillis() ? 'reminded' : 'missed';
       add(`elderSettings/${uid}`, {familySharingEnabled:uid === 'elder_demo', familyBookingEnabled:uid === 'elder_demo',
-        dueLocalTime:'09:00', graceMinutes:30, pausedOn:null, ...metadata});
+        dueLocalTime, graceMinutes, pausedOn:null, ...metadata});
+      add(`checkins/${uid}_${date}`, {elderId:uid,townshipId,localDate:date,state,dueAt,graceEndsAt,
+        submittedAt:null,recordedBy:null,source:null,...metadata});
+      add(`dailyStatuses/${uid}_${date}`, {elderId:uid,householdId:account.householdId,localDate:date,
+        state,submittedAt:null,updatedAt:at});
     }
   }
   add('households/household_demo', {townshipId, memberUids:['elder_demo','family_demo'], elderIds:['elder_demo'],
@@ -47,7 +58,6 @@ export function fixtureDocuments(now = new Date()) {
   const tasks = ['walk_with_me','sit_with_me','phone_help','carry_light_item'];
   add('helperProfiles/helper_demo', {approved:true, tier:'T3', languages:['bm','en'], gender:'female',
     allowedTasks:tasks, available:true, availabilitySlots:slots, ...metadata});
-  const localDate = (date) => new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Kuala_Lumpur', year:'numeric', month:'2-digit', day:'2-digit'}).format(date);
   add('pairings/pairing_demo', {townshipId, elderId:'elder_demo', helperId:'helper_demo', active:true,
     elderAccepted:true, helperAccepted:true, trialStartsOn:localDate(new Date(now.getTime()-86400000)),
     trialEndsOn:localDate(new Date(now.getTime()+14*86400000)), cadence:slots, allowedTasks:tasks, isDemoSeed:true, ...metadata});

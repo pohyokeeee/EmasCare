@@ -2,6 +2,8 @@
 
 Stage 1 establishes the local Firebase backend on branch `backend-foundation`. Developer A owns **all Flutter files**, including coordinator UI, navigation, models and the repository adapter. Developer B owns TypeScript Functions, Auth/data, permissions, rules/indexes, scripts and backend checks.
 
+Stage 2 adds working check-in/settings commands, current daily fixtures and scoped check-in history. Read [the Stage 2 handover](BACKEND_CHECKINS.md) for the current callable examples, reset coverage and integration steps.
+
 The agreed API contract is v1, document revision 2, shared separately. Its local Markdown and JSON files remain excluded from Git. This guide covers the implemented foundation; domain functions in that contract arrive in subsequent stages.
 
 ## Start locally
@@ -92,7 +94,7 @@ An additional `foundationProbe` callable exists **only in the Functions emulator
 
 `scripts/fixtures.mjs` is the executable seed source. It does not import the ignored UI fixture bundle, whose scenarios are alternatives and include a hypothetical redemption balance.
 
-The seed contains six actual Auth accounts and corresponding profiles, four households, separate elder settings, one approved helper with availability, one accepted recurring trial pair, two upcoming dated activities, two illustrative places (one warning), one 100-coin **mock** voucher and three zero-balance wallets. Dates are generated from the seed execution time. The standalone elder has no companion pairing. No completed participation, reward rate, credited history or positive wallet balance is fabricated.
+The seed contains six actual Auth accounts and corresponding profiles, four households, separate elder settings, one approved helper with availability, one accepted recurring trial pair, two upcoming dated activities, two illustrative places (one warning), one 100-coin **mock** voucher and three zero-balance wallets. Stage 2 also seeds current check-ins and safe daily statuses for both elders; the standalone elder has an overdue fixture for coordinator phone follow-up. Dates are generated from the seed execution time. The standalone elder has no companion pairing. No completed participation, reward rate, credited history or positive wallet balance is fabricated.
 
 Rules currently permit:
 
@@ -102,7 +104,7 @@ Rules currently permit:
 - Helper's own profile; same-township coordinator access. Residents cannot read individual helper availability.
 - Pairings for their elder/helper and same-township coordinator.
 - Elder's own wallet and helper's own wallet/ledger; same-township coordinator audit. Family has no financial access.
-- Family-safe daily status reads for a linked family with **current sharing consent**. Stage 2 will create these statuses; permission tests use isolated synthetic documents.
+- Family-safe daily status reads for a linked family with **current sharing consent**. Stage 2 creates these statuses and permits raw check-in history only to its elder and same-township coordinator.
 
 All direct client writes are denied, including for coordinators. Commands must perform protected writes. Receipts, probes and all remaining collections are denied to clients until their stage adds explicit read policies. Helpers and family do not gain additional permissions through token role claims.
 
@@ -117,9 +119,9 @@ Queries must match the rules; rules do not filter an unrestricted collection. A 
 | `helperProfiles` | Own UID document; coordinator can fetch known same-township helper IDs |
 | `pairings` | Own `elderId` or `helperId`; coordinator uses `townshipId` and optionally `active` |
 | `wallets`, nested `entries` | Own wallet document/entries; coordinator audit scoped by `townshipId` |
-| `dailyStatuses` (Stage 2 producer) | `elderId == selectedElderId`, `householdId == currentHouseholdId`, order `localDate DESC` |
+| `dailyStatuses` | `elderId == selectedElderId`, `householdId == currentHouseholdId`, order `localDate DESC` |
 
-The three current compound indexes match the activity, coordinator pairing and family daily-history queries. Later stages add indexes with their actual queries. The emulator verifies rules/query authorization, but does not prove production index readiness; deployed indexes must later be checked on the real project.
+The compound indexes match the activity, coordinator pairing, family daily-history and Stage 2 check-in-history/exception queries. Later stages add indexes with their actual queries. The emulator verifies rules/query authorization, but does not prove production index readiness; deployed indexes must later be checked on the real project.
 
 ## Retry and permission helpers
 
@@ -138,7 +140,7 @@ npm.cmd run demo:reset
 npm.cmd run demo:smoke
 ```
 
-Reset deletes/recreates only the explicit foundation fixture documents/accounts and removes those accounts' foundation probes/probe receipts. It preserves unknown documents, unrelated Auth accounts and receipts for other commands. It is a **foundation fixture reset**, not a whole-database reset for later booking/reward stages. Never use it to repair real financial history; expand the manifest deliberately as later stages introduce demo-owned data. Seed alone upserts the fixture snapshot and restores its default settings/balances.
+Reset deletes/recreates the explicit fixture documents/accounts, removes known demo elders' check-ins/daily statuses across dates, and clears known demo actors' foundation/settings/check-in/phone receipts. It preserves other elders' records, unrelated Auth accounts and receipts for other commands. It is a **Stage 1/2 fixture reset**, not a whole-database reset for later booking/reward stages. Never use it to repair real financial history; expand the manifest deliberately as later stages introduce demo-owned data. Seed alone upserts the current fixture snapshot and restores its default settings/balances; use reset before repeating an entire check-in walkthrough.
 
 Both scripts validate the exact demo project and loopback emulator hosts before Admin client initialization. Existing conflicting project or host environment variables cause failure. They cannot target a live Firebase project.
 
@@ -159,8 +161,8 @@ No Gemini API key was available in the checked environment and no presentation-b
 After Stage 1, the project owner should:
 
 1. Run the start and seed commands above and inspect the six accounts in the emulator UI.
-2. Send Developer A this guide's connection details, accounts and `getBackendContext` example. They can independently verify Auth and catalog streams without waiting for domain features.
-3. Review the backend branch and pull request before merging. Keep the private contract files excluded from Git; cloud deployment is a later step.
+2. After backend checks pass, commit the stage changes, push the branch and open a pull request into `main`. Send Developer A the PR/branch link so they can fetch the implementation.
+3. Send Developer A this guide's connection details, accounts and `getBackendContext` example. They can independently verify Auth and catalog streams without waiting for domain features. Keep the private contract files excluded from Git; review the pull request before merging. Cloud deployment is a later step.
 4. Continue Stage 2: settings/check-ins, separate consent, permitted family updates and coordinator phone responses. Its acceptance check is an elder check-in that persists and becomes unreadable to family when sharing is withdrawn.
 
 The remaining backend sequence is:

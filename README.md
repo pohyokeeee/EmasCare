@@ -4,10 +4,13 @@ Phase 1 local Flutter Web preview is in [`app/`](app/README.md). It includes fou
 
 On Windows, run `app/preview.ps1` from PowerShell, then open `http://127.0.0.1:8080`. Flutter and Node.js are required. See the app README for development commands and the exact preview boundaries.
 
+When running the preview alongside the backend, use `app/preview.ps1 -Port 8090` and open `http://127.0.0.1:8090`; Firestore uses port 8080. The preview remains a local mock until Developer A connects the Firebase adapter.
+
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)
 - [Original three-day implementation plan (reference)](docs/FULL_IMPLEMENTATION_PLAN_3_DAYS.md)
 - [Backend Stage 1: local setup, demo accounts and teammate handover](docs/BACKEND_FOUNDATION.md)
+- [Backend Stage 2: check-ins, consent and frontend handover](docs/BACKEND_CHECKINS.md)
 
 Scope decision (21 Oct 2026): Tanya Dulu is a future feature and is excluded from the current MVP and prototype builds.
 

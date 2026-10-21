@@ -12,7 +12,7 @@
     "demo:seed": "node scripts/demo.mjs seed",
     "demo:reset": "node scripts/demo.mjs reset",
     "demo:smoke": "node --test tests/backend.test.mjs",
-    "test:integration": "node --test --test-concurrency=1 tests/backend.test.mjs tests/checkins.test.mjs tests/rules.test.mjs tests/sessions.test.mjs"
+    "test:integration": "node --test --test-concurrency=1 tests/backend.test.mjs tests/checkins.test.mjs tests/rules.test.mjs tests/sessions.test.mjs tests/attendance.test.mjs"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "5.0.2",

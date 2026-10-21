@@ -112,6 +112,7 @@ export function createSessionService(db: Firestore, clock: () => Timestamp = Tim
           const lock = (await tx.get(db.doc(`activityElderLocks/${activityLockId(activityId, elderId)}`))).data();
           const attendance = (await tx.get(db.doc(`activityAttendances/${attendanceId(activityId, elderId)}`))).data();
           if (lock?.state === "completed" || attendance?.status === "verified") fail("failed-precondition", "ACTIVITY_ALREADY_COMPLETED");
+          if (attendance || lock?.attendanceId) fail("failed-precondition", "ATTENDANCE_ALREADY_SUBMITTED");
           if (lock?.requestId) fail("failed-precondition", "ACTIVITY_REQUEST_EXISTS");
         }
         const request = {...payload, startsAt: start, endsAt: end, townshipId: actor.townshipId, householdId: elder.householdId,

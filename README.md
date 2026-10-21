@@ -14,6 +14,7 @@ Port 8090 is the app's default; Firestore uses 8080. Booking, sessions, rewards,
 - [Backend Stage 1: local setup, demo accounts and teammate handover](docs/BACKEND_FOUNDATION.md)
 - [Backend Stage 2: check-ins, consent and frontend handover](docs/BACKEND_CHECKINS.md)
 - [Backend Stage 3: companion requests, sessions and frontend handover](docs/BACKEND_SESSIONS.md)
+- [Backend Stage 4: standalone attendance, coordinator verification and frontend handover](docs/BACKEND_ATTENDANCE.md)
 
 Scope decision (21 Oct 2026): Tanya Dulu is a future feature and is excluded from the current MVP and prototype builds.
 

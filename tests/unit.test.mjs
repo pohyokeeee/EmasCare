@@ -12,7 +12,22 @@ const {authenticatedUid, requireRole, requireTownship} = require('../functions/l
 const {malaysiaDate, dailySchedule, unsubmittedState, createCheckInService} = require('../functions/lib/checkins.js');
 const {slotsInput,isoTime,daySegments,covers} = require('../functions/lib/scheduling.js');
 const {createSessionService} = require('../functions/lib/sessions.js');
+const {createAttendanceService} = require('../functions/lib/attendance.js');
 const reason = (expected) => (error) => error.details?.reason === expected;
+
+test('attendance review requires explicit evidence method and factual note; caller cannot supply completion fields', async () => {
+  const service=createAttendanceService({});
+  const input={contractVersion:1,idempotencyKey:'validation',attendanceId:'some_attendance',decision:'verify',verificationMethod:'organizer_roster',note:'Matched the organizer roster.'};
+  for (const method of [null,'mutual_session_confirmation','self_reported','']) {
+    await assert.rejects(service.reviewActivityAttendance('coordinator_demo',{...input,verificationMethod:method}),reason('INVALID_VERIFICATION_METHOD'));
+  }
+  for (const note of ['',null,' ', 'a'.repeat(501)]) await assert.rejects(service.reviewActivityAttendance('coordinator_demo',{...input,note}),reason('INVALID_REVIEW_NOTE'));
+  await assert.rejects(service.reviewActivityAttendance('coordinator_demo',{...input,decision:'approve'}),reason('INVALID_REVIEW_DECISION'));
+  await assert.rejects(service.reviewActivityAttendance('coordinator_demo',{...input,decision:'reject'}),reason('INVALID_VERIFICATION_METHOD'));
+  for (const extra of [{elderId:'elder_demo'},{verifiedAt:'2026-10-21T00:00:00Z'},{status:'verified'},{amountCoins:100}]) {
+    await assert.rejects(service.submitActivityAttendance('elder_demo',{contractVersion:1,idempotencyKey:'validation',activityId:'activity_garden',...extra}),reason('UNKNOWN_FIELD'));
+  }
+});
 
 test('weekly slots cover whole Malaysian intervals, including adjacent slots, midnight and Sunday to Monday', () => {
   const start=isoTime('2026-10-25T15:30:00Z'), end=isoTime('2026-10-25T16:30:00.000Z');

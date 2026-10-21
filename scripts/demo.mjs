@@ -2,7 +2,7 @@ import {pathToFileURL} from 'node:url';
 import {localEnvironment, projectId} from './local.mjs';
 import {demoAccounts, demoPassword, fixtureDocuments} from './fixtures.mjs';
 const resettableCommands = new Set(['foundationProbe','saveElderSettings','submitCheckIn','recordPhoneResponse',
-  'setHelperAvailability','createRequest','assignRequest','transitionRequest']);
+  'setHelperAvailability','createRequest','assignRequest','transitionRequest','submitActivityAttendance','reviewActivityAttendance']);
 
 export async function demoClients() {
   const env = localEnvironment();
@@ -71,7 +71,9 @@ async function resetCompanions(db) {
     if (role === 'elder') {
       for (const snapshot of (await db.collection('requests').where('elderId','==',uid).get()).docs) requests.set(snapshot.id,snapshot);
       for (const collection of ['activityElderLocks','activityAttendances']) {
-        await deleteOwnedDocuments(db,(await db.collection(collection).where('elderId','==',uid).get()).docs);
+        const owned=(await db.collection(collection).where('elderId','==',uid).get()).docs;
+        for (const snapshot of owned) if (snapshot.data().completionEventId) events.add(snapshot.data().completionEventId);
+        await deleteOwnedDocuments(db,owned);
       }
     }
     for (const snapshot of (await db.collection('participations').where('beneficiaryUid','==',uid).get()).docs) participants.set(snapshot.id,snapshot);

@@ -4,9 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../models/backend_models.dart';
 import 'backend_repository.dart';
+import 'community_repository.dart';
+import '../models/community_models.dart';
+import '../models/preview_models.dart';
 
 /// Local-only adapter. No SDK read, listener or callable starts before connect.
-class FirebaseBackendRepository implements BackendRepository {
+class FirebaseBackendRepository
+    implements BackendRepository, CommunityRepository {
   FirebaseBackendRepository._(this.auth, this.db, this.functions);
   final FirebaseAuth auth;
   final FirebaseFirestore db;
@@ -171,4 +175,68 @@ class FirebaseBackendRepository implements BackendRepository {
     'idempotencyKey': key,
     'elderId': elderId,
   });
+
+  @override
+  Stream<List<ActivityRecord>> watchActivities(String townshipId) => db
+      .collection('activities')
+      .where('townshipId', isEqualTo: townshipId)
+      .orderBy('startsAt')
+      .snapshots(includeMetadataChanges: true)
+      .where((s) => !s.metadata.isFromCache)
+      .map(
+        (s) => s.docs
+            .map((d) => ActivityRecord.fromJson({...d.data(), 'id': d.id}))
+            .toList(),
+      );
+  @override
+  Stream<List<PlaceRecord>> watchPlaces(String townshipId) => db
+      .collection('places')
+      .where('townshipId', isEqualTo: townshipId)
+      .snapshots(includeMetadataChanges: true)
+      .where((s) => !s.metadata.isFromCache)
+      .map(
+        (s) => s.docs
+            .map((d) => PlaceRecord.fromJson({...d.data(), 'id': d.id}))
+            .toList(),
+      );
+  @override
+  Stream<List<PairingRecord>> watchPairings(BackendProfile profile) {
+    Query<Json> query = db.collection('pairings');
+    query = switch (profile.role) {
+      AppRole.elder =>
+        query
+            .where('elderId', isEqualTo: profile.uid)
+            .where('townshipId', isEqualTo: profile.townshipId),
+      AppRole.helper =>
+        query
+            .where('helperId', isEqualTo: profile.uid)
+            .where('townshipId', isEqualTo: profile.townshipId),
+      AppRole.coordinator =>
+        query
+            .where('townshipId', isEqualTo: profile.townshipId)
+            .where('active', isEqualTo: true),
+      AppRole.family => throw StateError(
+        'Family pairing reads are not authorized.',
+      ),
+    };
+    return query
+        .snapshots(includeMetadataChanges: true)
+        .where((s) => !s.metadata.isFromCache)
+        .map(
+          (s) => s.docs
+              .map((d) => PairingRecord.fromJson({...d.data(), 'id': d.id}))
+              .toList(),
+        );
+  }
+
+  @override
+  Stream<HelperProfileRecord?> watchHelperProfile(String uid) => db
+      .doc('helperProfiles/$uid')
+      .snapshots(includeMetadataChanges: true)
+      .where((s) => !s.metadata.isFromCache)
+      .map(
+        (s) => s.exists
+            ? HelperProfileRecord.fromJson({...s.data()!, 'id': s.id})
+            : null,
+      );
 }

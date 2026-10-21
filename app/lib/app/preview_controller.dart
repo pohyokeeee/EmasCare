@@ -3,14 +3,45 @@ import '../data/emas_repository.dart';
 import '../models/preview_models.dart';
 import '../platform/browser_support.dart';
 import 'session_controller.dart';
+import 'community_controller.dart';
+import 'companion_demo_controller.dart';
+import '../data/community_repository.dart';
 
 class PreviewController extends ChangeNotifier {
   PreviewController(this.repository, {this.session}) {
-    repository.addListener(notifyListeners);
+    repository.addListener(_repositoryChanged);
     session?.addListener(_sessionChanged);
+    community?.addListener(notifyListeners);
+    demo.addListener(notifyListeners);
   }
   final EmasRepository repository;
   final SessionController? session;
+  late final CommunityController? community =
+      session != null && session!.repository is CommunityRepository
+      ? CommunityController(
+          session!,
+          session!.repository as CommunityRepository,
+        )
+      : null;
+  final CompanionDemoController demo = CompanionDemoController();
+  void _repositoryChanged() {
+    if (demo.helperAvailable != repository.helperAvailable) {
+      demo.setHelperAvailable(repository.helperAvailable);
+    }
+    notifyListeners();
+  }
+
+  void resetPreview() {
+    repository.resetPreview();
+    demo.reset();
+  }
+
+  Future<void> enterPhase2Preview() async {
+    if (session != null) await session!.signOut(enterPreview: true);
+    if (_disposed || session?.authError != null) return;
+    navigate(role: AppRole.elder, destination: Destination.companion);
+  }
+
   String? _lastUid;
   void _sessionChanged() {
     final p = session?.profile;
@@ -119,8 +150,12 @@ class PreviewController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    repository.removeListener(notifyListeners);
+    repository.removeListener(_repositoryChanged);
     session?.removeListener(_sessionChanged);
+    community?.removeListener(notifyListeners);
+    community?.dispose();
+    demo.removeListener(notifyListeners);
+    demo.dispose();
     super.dispose();
   }
 }

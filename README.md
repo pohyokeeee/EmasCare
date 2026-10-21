@@ -2,6 +2,8 @@
 
 The Flutter Web app in [`app/`](app/README.md) now connects to the local Firebase backend for sign-in, elder check-ins/settings, consent-gated family status and coordinator phone responses. It preserves responsive navigation, BM/EN and accessibility controls, with the original sample screens available in an explicit design-preview mode.
 
+Phase 2 adds a connected, read-only activity/access catalogue and permitted companion/availability summaries. A separate labelled sample journey covers requests, coordinator assignment, helper session steps and both participant confirmations while Developer B finishes Stage 3. See [Phase 2 handover and review steps](app/PHASE2_HANDOVER.md).
+
 On Windows, start and seed the backend first, then run `app/preview.ps1` and open `http://127.0.0.1:8090`. Flutter, Node.js and a JDK are required. Follow the [exact local startup and manual verification steps](app/LOCAL_BACKEND.md).
 
 Port 8090 is the app's default; Firestore uses 8080. Booking, sessions, rewards, redemption and voice APIs remain pending. No cloud services have been deployed.

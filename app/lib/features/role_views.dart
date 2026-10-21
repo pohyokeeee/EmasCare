@@ -7,6 +7,9 @@ import '../models/preview_models.dart';
 import '../shared/design_system.dart';
 import '../shared/park_art.dart';
 import 'connected/connected_home.dart';
+import 'community/activity_catalog.dart';
+import 'community/companion_workspace.dart';
+import '../data/phase2_samples.dart';
 
 class RoleContent extends StatelessWidget {
   const RoleContent({super.key});
@@ -14,6 +17,27 @@ class RoleContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = PreviewScope.of(context);
     if (c.session?.connected == true) return const ConnectedHome();
+    if (c.role == AppRole.coordinator &&
+        c.destination == Destination.activities) {
+      return const CompanionWorkspace();
+    }
+    if (c.role == AppRole.coordinator &&
+        c.destination == Destination.companion) {
+      return const CommunityPlaces();
+    }
+    if (c.role != AppRole.coordinator &&
+        c.destination == Destination.activities) {
+      return const CommunityActivities();
+    }
+    if (c.role != AppRole.coordinator &&
+        c.destination == Destination.companion) {
+      return const CompanionWorkspace();
+    }
+    if (c.role == AppRole.helper &&
+        c.destination == Destination.today &&
+        c.demo.requests.any((r) => r.helperName != null)) {
+      return const CompanionWorkspace();
+    }
     if (c.role == AppRole.coordinator) return const _Coordinator();
     return switch (c.destination) {
       Destination.today => switch (c.role) {
@@ -21,8 +45,8 @@ class RoleContent extends StatelessWidget {
         AppRole.family => const _FamilyHome(),
         _ => const _HelperHome(),
       },
-      Destination.activities => const _ActivityCatalog(),
-      Destination.companion => const _Companion(),
+      Destination.activities => const CommunityActivities(),
+      Destination.companion => const CompanionWorkspace(),
       Destination.rewards =>
         c.role == AppRole.family ? const _Community() : const _Wallet(),
     };
@@ -711,127 +735,10 @@ class _ActivityCard extends StatelessWidget {
 
 void showActivity(BuildContext context, CommunityActivity a) {
   final c = PreviewScope.of(context);
-  showEmasSheet(
-    context,
-    Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: SizedBox(
-            height: 180,
-            width: double.infinity,
-            child: ParkArt(garden: a.garden),
-          ),
-        ),
-        const SizedBox(height: 22),
-        Pill(c.t('Sample activity', 'Aktiviti contoh'), gold: true),
-        const SizedBox(height: 13),
-        Text(
-          a.title.inLanguage(c.malay),
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 10),
-        Text('${a.day.inLanguage(c.malay)} · ${a.time}\n${a.place}'),
-        const SizedBox(height: 14),
-        Text(a.description.inLanguage(c.malay)),
-        const Divider(),
-        Text(
-          c.t('A more comfortable way there', 'Perjalanan yang lebih selesa'),
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            Pill(
-              c.t('Step-free entry', 'Laluan tanpa tangga'),
-              icon: CupertinoIcons.check_mark_circled,
-            ),
-            Pill(c.t('Accessible toilet', 'Tandas mesra akses')),
-            Pill(c.t('Places to sit', 'Tempat duduk')),
-            Pill(
-              c.t('${a.walkMinutes} min walk', '${a.walkMinutes} min jalan'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Text(
-          c.t(
-            'Illustrative access notes. Live warnings, Maps and booking connect in a later phase.',
-            'Nota akses contoh. Amaran semasa, Peta dan tempahan akan disambung kemudian.',
-          ),
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 23),
-        EmasButton(
-          label: c.t('Meet your companion', 'Kenali teman anda'),
-          icon: CupertinoIcons.person_2,
-          onPressed: () {
-            Navigator.pop(context);
-            c.navigate(destination: Destination.companion);
-          },
-        ),
-      ],
-    ),
-  );
-}
-
-class _ActivityCatalog extends StatefulWidget {
-  const _ActivityCatalog();
-  @override
-  State<_ActivityCatalog> createState() => _ActivityCatalogState();
-}
-
-class _ActivityCatalogState extends State<_ActivityCatalog> {
-  int filter = 0;
-  @override
-  Widget build(BuildContext context) {
-    final c = PreviewScope.of(context);
-    final items = c.repository.activities
-        .where((a) => filter == 0 || (filter == 2 ? a.garden : !a.garden))
-        .toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _Header(
-          c.t(
-            'Good things, close to home.',
-            'Aktiviti menarik, dekat di rumah.',
-          ),
-          c.t(
-            'Find a little movement, fresh air and familiar faces.',
-            'Nikmati senaman ringan, udara segar dan teman mesra.',
-          ),
-          eyebrow: 'CITY OF ELMINA',
-        ),
-        Wrap(
-          spacing: 9,
-          runSpacing: 9,
-          children: [
-            for (var i = 0; i < 3; i++)
-              ChoiceChip(
-                label: Text(
-                  [
-                    c.t('All activities', 'Semua aktiviti'),
-                    c.t('Movement', 'Senaman'),
-                    c.t('Community', 'Komuniti'),
-                  ][i],
-                ),
-                selected: filter == i,
-                onSelected: (_) => setState(() => filter = i),
-                showCheckmark: false,
-              ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        ActivityGrid(activities: items),
-        const SizedBox(height: 24),
-        const _VoiceInvitation(),
-      ],
-    );
-  }
+  final activity = sampleActivities(
+    c.demo.seededAt,
+  ).where((item) => item.id == a.id).firstOrNull;
+  if (activity != null) openActivity(context, activity);
 }
 
 class _VoiceInvitation extends StatelessWidget {
@@ -1048,87 +955,6 @@ class _HelperHome extends StatelessWidget {
               const _Neighbours(),
             ],
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Companion extends StatelessWidget {
-  const _Companion();
-  @override
-  Widget build(BuildContext context) {
-    final c = PreviewScope.of(context);
-    final helper = c.role == AppRole.helper;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _Header(
-          c.t('A familiar face, by your side.', 'Teman mesra di sisi anda.'),
-          c.t(
-            'Small routines. A friendship that has room to grow.',
-            'Rutin kecil. Persahabatan yang berkembang.',
-          ),
-        ),
-        _Columns(
-          main: Surface(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _PersonRow(
-                  helper ? 'MT' : 'KL',
-                  helper ? 'Mr Tan' : 'Kak Lina',
-                  c.t(
-                    'Your regular neighbour companion',
-                    'Teman jiran tetap anda',
-                  ),
-                ),
-                const SizedBox(height: 22),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    Pill('BM / EN', icon: CupertinoIcons.chat_bubble),
-                    Pill(c.t('City of Elmina', 'City of Elmina')),
-                    Pill(
-                      c.t(
-                        'Trial pairing · sample',
-                        'Pasangan percubaan · contoh',
-                      ),
-                      gold: true,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  c.t('A morning walk, together.', 'Jalan pagi bersama.'),
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  c.t(
-                    'A coordinator-proposed regular pairing is shown here as sample data. This is a preview of the ongoing relationship, not a real booking.',
-                    'Pasangan tetap yang dicadangkan penyelaras dipaparkan sebagai data contoh. Ini pratonton hubungan berterusan, bukan tempahan sebenar.',
-                  ),
-                ),
-                const Divider(),
-                Text(
-                  c.t(
-                    'Session check-in/out and separate confirmations will connect in a later phase. No session is completed here.',
-                    'Daftar masuk/keluar sesi dan pengesahan berasingan akan disambung kemudian. Tiada sesi diselesaikan di sini.',
-                  ),
-                  style: const TextStyle(color: Palette.muted),
-                ),
-                const SizedBox(height: 22),
-                EmasButton(
-                  label: c.t('Explore activities', 'Terokai aktiviti'),
-                  onPressed: () =>
-                      c.navigate(destination: Destination.activities),
-                ),
-              ],
-            ),
-          ),
-          aside: const _NextOuting(),
         ),
       ],
     );

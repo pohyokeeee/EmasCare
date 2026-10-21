@@ -64,7 +64,7 @@ void main() {
     },
   );
   testWidgets(
-    'Activities filter and details navigate to the companion; wallet cannot redeem',
+    'Activities filter, access details and sample request work; wallet cannot redeem',
     (tester) async {
       tester.view.physicalSize = const Size(1440, 1100);
       tester.view.devicePixelRatio = 1;
@@ -76,15 +76,27 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('nav-activities')));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Community'));
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Step-free'));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('activity-tai_chi')), findsNothing);
+      expect(find.byKey(const ValueKey('activity-lakeside')), findsNothing);
       await tester.tap(find.byKey(const ValueKey('activity-garden')));
       await tester.pumpAndSettle();
       expect(find.text('A more comfortable way there'), findsOneWidget);
-      final meet = find.text('Meet your companion');
+      final meet = find.text('Request a companion');
       await tester.ensureVisible(meet);
       await tester.tap(meet);
+      await tester.pumpAndSettle();
+      final review = find.byKey(const ValueKey('review-request'));
+      await tester.ensureVisible(review);
+      await tester.tap(
+        find.descendant(of: review, matching: find.byType(Text)).first,
+      );
+      await tester.pumpAndSettle();
+      final create = find.byKey(const ValueKey('create-sample-request'));
+      await tester.ensureVisible(create);
+      await tester.tap(
+        find.descendant(of: create, matching: find.byType(Text)).first,
+      );
       await tester.pumpAndSettle();
       expect(c.destination, Destination.companion);
       c.navigate(destination: Destination.rewards);

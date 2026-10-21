@@ -1,6 +1,6 @@
-# Flutter Stage 2 integration
+# Flutter local backend and Phase 2 UI
 
-The default app connects to the local `demo-emascare` Firebase emulators. Developer A's implementation is on `codex/flutter-checkins-integration`, based on merged backend commit `f64fc02`. No cloud deployment is configured.
+The default app connects to the local `demo-emascare` Firebase emulators. The Stage 2 Flutter integration was merged through PR #4. Phase 2 UI is on `ui-phase-2`, based on merged main `a751ee9`. No cloud deployment is configured. See [PHASE2_HANDOVER.md](PHASE2_HANDOVER.md) for the new UI walkthrough.
 
 ## Start on this Windows computer
 
@@ -90,8 +90,10 @@ For backend checks while development emulators are already running, use `npm.cmd
 
 ## Current limits
 
-Only authentication, elder settings/check-ins, family consent-gated daily status and coordinator phone reporting are connected. All domain writes use the four supplied callables, with version 1 envelopes and action-specific retry keys. Stream snapshots remain authoritative, so replayed settings responses cannot overwrite newer consent.
+Authentication, elder settings/check-ins, family consent-gated daily status and coordinator phone reporting are connected. Phase 2 adds read-only township activities/places, permitted pairings and the helper's own saved availability. Participant pairing queries require both the participant ID and township constraints. All domain writes use the four supplied callables, with version 1 envelopes and action-specific retry keys. Stream snapshots remain authoritative, so replayed settings responses cannot overwrite newer consent.
 
-Pending live destinations explain their status. Account → design preview retains the original sample UI. There are no booking, availability, session, reward, redemption, voice/model, automatic reminder, notification or scheduler APIs in this integration. No check-in earns coins. Tanya Dulu remains future work. Backend Functions, rules, indexes and scripts were not modified.
+Pending live destinations explain their status. Connected request forms remain unsent drafts. Account → design preview includes a labelled in-memory request/assignment/session journey with independent participant confirmations. There are no booking, availability-mutation, session-mutation, reward, redemption, voice/model, automatic reminder, notification or scheduler APIs in this integration. No check-in or sample completion earns coins. Tanya Dulu remains future work. Backend Functions, rules, indexes and scripts were not modified.
+
+Run `node app/tool/verify_community.mjs` from the repository root for read-only catalogue/companion permission checks against the running emulators. It signs into the six demo accounts without resetting or changing domain data.
 
 Retry keys are retained in memory for the confirmed action until it succeeds or the user cancels it. They are cleared on sign-out/profile changes; reloading recovers persisted domain state rather than an unfinished retry. New actions get new keys. Malaysian date rollover refreshes date-scoped subscriptions; commands still select dates/timestamps on the server.

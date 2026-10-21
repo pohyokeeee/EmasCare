@@ -4,7 +4,7 @@
   <base href="$FLUTTER_BASE_HREF">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="EmasCare — a little company, close to home. Phase 1 local design preview.">
+  <meta name="description" content="EmasCare — a little company, close to home. Local Firebase demo.">
   <meta name="theme-color" content="#315d4b">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="manifest" href="manifest.json">
@@ -21,6 +21,17 @@
   <script>
     window.addEventListener('flutter-first-frame', () => document.getElementById('loading')?.remove());
   </script>
-  <script src="flutter_bootstrap.js" async></script>
+  <script type="module">
+    import {prepareLocalFirebase} from './firebase_local.mjs';
+    try {
+      await prepareLocalFirebase();
+      const flutter = document.createElement('script');
+      flutter.src = 'flutter_bootstrap.js';
+      document.body.appendChild(flutter);
+    } catch (error) {
+      document.getElementById('loading').textContent = 'Local Firebase could not start. Open http://127.0.0.1:8090 and reload. The first launch needs internet access for the Firebase SDK.';
+      console.error('Local Firebase initialization failed', error);
+    }
+  </script>
 </body>
 </html>

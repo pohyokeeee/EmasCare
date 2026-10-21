@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
-import 'app/emas_app.dart';
+import 'app/firebase_bootstrap.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const EmasCareApp());
+  runApp(const FirebaseBootstrap());
 }

@@ -6,12 +6,14 @@ import '../app/preview_controller.dart';
 import '../models/preview_models.dart';
 import '../shared/design_system.dart';
 import '../shared/park_art.dart';
+import 'connected/connected_home.dart';
 
 class RoleContent extends StatelessWidget {
   const RoleContent({super.key});
   @override
   Widget build(BuildContext context) {
     final c = PreviewScope.of(context);
+    if (c.session?.connected == true) return const ConnectedHome();
     if (c.role == AppRole.coordinator) return const _Coordinator();
     return switch (c.destination) {
       Destination.today => switch (c.role) {

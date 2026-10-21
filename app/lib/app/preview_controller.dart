@@ -2,12 +2,29 @@ import 'package:flutter/widgets.dart';
 import '../data/emas_repository.dart';
 import '../models/preview_models.dart';
 import '../platform/browser_support.dart';
+import 'session_controller.dart';
 
 class PreviewController extends ChangeNotifier {
-  PreviewController(this.repository) {
+  PreviewController(this.repository, {this.session}) {
     repository.addListener(notifyListeners);
+    session?.addListener(_sessionChanged);
   }
   final EmasRepository repository;
+  final SessionController? session;
+  String? _lastUid;
+  void _sessionChanged() {
+    final p = session?.profile;
+    if (p != null && session!.connected) {
+      final newUser = p.uid != _lastUid;
+      location = AppLocation(p.role, newUser ? Destination.today : destination);
+      if (newUser) malay = p.locale == 'bm';
+      _lastUid = p.uid;
+    } else if (p == null) {
+      _lastUid = null;
+    }
+    notifyListeners();
+  }
+
   AppLocation location = const AppLocation(AppRole.elder, Destination.today);
   bool malay = false,
       largeText = false,
@@ -44,14 +61,16 @@ class PreviewController extends ChangeNotifier {
         };
   void navigate({AppRole? role, Destination? destination}) {
     location = AppLocation(
-      role ?? this.role,
+      session?.connected == true ? session!.profile!.role : role ?? this.role,
       destination ?? (role == null ? this.destination : Destination.today),
     );
     notifyListeners();
   }
 
   void restore(AppLocation value) {
-    location = value;
+    location = session?.connected == true
+        ? AppLocation(session!.profile!.role, value.destination)
+        : value;
     notifyListeners();
   }
 
@@ -101,6 +120,7 @@ class PreviewController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     repository.removeListener(notifyListeners);
+    session?.removeListener(_sessionChanged);
     super.dispose();
   }
 }

@@ -41,8 +41,28 @@ class BackendFailure implements Exception {
         'Masa mula yang dijadualkan belum tiba.',
       ),
       'ACTIVITY_NOT_FINISHED' => (
-        'Wait until the activity ends before finishing this session.',
-        'Tunggu sehingga aktiviti tamat sebelum menamatkan sesi.',
+        'Wait until the activity ends before submitting attendance or finishing the session.',
+        'Tunggu sehingga aktiviti tamat sebelum menghantar kehadiran atau menamatkan sesi.',
+      ),
+      'ATTENDANCE_MANAGED_BY_SESSION' => (
+        'This activity is managed through your companion session. Complete both confirmations in My companion.',
+        'Aktiviti ini diurus melalui sesi teman anda. Lengkapkan kedua-dua pengesahan dalam Teman saya.',
+      ),
+      'ATTENDANCE_ALREADY_REVIEWED' => (
+        'This attendance has already been reviewed. Close the form and check the latest record.',
+        'Kehadiran ini telah disemak. Tutup borang dan semak rekod terkini.',
+      ),
+      'ACTIVITY_NOT_IN_PERSON' ||
+      'INVALID_ACTIVITY_SCHEDULE' ||
+      'INVALID_ATTENDANCE_LINK' => (
+        'Attendance needs a valid, finished in-person activity. Ask the coordinator to check its details.',
+        'Kehadiran memerlukan aktiviti bersemuka yang sah dan telah tamat. Minta penyelaras menyemak butirannya.',
+      ),
+      'INVALID_REVIEW_DECISION' ||
+      'INVALID_VERIFICATION_METHOD' ||
+      'INVALID_REVIEW_NOTE' => (
+        'Choose a review decision, a verification method when verifying, and a note of 1–500 characters.',
+        'Pilih keputusan semakan, kaedah apabila mengesahkan, dan nota 1–500 aksara.',
       ),
       'ACTIVITY_ALREADY_FINISHED' => (
         'This activity has ended and the session can no longer be started.',
@@ -56,7 +76,7 @@ class BackendFailure implements Exception {
         'An active request already exists for this activity. Find it in My companion.',
         'Permintaan aktif untuk aktiviti ini sudah wujud. Lihat dalam Teman saya.',
       ),
-      'ACTIVITY_ALREADY_COMPLETED' || 'ATTENDANCE_ALREADY_REVIEWED' => (
+      'ACTIVITY_ALREADY_COMPLETED' => (
         'Participation in this activity has already been recorded.',
         'Penyertaan aktiviti ini sudah direkodkan.',
       ),
@@ -72,7 +92,10 @@ class BackendFailure implements Exception {
         'Check the weekly hours. Each interval must end after it starts and cannot overlap another interval.',
         'Semak waktu mingguan. Setiap selang mesti tamat selepas bermula dan tidak boleh bertindih.',
       ),
-      'REQUEST_NOT_FOUND' || 'PLACE_NOT_FOUND' || 'ACTIVITY_NOT_FOUND' => (
+      'REQUEST_NOT_FOUND' ||
+      'PLACE_NOT_FOUND' ||
+      'ACTIVITY_NOT_FOUND' ||
+      'ATTENDANCE_NOT_FOUND' => (
         'This record is no longer available. Refresh the list and choose again.',
         'Rekod ini tidak lagi tersedia. Muat semula senarai dan pilih semula.',
       ),
@@ -130,6 +153,8 @@ class BackendFailure implements Exception {
       'ROLE_NOT_ALLOWED' ||
       'TOWNSHIP_NOT_ALLOWED' ||
       'UNRELATED_HOUSEHOLD' ||
+      'ELDER_ACCESS_DENIED' ||
+      'ATTENDANCE_ACCESS_DENIED' ||
       'CONSENT_REQUIRED' => (
         'Access is no longer permitted. Private data has been cleared.',
         'Akses tidak dibenarkan. Data peribadi telah dipadam daripada paparan.',

@@ -9,14 +9,78 @@ import 'session_repository.dart';
 import '../models/session_models.dart';
 import '../models/community_models.dart';
 import '../models/preview_models.dart';
+import 'attendance_repository.dart';
+import '../models/attendance_models.dart';
 
 /// Local-only adapter. No SDK read, listener or callable starts before connect.
 class FirebaseBackendRepository
-    implements BackendRepository, CommunityRepository, SessionRepository {
+    implements
+        BackendRepository,
+        CommunityRepository,
+        SessionRepository,
+        AttendanceRepository {
   FirebaseBackendRepository._(this.auth, this.db, this.functions);
   final FirebaseAuth auth;
   final FirebaseFirestore db;
   final FirebaseFunctions functions;
+
+  @override
+  Stream<List<ActivityAttendance>> watchAttendance(
+    BackendProfile profile, {
+    String? elderId,
+  }) {
+    if (profile.role == AppRole.helper) return const Stream.empty();
+    Query<Json> q = db.collection('activityAttendances');
+    q = switch (profile.role) {
+      AppRole.elder =>
+        q
+            .where('elderId', isEqualTo: profile.uid)
+            .orderBy('createdAt', descending: true),
+      AppRole.family =>
+        q
+            .where('elderId', isEqualTo: elderId!)
+            .where('householdId', isEqualTo: profile.householdId!)
+            .orderBy('createdAt', descending: true),
+      AppRole.coordinator =>
+        q
+            .where('townshipId', isEqualTo: profile.townshipId)
+            .where('status', isEqualTo: 'submitted')
+            .orderBy('submittedAt'),
+      AppRole.helper => throw StateError(
+        'Helper attendance reads are not permitted',
+      ),
+    };
+    return q
+        .snapshots(includeMetadataChanges: true)
+        .where((s) => !s.metadata.isFromCache)
+        .map(
+          (s) => s.docs
+              .map(
+                (d) => ActivityAttendance.fromJson({...d.data(), 'id': d.id}),
+              )
+              .toList(),
+        );
+  }
+
+  Future<ActivityAttendance> _attendanceCall(
+    String name,
+    Json fields,
+    String key,
+  ) async => ActivityAttendance.fromJson(
+    jsonObject(
+      (await _call(name, {...fields, 'idempotencyKey': key}))['attendance'],
+    ),
+  );
+  @override
+  Future<ActivityAttendance> submitActivityAttendance(
+    Json fields,
+    String key,
+  ) => _attendanceCall('submitActivityAttendance', fields, key);
+  @override
+  Future<ActivityAttendance> reviewActivityAttendance(
+    Json fields,
+    String key,
+  ) => _attendanceCall('reviewActivityAttendance', fields, key);
   static Future<FirebaseBackendRepository> connect() async {
     if (!['127.0.0.1', 'localhost', '::1'].contains(Uri.base.host)) {
       throw StateError('This build requires a loopback browser origin.');

@@ -1,6 +1,6 @@
 # EmasCare — Flutter Web
 
-A responsive Flutter Web app owned by Developer A, connected to Developer B's local Stage 2 and Stage 3 Firebase APIs. **Read [LOCAL_BACKEND.md](LOCAL_BACKEND.md) first** for exact emulator startup, accounts, connected features and manual verification. [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) covers real bookings and sessions. The default app requires the emulators. Account → design preview retains separate sample screens.
+A responsive Flutter Web app owned by Developer A, connected to Developer B's local Stage 2–4 Firebase APIs. **Read [LOCAL_BACKEND.md](LOCAL_BACKEND.md) first** for exact emulator startup, accounts, connected features and manual verification. [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) covers attendance submission/review/history; [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) covers bookings and sessions. The default app requires the emulators. Account → design preview retains separate sample screens.
 
 ## Run on this Windows computer
 
@@ -61,7 +61,9 @@ Connected mode has sign-in/out, saved independent consent, due/grace/pause setti
 
 Phase 3 connects helper availability/weekly hours, elder/consented-family requests, coordinator assignment, accept/start/finish/cancel and each participant's confirmation. Live request streams survive refresh through server state. Activity bookings use exact recorded schedules and places; standalone phone help sends explicit null activity/place IDs. Form notes remain preview-only because Stage 3 does not accept them.
 
-Rewards/redemption, notifications/automatic reminders, family cheers, AI voice parsing and Stage 4 standalone-attendance UI remain pending. In design-preview mode, the request → assignment → helper session → two-participant confirmation journey uses separate in-memory samples that disappear on reload. Neither preview nor live completion credits coins while reward policy is pending. The SDP entry remains a mock module entry.
+Phase 4 adds Past activities and Attendance history under Activities. Actual elders submit ended in-person attendance; coordinators review submitted records from Requests → Attendance review, using a trusted evidence method and a factual note. Family history follows sharing consent, independently of booking. Existing companion attendance is reused without another participation. The local SDK warning no longer covers phone navigation; in-app local-demo labels remain.
+
+Rewards/redemption, notifications/automatic reminders, family cheers and AI voice parsing remain pending. In design-preview mode, the request → assignment → helper session → two-participant confirmation journey uses separate in-memory samples that disappear on reload. Attendance is a connected feature, with no fabricated preview history. Neither preview nor live completion credits coins while reward policy is pending. The SDP entry remains a mock module entry.
 
 The reward decision remains **coins for elders and helpers after each eligible verified completion**. Rates, detailed eligibility and exact response JSON still require agreement. This app does not implement the superseded monthly award or fabricate wallet balances. Tanya Dulu is future work and has no screen here.
 
@@ -77,6 +79,7 @@ Browser API availability is not proof of successful microphone capture or audibl
 | `lib/data/emas_repository.dart` | Repository interface and local mock |
 | `lib/data/community_repository.dart`, `lib/models/community_models.dart` | Scoped read-only catalogue, place, pairing and helper records |
 | `lib/data/session_repository.dart`, `lib/models/session_models.dart`, `lib/app/session_workflow_controller.dart` | Stage 3 typed callables, scoped request streams, frozen retries and cleanup |
+| `lib/data/attendance_repository.dart`, `lib/models/attendance_models.dart`, `lib/app/attendance_controller.dart`, `lib/features/community/attendance_views.dart` | Stage 4 attendance submission, scoped history, coordinator review and retry/consent cleanup |
 | `lib/features/community/` | Phase 2 catalogue, access details, request/review and companion/session UI |
 | `lib/app/companion_demo_controller.dart`, `lib/models/companion_ui_models.dart` | Explicitly local sample workflow; no Stage 3 wire contract |
 | `lib/features/role_views.dart` | Four role previews and activity/companion/reward views |
@@ -93,6 +96,8 @@ See [the Stage 2 verification record](STAGE2_VERIFICATION.md) for connected-mode
 See [the Phase 2 handover](PHASE2_HANDOVER.md) for the 41-test check run, read-only checks against all six emulator accounts, browser walkthrough and screenshots.
 
 See [Stage 3 verification](STAGE3_VERIFICATION.md) for the current connected companion journey and acceptance evidence.
+
+See [Stage 4 verification](STAGE4_VERIFICATION.md) for attendance scenarios, current test results and the read-only attendance verifier.
 
 See [the Phase 1 verification record](PHASE1_VERIFICATION.md) for observed browser results, screenshots and device-audio limits.
 

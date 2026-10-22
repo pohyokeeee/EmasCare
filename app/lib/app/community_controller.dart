@@ -21,6 +21,7 @@ class CommunityController extends ChangeNotifier {
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   late final Timer _timer;
   Timer? _noticeExpiry;
+  Timer? _activityBoundary;
   int _epoch = 0;
   bool _disposed = false;
   List<ActivityRecord> activities = [];
@@ -34,6 +35,7 @@ class CommunityController extends ChangeNotifier {
   void _clear() {
     _epoch++;
     _noticeExpiry?.cancel();
+    _activityBoundary?.cancel();
     for (final s in _subscriptions) {
       unawaited(s.cancel());
     }
@@ -65,6 +67,23 @@ class CommunityController extends ChangeNotifier {
       if (_disposed || epoch != _epoch) return;
       notifyListeners();
       _scheduleNoticeExpiry();
+    });
+  }
+
+  void _scheduleActivityBoundary() {
+    _activityBoundary?.cancel();
+    final times =
+        activities
+            .expand((a) => [a.startsAt, a.endsAt])
+            .where((t) => t.isAfter(now))
+            .toList()
+          ..sort();
+    if (times.isEmpty) return;
+    final epoch = _epoch;
+    _activityBoundary = Timer(times.first.difference(now), () {
+      if (_disposed || epoch != _epoch) return;
+      notifyListeners();
+      _scheduleActivityBoundary();
     });
   }
 
@@ -100,6 +119,7 @@ class CommunityController extends ChangeNotifier {
       repository.watchActivities(p.townshipId).listen((value) {
         if (!valid()) return;
         activities = value;
+        _scheduleActivityBoundary();
         activitiesReady = true;
         catalogLoading = !(activitiesReady && placesReady);
         notifyListeners();

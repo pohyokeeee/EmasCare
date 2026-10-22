@@ -6,7 +6,9 @@ Phase 3 connects companion booking, helper availability, coordinator assignment 
 
 On Windows, start and seed the backend first, then run `app/preview.ps1` and open `http://127.0.0.1:8090`. Flutter, Node.js and a JDK are required. Follow the [exact local startup and manual verification steps](app/LOCAL_BACKEND.md).
 
-Port 8090 is the app's default; Firestore uses 8080. Reward awards/redemption, voice and standalone-attendance UI remain pending. No cloud services have been deployed.
+Phase 4 adds elder submission for ended in-person activities, coordinator attendance verification/rejection and saved elder/family history. Family attendance follows sharing consent independently of booking. See [Phase 4 verification and walkthrough](app/STAGE4_VERIFICATION.md).
+
+Port 8090 is the app's default; Firestore uses 8080. Reward awards/redemption and voice remain pending. No cloud services have been deployed.
 
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)

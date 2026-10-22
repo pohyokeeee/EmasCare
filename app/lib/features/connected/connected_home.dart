@@ -6,6 +6,7 @@ import '../../shared/design_system.dart';
 import '../../shared/park_art.dart';
 import '../community/activity_catalog.dart';
 import '../community/companion_workspace.dart';
+import '../community/attendance_views.dart';
 
 String statusLabel(CheckInState? state, bool bm) => switch (state) {
   CheckInState.ok => bm ? 'Saya OK diterima' : 'Saya OK received',
@@ -26,7 +27,9 @@ class ConnectedHome extends StatelessWidget {
     if (p == null) return const SizedBox.shrink();
     if (c.role == AppRole.coordinator &&
         c.destination == Destination.activities) {
-      return const CompanionWorkspace();
+      return c.attendance == null
+          ? const CompanionWorkspace()
+          : const _CoordinatorRequests();
     }
     if (c.role == AppRole.coordinator &&
         c.destination == Destination.companion) {
@@ -124,6 +127,48 @@ class ConnectedHome extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
+      ],
+    );
+  }
+}
+
+class _CoordinatorRequests extends StatefulWidget {
+  const _CoordinatorRequests();
+  @override
+  State<_CoordinatorRequests> createState() => _CoordinatorRequestsState();
+}
+
+class _CoordinatorRequestsState extends State<_CoordinatorRequests> {
+  bool attendance = false;
+  @override
+  Widget build(BuildContext context) {
+    final c = PreviewScope.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            ChoiceChip(
+              key: const ValueKey('companion-requests-tab'),
+              label: Text(c.t('Companion requests', 'Permintaan teman')),
+              selected: !attendance,
+              onSelected: (_) => setState(() => attendance = false),
+            ),
+            ChoiceChip(
+              key: const ValueKey('attendance-review-tab'),
+              label: Text(c.t('Attendance review', 'Semakan kehadiran')),
+              selected: attendance,
+              onSelected: (_) => setState(() => attendance = true),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        if (attendance)
+          const AttendanceReviewQueue()
+        else
+          const CompanionWorkspace(),
       ],
     );
   }

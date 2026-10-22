@@ -1,6 +1,6 @@
-# Flutter local backend and Phase 4 UI
+# Flutter local backend and Stage 5 UI
 
-The default app connects to the local `demo-emascare` Firebase emulators. Phase 4 is on `ui-phase-4`, based on merged main `d3bd841`. It adds B's Stage 4 attendance APIs and preserves check-ins and companion sessions. No cloud deployment is configured. See [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) for attendance and [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) for bookings/sessions.
+The default app connects to the local `demo-emascare` Firebase emulators. Stage 5 wallet UI was merged in PR #11; the completion audit is on `ui-phase-5`, based on merged main `874afa3`. It preserves check-ins, companion sessions and attendance. No cloud deployment is configured. See [PHASE5_VERIFICATION.md](PHASE5_VERIFICATION.md) for the current audit, [STAGE5_VERIFICATION.md](STAGE5_VERIFICATION.md) for wallets, [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) for attendance and [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) for bookings/sessions.
 
 ## Start on this Windows computer
 
@@ -23,15 +23,18 @@ npm.cmd run emulators
 
 Wait for function definitions to load, including `getBackendContext`, `saveElderSettings`, `submitCheckIn`, `recordPhoneResponse`, `setHelperAvailability`, `createRequest`, `assignRequest` and `transitionRequest`. The current backend also includes Stage 4 attendance functions. The generic “all emulators ready” banner alone does not establish Functions readiness. This machine needed the 60-second discovery allowance on its first launch.
 
+After a backend rebuild, Functions can need time to reload. If refresh shows **Could not reach the local backend**, wait for the function definitions, then use **Retry profile**. This preserves the signed-in account and saved records; a reset is unnecessary. Both role refresh checks passed once the local backend was ready.
+
 The workspace cache contains the official Firestore 1.22.0 runtime, verified against Firebase CLI's SHA-256 manifest. If the cache is absent, the CLI downloads it. On another computer, use your installed JDK 21+ path instead. Node/npm and the Flutter SDK must already be installed.
 
 Terminal 2, repository root:
 
 ```powershell
 npm.cmd run demo:reset
+npm.cmd run demo:configure-rewards
 ```
 
-Reset is for disposable emulator fixtures. It restores both elders' settings/statuses and the six demo accounts, clears their known receipts/session-derived history and seeds `request_demo_ready` for an immediate phone-help walkthrough. Emulator data is in memory; restart and reset again for a fresh rehearsal.
+Reset is for disposable emulator fixtures. It restores both elders' settings/statuses and the six demo accounts, clears their known receipts/session-derived history and seeds `request_demo_ready` for an immediate phone-help walkthrough. The configuration command applies the owner's 20-coin rule for all five verified action types and both participant roles, then reconciles earlier verified pending records. It does not add an opening balance. Emulator data is in memory; after restart/reset, reapply configuration. Skip reset when preserving the current saved examples.
 
 Terminal 3:
 
@@ -92,11 +95,15 @@ For backend checks while development emulators are already running, use `npm.cmd
 
 ## Current limits
 
-Authentication, elder settings/check-ins, family consent-gated daily status, coordinator phone reporting, companion requests/assignment, helper availability, sessions and attendance are connected. Township activities/places and permitted pairings are read-only. Participant pairing queries require both the participant ID and township constraints. All domain writes use the supplied Stage 2–4 callables, with version 1 envelopes and action-specific retry keys. Stream snapshots remain authoritative, so replayed responses cannot overwrite newer state.
+Authentication, elder settings/check-ins, family consent-gated daily status, coordinator phone reporting, companion requests/assignment, helper availability, sessions, attendance and own-wallet/mock redemption are connected. Township activities/places and permitted pairings are read-only. Participant pairing queries require both the participant ID and township constraints. All domain writes use the supplied Stage 2–5 callables, with version 1 envelopes and action-specific retry keys. Stream snapshots remain authoritative, so replayed responses cannot overwrite newer state.
 
-Account → design preview retains a labelled in-memory journey. Connected mode uses real persisted requests, sessions and attendance. Elders submit ended in-person attendance from Activities → Past activities; coordinators verify/reject in Requests → Attendance review; elders and sharing-consented family read Attendance history. Booking consent does not grant attendance access. Coin awards/redemption, voice/model, automatic reminders/notifications and scheduler features remain outside this integration. No check-in, sample or live completion directly credits coins; verified participation creates pending-policy claims through the backend. Tanya Dulu remains future work. Backend Functions, rules, indexes and scripts were not modified.
+Account → design preview retains a labelled in-memory journey. Connected mode uses real persisted requests, sessions, attendance and wallets. Elders submit ended in-person attendance from Activities → Past activities; coordinators verify/reject in Requests → Attendance review; elders and sharing-consented family read Attendance history. Booking consent does not grant attendance access, and neither family consent grants financial access. My rewards reads only the actual elder/helper's own wallet, reward outcomes, coin history and saved demo codes. With `demo:configure-rewards` applied, each verified activity/helping session earns 20 coins for each actual elder/helper participant; five distinct credits fund the 100-coin DEMO voucher. Before configuration, claims remain pending. Bare seed/reset clears the active policy pointer, so reapply configuration afterward. Voice/model, automatic reminders/notifications and scheduler features remain outside this integration. Tanya Dulu remains future work. Backend Functions, rules, indexes and the existing reward/reconciliation engine were not modified; the guarded configuration command is new.
 
-Run `node app/tool/verify_attendance.mjs` from the repository root for read-only checks of the exact attendance queries. After the documented elder-verification/solo-rejection browser walkthrough, add `--expect-browser-results` to validate those saved reviews, privacy boundaries and unchanged zero coin balances. The verifier does not reset or mutate data.
+Run `node app/tool/verify_wallet.mjs` from the root for read-only wallet/privacy checks. After verifying the main elder's activity in the default demo, add `--expect-default-demo` to confirm a pending claim, zero balances and no financial transactions/redemptions. Do not use this default-state assertion against an intentionally configured earning-policy test.
+
+After completing the configured 20-coin earning/redemption walkthrough for both demo recipients, use `node app/tool/verify_wallet.mjs --expect-20-coin-demo` to check exact credits, saved demo redemptions, wallet/ledger consistency and privacy. This expectation also checks that each main recipient has at least five credits and one saved voucher.
+
+Run `node app/tool/verify_attendance.mjs` from the repository root for read-only checks of the exact attendance queries. Before activating the reward policy, the original elder-verification/solo-rejection walkthrough can additionally use `--expect-browser-results` to validate those saved reviews and unchanged zero balances. That historical expectation does not apply to the configured earning demo. The verifier does not reset or mutate data.
 
 Run `node app/tool/verify_community.mjs` from the repository root for read-only catalogue/companion permission checks against the running emulators. It signs into the six demo accounts without resetting or changing domain data.
 

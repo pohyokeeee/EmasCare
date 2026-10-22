@@ -1,0 +1,23 @@
+{
+  "policyId": "owner-20-all-v1",
+  "townshipId": "township_demo",
+  "version": "owner-20-all-v1",
+  "status": "approved",
+  "approvedBy": "project-owner",
+  "approvalReference": "Owner instruction in Codex chat 01a159b8-ab7a-7161-a735-4ba00976f7cf on 2026-10-22: Proceed with Award to all activities, 20 coins for one activities. One amount for elders and helpers; all supported verified participation, including existing pending records.",
+  "approvedAt": "2026-10-22T07:43:11.000Z",
+  "effectiveFrom": "1970-01-01T00:00:00.000Z",
+  "effectiveUntil": null,
+  "rules": [
+    {"id":"activity-elder","action":"activity_attendance","role":"elder","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"activity-helper","action":"activity_attendance","role":"helper","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"walk-elder","action":"walk_with_me","role":"elder","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"walk-helper","action":"walk_with_me","role":"helper","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"sit-elder","action":"sit_with_me","role":"elder","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"sit-helper","action":"sit_with_me","role":"helper","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"carry-elder","action":"carry_light_item","role":"elder","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"carry-helper","action":"carry_light_item","role":"helper","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"phone-elder","action":"phone_help","role":"elder","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"},
+    {"id":"phone-helper","action":"phone_help","role":"helper","eligible":true,"rateCoins":20,"reason":"OWNER_APPROVED_ALL_ACTIVITIES_20"}
+  ]
+}

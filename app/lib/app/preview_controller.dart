@@ -10,6 +10,8 @@ import '../data/session_repository.dart';
 import 'session_workflow_controller.dart';
 import '../data/attendance_repository.dart';
 import 'attendance_controller.dart';
+import '../data/wallet_repository.dart';
+import 'wallet_controller.dart';
 
 class PreviewController extends ChangeNotifier {
   PreviewController(this.repository, {this.session}) {
@@ -18,10 +20,15 @@ class PreviewController extends ChangeNotifier {
     community?.addListener(notifyListeners);
     sessions?.addListener(notifyListeners);
     attendance?.addListener(notifyListeners);
+    wallet?.addListener(notifyListeners);
     demo.addListener(notifyListeners);
   }
   final EmasRepository repository;
   final SessionController? session;
+  late final WalletController? wallet =
+      session != null && session!.repository is WalletRepository
+      ? WalletController(session!, session!.repository as WalletRepository)
+      : null;
   late final AttendanceController? attendance =
       session != null && session!.repository is AttendanceRepository
       ? AttendanceController(
@@ -178,6 +185,8 @@ class PreviewController extends ChangeNotifier {
     sessions?.dispose();
     attendance?.removeListener(notifyListeners);
     attendance?.dispose();
+    wallet?.removeListener(notifyListeners);
+    wallet?.dispose();
     demo.removeListener(notifyListeners);
     demo.dispose();
     super.dispose();

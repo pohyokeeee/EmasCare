@@ -317,8 +317,8 @@ class AttendanceHistory extends StatelessWidget {
         const SizedBox(height: 18),
         Text(
           c.t(
-            'Verified participation is recorded. Coin awards and redemption are awaiting the agreed reward policy.',
-            'Penyertaan yang disahkan direkodkan. Pemberian syiling dan penebusan menunggu dasar ganjaran yang dipersetujui.',
+            'Attendance and reward eligibility are separate. Coin awards require approved earning rules.',
+            'Kehadiran dan kelayakan ganjaran adalah berasingan. Ganjaran syiling memerlukan peraturan pendapatan yang diluluskan.',
           ),
           style: Theme.of(context).textTheme.bodySmall,
         ),

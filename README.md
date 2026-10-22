@@ -8,7 +8,11 @@ On Windows, start and seed the backend first, then run `app/preview.ps1` and ope
 
 Phase 4 adds elder submission for ended in-person activities, coordinator attendance verification/rejection and saved elder/family history. Family attendance follows sharing consent independently of booking. See [Phase 4 verification and walkthrough](app/STAGE4_VERIFICATION.md).
 
-Port 8090 is the app's default; Firestore uses 8080. Stage 5 adds configurable backend reward accounting and protected mock redemption; actual awards remain pending an approved reward policy. Stage 6 adds coordinator operations, consent-scoped notifications, progress/availability summaries and a server-side voice-booking parser. Live Gemini/audio verification requires local provider configuration. Flutter wallet and Stage 6 integration remain with Developer A. No cloud services have been deployed.
+Stage 5 connects My rewards to the elder/helper's saved wallet, reward outcomes, coin history, mock voucher catalogue and demo redemption. The owner-approved reward is **20 coins per verified activity or helping session for both roles**. After seeding the local emulators, run `npm.cmd run demo:configure-rewards` to apply it and settle earlier verified pending records. Five distinct credits fund the 100-coin demo voucher. See [current Phase 5 verification](app/PHASE5_VERIFICATION.md).
+
+The [Phase 5 completion audit](app/PHASE5_VERIFICATION.md) on `ui-phase-5` covers translation, receipt and purchase-feedback/retry fixes, the approved 20-coin configuration and earned-coins redemption verification.
+
+Port 8090 is the app's default; Firestore uses 8080. Bare seed/reset leaves the foundation policy unconfigured until the approved configuration command is run. Stage 6 adds coordinator operations, consent-scoped notifications, progress/availability summaries and a server-side voice-booking parser. Live Gemini/audio verification requires local provider configuration. Flutter Stage 6 integration remains with Developer A. No cloud services have been deployed.
 
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)
@@ -17,12 +21,12 @@ Port 8090 is the app's default; Firestore uses 8080. Stage 5 adds configurable b
 - [Backend Stage 2: check-ins, consent and frontend handover](docs/BACKEND_CHECKINS.md)
 - [Backend Stage 3: companion requests, sessions and frontend handover](docs/BACKEND_SESSIONS.md)
 - [Backend Stage 4: standalone attendance, coordinator verification and frontend handover](docs/BACKEND_ATTENDANCE.md)
-- [Backend Stage 5: configured rewards, wallets, mock redemption and remaining policy decisions](docs/BACKEND_WALLET.md)
+- [Backend Stage 5: configured rewards, wallets and mock redemption](docs/BACKEND_WALLET.md)
 - [Backend Stage 6: coordinator APIs, notifications, progress, voice parsing and teammate fixtures](docs/BACKEND_COORDINATION.md)
 
 Scope decision (21 Oct 2026): Tanya Dulu is a future feature and is excluded from the current MVP and prototype builds.
 
-Reward decision (21 Oct 2026): elders and helpers earn coins after each eligible completed activity or helping session. This replaces the fixed monthly award. The separately shared contract v1, revision 2, defines the agreed interface; reward amounts, detailed eligibility and ambiguous outing definitions remain pending. Local foundation wallets start at zero.
+Reward decision (22 Oct 2026): each verified community activity, walk, sitting session, carrying-help session or phone-help session awards **20 coins to each actual elder/helper participant**. Existing verified pending participation is included, once per canonical participation. This replaces earlier role-rate suggestions and the old monthly award. The separately shared contract v1, revision 2, defines the interface; outing classifications remain separate. Local foundation wallets start at zero and gain funds only through verified evidence.
 
 Developer A owns all Flutter code, including the coordinator screen, shared Dart models and repository adapter. Developer B owns the backend. This overrides the older ownership table in the implementation plan.
 

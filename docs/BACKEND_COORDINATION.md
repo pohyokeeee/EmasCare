@@ -1,8 +1,8 @@
 # Backend Stage 6: coordinator operations, progress and voice booking
 
-Developer B implements the backend on `backend-coordination-reporting`. Developer A owns every Flutter screen, shared model and repository adapter, including the coordinator screen. This stage builds on Stage 5's completion records and reward protection. Merge Stage 5 first when reviewing this branch.
+Developer B implements the backend on `backend-coordination-reporting`. Developer A owns every Flutter screen, shared model and repository adapter, including the coordinator screen. This stage builds on merged Stage 5's completion records, reward protection and wallet integration.
 
-Use the existing Auth/Firestore/Functions emulators, project `demo-emascare`, region `asia-southeast1`. No cloud deployment is included. Tanya Dulu stays outside this build. Reward values and unresolved eligibility/outing decisions remain pending; this stage activates no reward policy.
+Use the existing Auth/Firestore/Functions emulators, project `demo-emascare`, region `asia-southeast1`. No cloud deployment is included. Tanya Dulu stays outside this build. Main now includes the approved **20 coins per verified activity/helping session for both roles**; apply it after seeding with `npm.cmd run demo:configure-rewards`, as described in [the wallet guide](BACKEND_WALLET.md). Stage 6 does not change that policy. Phone help remains excluded from outing progress; standalone sit/carry outing definitions remain pending independently of reward eligibility.
 
 ## Interface and examples
 
@@ -24,7 +24,7 @@ Share this guide and [the executable JSON fixtures](fixtures/stage6_coordination
 
 The three named summary read APIs make the previously specified authorized summary reads concrete. They are additive to contract v1; existing settings, availability, session and attendance response envelopes remain unchanged. Use `getProgress` for current results rather than a cached `progress` document. Refresh after completion/review or when the user opens the progress view. `getCoordinatorSummary` is a read snapshot; refresh after an operator action.
 
-Fixtures contain ordered calls from a fixed server time, including real service responses for all the new APIs. Their voice result uses an **injected provider**, not a recording or a live Gemini success. Seeded aggregate history is marked separately and never proves an actual completion or coin award.
+Fixtures contain ordered calls from a fixed server time, including real service responses for all the new APIs. They exercise bare seed/reset before applying the approved reward configuration, so they do not show configured coin awards. Their voice result uses an **injected provider**, not a recording or a live Gemini success. Seeded aggregate history is marked separately and never proves an actual completion or coin award.
 
 ## Reports, warnings and blocking
 
@@ -104,6 +104,8 @@ Run `npm.cmd test` for the build, focused unit checks and the complete local emu
 For a Stage 6-only rerun with no emulators already running, use `npm.cmd run test:coordination`. It builds, runs the unit checks, then starts/stops local emulators for the coordination and household-membership regression tests.
 
 Local verification on 22 October 2026: the full suite passed 20 unit and 99 emulator checks. After tightening household-membership permissions, the final focused rerun passed all 20 unit and 16 coordination/membership emulator checks, including exact fixture comparisons. Live Gemini/audio and connected Flutter verification remain separate pending work.
+
+After integrating main's approved reward configuration and wallet UI changes, the TypeScript build and all 24 combined unit checks passed. The shared test command retains both the reward-policy checks and Stage 6 checks; this branch adds no Flutter changes relative to main.
 
 All client writes remain denied. Backend receipts, markers, private aggregate inputs, targets, illustrative history and rate-limit documents remain backend-only. Pilot reads are bounded (500 records per query, voice catalog 50, due batch 50 elders/20 coordinators and 400 writes). Exceeding a bound returns `DEMO_LIMIT_EXCEEDED`, with no partial result or silent truncation. Production pagination, scheduling, push delivery and deployment are later work.
 

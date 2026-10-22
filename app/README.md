@@ -1,6 +1,6 @@
 # EmasCare — Flutter Web
 
-A responsive Flutter Web app owned by Developer A, connected to Developer B's local Stage 2–4 Firebase APIs. **Read [LOCAL_BACKEND.md](LOCAL_BACKEND.md) first** for exact emulator startup, accounts, connected features and manual verification. [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) covers attendance submission/review/history; [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) covers bookings and sessions. The default app requires the emulators. Account → design preview retains separate sample screens.
+A responsive Flutter Web app owned by Developer A, connected to Developer B's local Stage 2–5 Firebase APIs. **Read [LOCAL_BACKEND.md](LOCAL_BACKEND.md) first** for exact emulator startup, accounts, connected features and manual verification. [STAGE5_VERIFICATION.md](STAGE5_VERIFICATION.md) covers wallets/rewards/mock redemption; [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) covers attendance; [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) covers bookings and sessions. The default app requires the emulators. Account → design preview retains separate sample screens.
 
 ## Run on this Windows computer
 
@@ -63,9 +63,11 @@ Phase 3 connects helper availability/weekly hours, elder/consented-family reques
 
 Phase 4 adds Past activities and Attendance history under Activities. Actual elders submit ended in-person attendance; coordinators review submitted records from Requests → Attendance review, using a trusted evidence method and a factual note. Family history follows sharing consent, independently of booking. Existing companion attendance is reused without another participation. The local SDK warning no longer covers phone navigation; in-app local-demo labels remain.
 
-Rewards/redemption, notifications/automatic reminders, family cheers and AI voice parsing remain pending. In design-preview mode, the request → assignment → helper session → two-participant confirmation journey uses separate in-memory samples that disappear on reload. Attendance is a connected feature, with no fabricated preview history. Neither preview nor live completion credits coins while reward policy is pending. The SDP entry remains a mock module entry.
+Stage 5 connects the existing My rewards destination to the actual elder/helper's own wallet, participation outcomes, immutable coin history, mock voucher catalogue and saved DEMO codes. A confirmed purchase uses the protected redemption callable and preserves its key across retries. Missing/denied data is not shown as zero, and old receipt balances cannot overwrite current streams. Family/coordinators have no proxy spending interface.
 
-The reward decision remains **coins for elders and helpers after each eligible verified completion**. Rates, detailed eligibility and exact response JSON still require agreement. This app does not implement the superseded monthly award or fabricate wallet balances. Tanya Dulu is future work and has no screen here.
+Notifications/automatic reminders, family cheers and AI voice parsing remain pending. In design-preview mode, the request → assignment → helper session → two-participant confirmation journey uses separate in-memory samples that disappear on reload. Connected attendance and wallet history contain server records only. After seed/reset, run `npm.cmd run demo:configure-rewards` from the repository root to apply the approved 20-coin rule and reconcile earlier verified pending records. Wallets start at zero and are funded through verified participation, not positive-balance seeds. The SDP entry remains a mock module entry.
+
+The owner's 22 Oct reward decision is **20 coins per verified activity/helping session for both elders and helpers**. All five supported action types and earlier verified pending participations are included, once per canonical participation. Five credits fund the 100-coin demo voucher. The Stage 5 response shapes are documented in B's handover. This app does not implement the superseded monthly award or fabricate wallet balances. Tanya Dulu is future work and has no screen here.
 
 Browser API availability is not proof of successful microphone capture or audible speech on the presentation device. Try the device check there; keep the manual activity UI available if audio fails.
 
@@ -75,11 +77,12 @@ Browser API availability is not proof of successful microphone capture or audibl
 | --- | --- |
 | `lib/app/` | App/router, shared preview state and responsive shell |
 | `lib/shared/` | Theme, reusable components, spring feedback and illustrations |
-| `lib/models/` | Separate fixture UI models and approved Stage 2/3 backend records |
+| `lib/models/` | Separate fixture UI models and documented Stage 2–5 backend records |
 | `lib/data/emas_repository.dart` | Repository interface and local mock |
 | `lib/data/community_repository.dart`, `lib/models/community_models.dart` | Scoped read-only catalogue, place, pairing and helper records |
 | `lib/data/session_repository.dart`, `lib/models/session_models.dart`, `lib/app/session_workflow_controller.dart` | Stage 3 typed callables, scoped request streams, frozen retries and cleanup |
 | `lib/data/attendance_repository.dart`, `lib/models/attendance_models.dart`, `lib/app/attendance_controller.dart`, `lib/features/community/attendance_views.dart` | Stage 4 attendance submission, scoped history, coordinator review and retry/consent cleanup |
+| `lib/data/wallet_repository.dart`, `lib/models/wallet_models.dart`, `lib/app/wallet_controller.dart`, `lib/features/wallet/wallet_view.dart` | Stage 5 owner-scoped wallet, reward outcomes, ledger, demo vouchers and guarded redemption |
 | `lib/features/community/` | Phase 2 catalogue, access details, request/review and companion/session UI |
 | `lib/app/companion_demo_controller.dart`, `lib/models/companion_ui_models.dart` | Explicitly local sample workflow; no Stage 3 wire contract |
 | `lib/features/role_views.dart` | Four role previews and activity/companion/reward views |
@@ -98,6 +101,10 @@ See [the Phase 2 handover](PHASE2_HANDOVER.md) for the 41-test check run, read-o
 See [Stage 3 verification](STAGE3_VERIFICATION.md) for the current connected companion journey and acceptance evidence.
 
 See [Stage 4 verification](STAGE4_VERIFICATION.md) for attendance scenarios, current test results and the read-only attendance verifier.
+
+See [Stage 5 verification](STAGE5_VERIFICATION.md) for connected wallet/redemption scenarios, current test results, screenshots and the read-only financial query verifier.
+
+See the [Phase 5 completion audit](PHASE5_VERIFICATION.md) for the additional voucher translation, receipt validation and purchase-feedback/retry regressions on `ui-phase-5`, the approved 20-coin configuration and the earned-coins demo verification.
 
 See [the Phase 1 verification record](PHASE1_VERIFICATION.md) for observed browser results, screenshots and device-audio limits.
 

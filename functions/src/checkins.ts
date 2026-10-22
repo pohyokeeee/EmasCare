@@ -3,6 +3,7 @@ import {Actor, loadActor, requireRole, requireTownship} from "./auth";
 import {runCommand} from "./commands";
 import {fail} from "./errors";
 import {documentId, envelope, inputObject} from "./validation";
+import {familyRecipients, Notice, prepareNotices} from "./notifications";
 
 const offsetMs = 8 * 60 * 60 * 1000;
 const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
@@ -178,6 +179,48 @@ export function createCheckInService(db: Firestore, clock: () => Timestamp = Tim
     });
   }
 
-  return {saveElderSettings, submitCheckIn: (uid: string, input: unknown) => submit(uid, input, false),
+  async function processDemoDueItems(uid: string, value: unknown) {
+    const input = inputObject(value, [], true);
+    return runCommand({db, uid, name: "processDemoDueItems", key: input.idempotencyKey as string, payload: {},
+      authorize: async (_tx, actor) => { requireRole(actor, ["coordinator"]); },
+      execute: async (tx, actor) => {
+        const now = clock(), date = malaysiaDate(now);
+        const profiles = await tx.get(db.collection("users").where("townshipId", "==", actor.townshipId).limit(501));
+        const elders = profiles.docs.filter((p) => p.data().role === "elder"), coordinators = profiles.docs.filter((p) => p.data().role === "coordinator");
+        if (profiles.size > 500 || elders.length > 50 || coordinators.length > 20) fail("resource-exhausted", "DEMO_LIMIT_EXCEEDED");
+        const changes: {id: string; access: ElderAccess; checkin: CheckIn}[] = [];
+        const effects: Awaited<ReturnType<typeof prepareNotices>>[] = [];
+        let remindersCreated = 0, missedAlertsCreated = 0;
+        for (const profile of elders) {
+          const id = `${profile.id}_${date}`;
+          const [settingsDoc, before] = await tx.getAll(db.doc(`elderSettings/${profile.id}`), db.doc(`checkins/${id}`));
+          // An unenrolled resident has no check-in schedule; do not invent one.
+          if (!settingsDoc!.exists) continue;
+          const access = await elderAccess(db, tx, actor, profile.id);
+          const settings = readSettings(settingsDoc!.data()), checkin = makeCheckIn(access, settings, now, before!.data() as CheckIn | undefined);
+          changes.push({id, access, checkin});
+          const notices: Notice[] = [];
+          if (checkin.state === "reminded") notices.push({recipientUid: profile.id, elderId: profile.id, kind: "checkin_reminder", entityId: id,
+            consentScope: "none", messageParams: {localDate: date}});
+          if (checkin.state === "missed") {
+            for (const recipientUid of coordinators.map((p) => p.id)) notices.push({recipientUid, elderId: profile.id, kind: "checkin_missed", entityId: id,
+              consentScope: "none", messageParams: {localDate: date}});
+            for (const recipientUid of await familyRecipients(db, tx, profile.id, "daily_sharing")) notices.push({recipientUid, elderId: profile.id, kind: "checkin_missed", entityId: id,
+              consentScope: "daily_sharing", messageParams: {localDate: date}});
+          }
+          const effect = await prepareNotices(db, tx, notices, date, now); effects.push(effect);
+          if (checkin.state === "reminded") remindersCreated += effect.count;
+          if (checkin.state === "missed") missedAlertsCreated += effect.count;
+        }
+        if (changes.length * 2 + remindersCreated + missedAlertsCreated > 400) fail("resource-exhausted", "DEMO_LIMIT_EXCEEDED");
+        for (const {id, access, checkin} of changes) {
+          tx.set(db.doc(`checkins/${id}`), checkin); tx.set(db.doc(`dailyStatuses/${id}`), dailyStatus(access, checkin));
+        }
+        for (const effect of effects) effect.write();
+        // Expiry means review is needed. Only an explicit human action clears a warning.
+        return envelope({processedAt: now.toDate().toISOString(), remindersCreated, missedAlertsCreated, warningsCleared: 0});
+      }});
+  }
+  return {saveElderSettings, processDemoDueItems, submitCheckIn: (uid: string, input: unknown) => submit(uid, input, false),
     recordPhoneResponse: (uid: string, input: unknown) => submit(uid, input, true)};
 }

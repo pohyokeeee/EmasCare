@@ -1,0 +1,549 @@
+{
+  "contractVersion": 1,
+  "serverTime": "2026-10-22T01:00:00.000Z",
+  "note": "Exact Stage 6 service results. The voice provider result is injected for offline fixtures; live Gemini remains disabled without configuration. Seeded aggregate history is illustrative and creates no rewards.",
+  "voiceProviderFixture": {
+    "transcript": "Teman saya berjalan di taman esok.",
+    "draft": {
+      "activityId": "activity_garden",
+      "placeId": null,
+      "startsAt": null,
+      "endsAt": null,
+      "taskType": "walk_with_me",
+      "preferredLanguage": "bm",
+      "preferredHelperGender": "any"
+    }
+  },
+  "steps": [
+    {
+      "functionName": "getAvailabilitySummary",
+      "callerUid": "elder_demo",
+      "input": {
+        "contractVersion": 1
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "availabilitySummary": {
+            "id": "township_demo",
+            "townshipId": "township_demo",
+            "cells": [
+              {
+                "weekday": 4,
+                "startMinute": 540,
+                "endMinute": 660,
+                "cohort": "retiree",
+                "helperCount": 6,
+                "requestCount": 2,
+                "suppressed": false
+              },
+              {
+                "weekday": 4,
+                "startMinute": 660,
+                "endMinute": 780,
+                "cohort": "student",
+                "helperCount": null,
+                "requestCount": null,
+                "suppressed": true
+              }
+            ],
+            "isDemo": true,
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "setPlaceWarning",
+      "callerUid": "coordinator_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-2",
+        "placeId": "place_hall",
+        "warning": {
+          "level": "warning",
+          "text": "Demo: temporary ramp closure; coordinator review required.",
+          "expiresAt": "2026-10-22T12:00:00.000Z"
+        }
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "place": {
+            "id": "place_hall",
+            "townshipId": "township_demo",
+            "name": "Community Hall",
+            "stepFree": true,
+            "accessibleToilet": true,
+            "seating": true,
+            "walkMinutes": 5,
+            "notes": {
+              "bm": "Nota akses contoh; semak keadaan semasa.",
+              "en": "Illustrative access notes; check current conditions."
+            },
+            "mapsUrl": "https://maps.google.com/?q=community+hall",
+            "imageAsset": null,
+            "liveStatus": {
+              "level": "warning",
+              "text": "Demo: temporary ramp closure; coordinator review required.",
+              "expiresAt": "2026-10-22T12:00:00.000Z",
+              "updatedAt": "2026-10-22T01:00:00.000Z",
+              "setBy": "coordinator_demo"
+            },
+            "createdAt": "2026-10-22T01:00:00.000Z",
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "submitReport",
+      "callerUid": "elder_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-3",
+        "kind": "place_problem",
+        "placeId": "place_hall",
+        "requestId": null,
+        "helperId": null,
+        "text": "Please review the ramp access."
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "report": {
+            "id": "b2e0ca0f1d0df5594c5cfc392e4182935517f631da4c4140d5462dbaded5cdb4",
+            "townshipId": "township_demo",
+            "createdBy": "elder_demo",
+            "kind": "place_problem",
+            "placeId": "place_hall",
+            "requestId": null,
+            "helperId": null,
+            "elderId": null,
+            "householdId": null,
+            "text": "Please review the ramp access.",
+            "state": "new",
+            "reviewedBy": null,
+            "reviewedAt": null,
+            "createdAt": "2026-10-22T01:00:00.000Z",
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "reviewReport",
+      "callerUid": "coordinator_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-4",
+        "reportId": "b2e0ca0f1d0df5594c5cfc392e4182935517f631da4c4140d5462dbaded5cdb4",
+        "state": "seen"
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "report": {
+            "id": "b2e0ca0f1d0df5594c5cfc392e4182935517f631da4c4140d5462dbaded5cdb4",
+            "townshipId": "township_demo",
+            "createdBy": "elder_demo",
+            "kind": "place_problem",
+            "placeId": "place_hall",
+            "requestId": null,
+            "helperId": null,
+            "elderId": null,
+            "householdId": null,
+            "text": "Please review the ramp access.",
+            "state": "seen",
+            "reviewedBy": "coordinator_demo",
+            "reviewedAt": "2026-10-22T01:00:00.000Z",
+            "createdAt": "2026-10-22T01:00:00.000Z",
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "reviewReport",
+      "callerUid": "coordinator_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-5",
+        "reportId": "b2e0ca0f1d0df5594c5cfc392e4182935517f631da4c4140d5462dbaded5cdb4",
+        "state": "done"
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "report": {
+            "id": "b2e0ca0f1d0df5594c5cfc392e4182935517f631da4c4140d5462dbaded5cdb4",
+            "townshipId": "township_demo",
+            "createdBy": "elder_demo",
+            "kind": "place_problem",
+            "placeId": "place_hall",
+            "requestId": null,
+            "helperId": null,
+            "elderId": null,
+            "householdId": null,
+            "text": "Please review the ramp access.",
+            "state": "done",
+            "reviewedBy": "coordinator_demo",
+            "reviewedAt": "2026-10-22T01:00:00.000Z",
+            "createdAt": "2026-10-22T01:00:00.000Z",
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "blockHelper",
+      "callerUid": "elder_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-6",
+        "elderId": "elder_demo",
+        "helperId": "helper_demo",
+        "reason": "Demo: pause this pairing pending review."
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "elderId": "elder_demo",
+          "helperId": "helper_demo",
+          "blocked": true
+        }
+      }
+    },
+    {
+      "functionName": "processDemoDueItems",
+      "callerUid": "coordinator_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-7"
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "processedAt": "2026-10-22T01:00:00.000Z",
+          "remindersCreated": 1,
+          "missedAlertsCreated": 1,
+          "warningsCleared": 0
+        }
+      }
+    },
+    {
+      "functionName": "markNotificationRead",
+      "callerUid": "elder_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-8",
+        "notificationId": "384d386c55fe76c5ae4a1e14acfbea6b427e7cdade72f17b9f28714f3f4a231e"
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "notificationId": "384d386c55fe76c5ae4a1e14acfbea6b427e7cdade72f17b9f28714f3f4a231e",
+          "readAt": "2026-10-22T01:00:00.000Z"
+        }
+      }
+    },
+    {
+      "functionName": "getCoordinatorSummary",
+      "callerUid": "coordinator_demo",
+      "input": {
+        "contractVersion": 1
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "summary": {
+            "townshipId": "township_demo",
+            "localDate": "2026-10-22",
+            "checkins": {
+              "pending": 0,
+              "reminded": 1,
+              "missed": 1,
+              "ok": 0,
+              "paused": 0,
+              "notMaterialized": 0
+            },
+            "requests": {
+              "requested": 0,
+              "assigned": 1,
+              "accepted": 0,
+              "in_progress": 0,
+              "awaiting_confirmation": 0,
+              "completed": 0,
+              "cancelled": 0
+            },
+            "attendance": {
+              "submitted": 0,
+              "verified": 0,
+              "rejected": 0
+            },
+            "reports": {
+              "new": 0,
+              "seen": 0,
+              "done": 1
+            },
+            "placeWarnings": {
+              "active": 2,
+              "needsReview": 0
+            },
+            "isDemo": true,
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "submitActivityAttendance",
+      "callerUid": "elder_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-10",
+        "activityId": "activity_demo_attendance"
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "attendance": {
+            "id": "a73b0a16137abcdcd135ead10f0e8375750dce9c1a457651ce1cf3b51f3acd7a",
+            "townshipId": "township_demo",
+            "householdId": "household_demo",
+            "activityId": "activity_demo_attendance",
+            "elderId": "elder_demo",
+            "mode": "standalone",
+            "status": "submitted",
+            "linkedRequestId": null,
+            "submittedAt": "2026-10-22T01:00:00.000Z",
+            "verifiedAt": null,
+            "verificationMethod": null,
+            "reviewedBy": null,
+            "reviewedAt": null,
+            "reviewNote": null,
+            "completionEventId": null,
+            "participationId": null,
+            "createdAt": "2026-10-22T01:00:00.000Z",
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "reviewActivityAttendance",
+      "callerUid": "coordinator_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-11",
+        "attendanceId": "a73b0a16137abcdcd135ead10f0e8375750dce9c1a457651ce1cf3b51f3acd7a",
+        "decision": "verify",
+        "verificationMethod": "organizer_roster",
+        "note": "Matched organizer roster."
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "attendance": {
+            "id": "a73b0a16137abcdcd135ead10f0e8375750dce9c1a457651ce1cf3b51f3acd7a",
+            "townshipId": "township_demo",
+            "householdId": "household_demo",
+            "activityId": "activity_demo_attendance",
+            "elderId": "elder_demo",
+            "mode": "standalone",
+            "status": "verified",
+            "linkedRequestId": null,
+            "submittedAt": "2026-10-22T01:00:00.000Z",
+            "verifiedAt": "2026-10-22T01:00:00.000Z",
+            "verificationMethod": "organizer_roster",
+            "reviewedBy": "coordinator_demo",
+            "reviewedAt": "2026-10-22T01:00:00.000Z",
+            "reviewNote": "Matched organizer roster.",
+            "completionEventId": "5c072a4fd8a36e604dc0a084bdda9d00d0463db0d38174a0a81a74de8f21120f",
+            "participationId": "b6373d845bb48ffa39c1b110f6175ae0582359b6272b4845d9ac7048b17fbf97",
+            "createdAt": "2026-10-22T01:00:00.000Z",
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "sendFamilyCheer",
+      "callerUid": "family_demo",
+      "input": {
+        "contractVersion": 1,
+        "idempotencyKey": "stage6-fixture-12",
+        "participationId": "b6373d845bb48ffa39c1b110f6175ae0582359b6272b4845d9ac7048b17fbf97"
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "cheer": {
+            "id": "11a0dcbbdf1cfbaefc38ebafaadb00f214b02e8eeeffc82d478b1bfca69559c0",
+            "familyUid": "family_demo",
+            "elderId": "elder_demo",
+            "participationId": "b6373d845bb48ffa39c1b110f6175ae0582359b6272b4845d9ac7048b17fbf97",
+            "kind": "clap",
+            "createdAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "getProgress",
+      "callerUid": "family_demo",
+      "input": {
+        "contractVersion": 1,
+        "scope": "elder",
+        "entityId": "elder_demo",
+        "periodType": "week",
+        "periodKey": null
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "progress": {
+            "id": "elder_elder_demo_week_2026-10-19",
+            "scope": "elder",
+            "entityId": "elder_demo",
+            "periodType": "week",
+            "periodKey": "2026-10-19",
+            "counts": {
+              "outings": 1,
+              "helpingSessions": 0,
+              "weekendGiveBack": 0
+            },
+            "targets": {
+              "outings": 2,
+              "helpingSessions": null,
+              "weekendGiveBack": null
+            },
+            "pendingOutingClassifications": 0,
+            "latestOuting": {
+              "participationId": "b6373d845bb48ffa39c1b110f6175ae0582359b6272b4845d9ac7048b17fbf97",
+              "requestId": null,
+              "attendanceId": "a73b0a16137abcdcd135ead10f0e8375750dce9c1a457651ce1cf3b51f3acd7a",
+              "activityTitle": {
+                "bm": "Aktiviti komuniti lalu (demo)",
+                "en": "Past community activity (demo)"
+              },
+              "completedAt": "2026-10-22T01:00:00.000Z"
+            },
+            "isDemo": true,
+            "includesSeededHistory": false,
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "getProgress",
+      "callerUid": "helper_demo",
+      "input": {
+        "contractVersion": 1,
+        "scope": "household",
+        "entityId": "household_helper",
+        "periodType": "month",
+        "periodKey": null
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "progress": {
+            "id": "household_household_helper_month_2026-10",
+            "scope": "household",
+            "entityId": "household_helper",
+            "periodType": "month",
+            "periodKey": "2026-10",
+            "counts": {
+              "outings": 0,
+              "helpingSessions": 0,
+              "weekendGiveBack": 1
+            },
+            "targets": {
+              "outings": null,
+              "helpingSessions": null,
+              "weekendGiveBack": 2
+            },
+            "pendingOutingClassifications": 0,
+            "latestOuting": null,
+            "isDemo": true,
+            "includesSeededHistory": true,
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "getProgress",
+      "callerUid": "coordinator_demo",
+      "input": {
+        "contractVersion": 1,
+        "scope": "township",
+        "entityId": "township_demo",
+        "periodType": "month",
+        "periodKey": null
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "progress": {
+            "id": "township_township_demo_month_2026-10",
+            "scope": "township",
+            "entityId": "township_demo",
+            "periodType": "month",
+            "periodKey": "2026-10",
+            "counts": {
+              "outings": 3,
+              "helpingSessions": 0,
+              "weekendGiveBack": 0
+            },
+            "targets": {
+              "outings": null,
+              "helpingSessions": null,
+              "weekendGiveBack": null
+            },
+            "pendingOutingClassifications": 0,
+            "latestOuting": null,
+            "isDemo": true,
+            "includesSeededHistory": true,
+            "updatedAt": "2026-10-22T01:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "functionName": "parseVoiceBooking",
+      "callerUid": "elder_demo",
+      "input": {
+        "contractVersion": 1,
+        "elderId": "elder_demo",
+        "locale": "bm",
+        "input": {
+          "type": "text",
+          "text": "Teman saya berjalan di taman esok."
+        }
+      },
+      "output": {
+        "contractVersion": 1,
+        "data": {
+          "transcript": "Teman saya berjalan di taman esok.",
+          "draft": {
+            "elderId": "elder_demo",
+            "activityId": "activity_garden",
+            "placeId": "place_garden",
+            "startsAt": "2026-10-23T01:00:00.000Z",
+            "endsAt": "2026-10-23T02:00:00.000Z",
+            "taskType": "walk_with_me",
+            "preferredLanguage": "bm",
+            "preferredHelperGender": "any"
+          },
+          "missingFields": [],
+          "clarification": null,
+          "readBackText": "Jalan di taman, Community Garden. 23 Okt 2026, 9:00 PG - 23 Okt 2026, 10:00 PG (MYT). Sila sahkan sebelum menghantar.",
+          "canConfirm": true
+        }
+      }
+    }
+  ]
+}

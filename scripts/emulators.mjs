@@ -8,7 +8,7 @@ import {localEnvironment, projectId} from './local.mjs';
 const require = createRequire(import.meta.url);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const mode = process.argv[2];
-if (!['start','test'].includes(mode)) throw new Error('Use: node scripts/emulators.mjs start|test');
+if (!['start','test','coordination-test'].includes(mode)) throw new Error('Use: node scripts/emulators.mjs start|test|coordination-test');
 const env = {...localEnvironment(), FIREBASE_CLI_DISABLE_UPDATE_CHECK:'true'};
 if (process.platform === 'win32') {
   // Oracle's javapath redirector launches another java.exe. Killing that
@@ -30,7 +30,7 @@ if (process.platform === 'win32') {
 if (Number(process.versions.node.split('.')[0]) !== 22) throw new Error('Run through npm scripts to use the pinned local Node 22 runtime');
 const args = mode === 'start'
   ? ['emulators:start','--project',projectId,'--only','auth,firestore,functions']
-  : ['emulators:exec','--project',projectId,'--only','auth,firestore,functions','npm run test:integration'];
+  : ['emulators:exec','--project',projectId,'--only','auth,firestore,functions',mode === 'test' ? 'npm run test:integration' : 'node --test --test-concurrency=1 tests/coordination.test.mjs tests/membership.test.mjs'];
 const child = spawn(process.execPath, [require.resolve('firebase-tools/lib/bin/firebase.js'),...args], {cwd:root, env, stdio:'inherit'});
 child.on('error', (error) => { console.error(error.message); process.exitCode = 1; });
 child.on('exit', (code) => { process.exitCode = code ?? 1; });

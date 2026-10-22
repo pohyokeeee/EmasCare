@@ -12,7 +12,7 @@ Stage 5 connects My rewards to the elder/helper's saved wallet, reward outcomes,
 
 The [Phase 5 completion audit](app/PHASE5_VERIFICATION.md) on `ui-phase-5` covers translation, receipt and purchase-feedback/retry fixes, the approved 20-coin configuration and earned-coins redemption verification.
 
-Port 8090 is the app's default; Firestore uses 8080. Bare seed/reset leaves the foundation policy unconfigured until the approved configuration command is run. Voice APIs remain pending. No cloud services have been deployed.
+Port 8090 is the app's default; Firestore uses 8080. Bare seed/reset leaves the foundation policy unconfigured until the approved configuration command is run. Stage 6 adds coordinator operations, consent-scoped notifications, progress/availability summaries and a server-side voice-booking parser. Live Gemini/audio verification requires local provider configuration. Flutter Stage 6 integration remains with Developer A. No cloud services have been deployed.
 
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)
@@ -22,6 +22,7 @@ Port 8090 is the app's default; Firestore uses 8080. Bare seed/reset leaves the 
 - [Backend Stage 3: companion requests, sessions and frontend handover](docs/BACKEND_SESSIONS.md)
 - [Backend Stage 4: standalone attendance, coordinator verification and frontend handover](docs/BACKEND_ATTENDANCE.md)
 - [Backend Stage 5: configured rewards, wallets and mock redemption](docs/BACKEND_WALLET.md)
+- [Backend Stage 6: coordinator APIs, notifications, progress, voice parsing and teammate fixtures](docs/BACKEND_COORDINATION.md)
 
 Scope decision (21 Oct 2026): Tanya Dulu is a future feature and is excluded from the current MVP and prototype builds.
 

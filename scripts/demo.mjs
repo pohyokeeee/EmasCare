@@ -2,7 +2,8 @@ import {pathToFileURL} from 'node:url';
 import {localEnvironment, projectId} from './local.mjs';
 import {demoAccounts, demoPassword, fixtureDocuments} from './fixtures.mjs';
 const resettableCommands = new Set(['foundationProbe','saveElderSettings','submitCheckIn','recordPhoneResponse',
-  'setHelperAvailability','createRequest','assignRequest','transitionRequest','submitActivityAttendance','reviewActivityAttendance','redeemDemoVoucher']);
+  'setHelperAvailability','createRequest','assignRequest','transitionRequest','submitActivityAttendance','reviewActivityAttendance','redeemDemoVoucher',
+  'setPlaceWarning','submitReport','reviewReport','blockHelper','sendFamilyCheer','markNotificationRead','processDemoDueItems']);
 
 export async function demoClients() {
   const env = localEnvironment();
@@ -48,6 +49,12 @@ export async function seedDemo({auth, db}, now = new Date()) {
 export async function resetDemo({auth, db}) {
   assertClientsLocal(auth, db);
   await resetCompanions(db);
+  for (const {uid} of demoAccounts) {
+    for (const [name, field] of [['reports','createdBy'],['cheers','familyUid'],['notifications','recipientUid'],['helperBlocks','elderId']]) {
+      await deleteOwnedDocuments(db,(await db.collection(name).where(field,'==',uid).get()).docs);
+    }
+    await db.doc(`voiceLimits/${uid}`).delete();
+  }
   for (const {uid,role} of demoAccounts) if (role === 'elder' || role === 'helper') {
     await deleteOwnedDocuments(db,(await db.collection(`wallets/${uid}/entries`).get()).docs);
     await deleteOwnedDocuments(db,(await db.collection('redemptions').where('ownerUid','==',uid).get()).docs);

@@ -86,6 +86,34 @@ service cloud.firestore {
     match /redemptions/{id} {
       allow read: if financialOwner(resource.data.ownerUid, resource.data.townshipId) || coordinator(resource.data.townshipId);
     }
+    match /reports/{id} {
+      allow read: if coordinator(resource.data.townshipId)
+        || (sameTownship(resource.data.townshipId) && request.auth.uid == resource.data.createdBy
+          && (resource.data.elderId == null || ownElder(resource.data.elderId)
+            || (profile().role == 'helper' && (request.auth.uid == resource.data.helperId
+              || (resource.data.requestId != null && request.auth.uid == get(/databases/$(database)/documents/requests/$(resource.data.requestId)).data.helperId)))
+            || familyAccess(resource.data.elderId, resource.data.householdId, 'familyBookingEnabled')));
+    }
+    match /helperBlocks/{id} {
+      allow read: if coordinator(resource.data.townshipId) || (sameTownship(resource.data.townshipId) && ownElder(resource.data.elderId));
+    }
+    match /cheers/{id} {
+      allow read: if ownElder(resource.data.elderId) || coordinator(elderProfile(resource.data.elderId).townshipId)
+        || familyAccess(resource.data.elderId, elderProfile(resource.data.elderId).householdId, 'familySharingEnabled');
+    }
+    match /notifications/{id} {
+      allow read: if signedIn() && request.auth.uid == resource.data.recipientUid
+        && sameTownship(elderProfile(resource.data.elderId).townshipId)
+        && ((resource.data.consentScope == 'daily_sharing'
+            && familyAccess(resource.data.elderId, elderProfile(resource.data.elderId).householdId, 'familySharingEnabled'))
+          || (resource.data.consentScope == 'family_booking'
+            && familyAccess(resource.data.elderId, elderProfile(resource.data.elderId).householdId, 'familyBookingEnabled'))
+          || (resource.data.consentScope == 'none'
+            && (ownElder(resource.data.elderId) || profile().role in ['helper', 'coordinator'])));
+    }
+    match /availabilitySummaries/{id} {
+      allow read: if sameTownship(resource.data.townshipId) && resource.data.isDemo == true;
+    }
 
     // Domain commands and remaining scoped read policies arrive in their stages.
     // No browser may write roles, consent, balances, receipts or backend locks.

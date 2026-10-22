@@ -23,6 +23,7 @@ Port 8090 is the app's default; Firestore uses 8080. Bare seed/reset leaves the 
 - [Backend Stage 4: standalone attendance, coordinator verification and frontend handover](docs/BACKEND_ATTENDANCE.md)
 - [Backend Stage 5: configured rewards, wallets and mock redemption](docs/BACKEND_WALLET.md)
 - [Backend Stage 6: coordinator APIs, notifications, progress, voice parsing and teammate fixtures](docs/BACKEND_COORDINATION.md)
+- [Integration rehearsal: safe setup, real API walkthrough and frontend handoff](docs/INTEGRATION_REHEARSAL.md)
 
 Scope decision (21 Oct 2026): Tanya Dulu is a future feature and is excluded from the current MVP and prototype builds.
 

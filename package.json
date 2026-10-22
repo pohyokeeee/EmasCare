@@ -13,9 +13,13 @@
     "demo:reset": "node scripts/demo.mjs reset",
     "demo:reconcile-rewards": "npm run build && node scripts/reconcile-rewards.mjs",
     "demo:configure-rewards": "npm run build && node scripts/configure-rewards.mjs && node scripts/reconcile-rewards.mjs",
+    "demo:prepare": "npm run build && node scripts/prepare-integration.mjs",
+    "demo:check": "node scripts/check-integration.mjs",
+    "demo:rehearse": "node scripts/rehearse-integration.mjs",
     "demo:smoke": "node --test tests/backend.test.mjs",
-    "test:integration": "node --test --test-concurrency=1 tests/backend.test.mjs tests/checkins.test.mjs tests/rules.test.mjs tests/sessions.test.mjs tests/attendance.test.mjs tests/wallet.test.mjs tests/coordination.test.mjs tests/membership.test.mjs",
-    "test:coordination": "npm run build && npm run test:unit && node scripts/emulators.mjs coordination-test"
+    "test:integration": "node --test --test-concurrency=1 tests/backend.test.mjs tests/checkins.test.mjs tests/rules.test.mjs tests/sessions.test.mjs tests/attendance.test.mjs tests/wallet.test.mjs tests/coordination.test.mjs tests/membership.test.mjs tests/integration-rehearsal.test.mjs",
+    "test:coordination": "npm run build && npm run test:unit && node scripts/emulators.mjs coordination-test",
+    "test:journey": "npm run build && node scripts/emulators.mjs journey-test"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "5.0.2",

@@ -8,7 +8,9 @@ On Windows, start and seed the backend first, then run `app/preview.ps1` and ope
 
 Phase 4 adds elder submission for ended in-person activities, coordinator attendance verification/rejection and saved elder/family history. Family attendance follows sharing consent independently of booking. See [Phase 4 verification and walkthrough](app/STAGE4_VERIFICATION.md).
 
-Port 8090 is the app's default; Firestore uses 8080. Stage 5 adds configurable backend reward accounting and protected mock redemption; actual awards remain pending an approved reward policy. Flutter wallet/redemption integration and voice APIs remain pending. No cloud services have been deployed.
+Stage 5 connects My rewards to the elder/helper's saved wallet, reward outcomes, coin history, mock voucher catalogue and demo redemption. The default policy is unconfigured: balances stay zero and verified participation remains pending rather than inventing earnings. See [Stage 5 verification and walkthrough](app/STAGE5_VERIFICATION.md).
+
+Port 8090 is the app's default; Firestore uses 8080. Actual coin awards need approved earning rules; voice APIs remain pending. No cloud services have been deployed.
 
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)

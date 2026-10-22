@@ -24,6 +24,29 @@ class BackendFailure implements Exception {
   }
   String message(bool bm) {
     final pair = switch (reason ?? code) {
+      'INSUFFICIENT_BALANCE' => (
+        'Not enough coins. This demo voucher needs 100 coins. Pending rewards are not spendable.',
+        'Syiling tidak mencukupi. Baucar demo ini memerlukan 100 syiling. Ganjaran tertunda belum boleh digunakan.',
+      ),
+      'VOUCHER_NOT_FOUND' ||
+      'VOUCHER_NOT_AVAILABLE' ||
+      'INVALID_VOUCHER_PRICE' => (
+        'This demo voucher is unavailable. Refresh the wallet and check the latest catalogue.',
+        'Baucar demo ini tidak tersedia. Muat semula dompet dan semak katalog terkini.',
+      ),
+      'WALLET_REQUIRED' => (
+        'Your saved wallet is unavailable. Ask the coordinator to check your account, then retry.',
+        'Dompet tersimpan anda tidak tersedia. Minta penyelaras menyemak akaun anda, kemudian cuba semula.',
+      ),
+      'INVALID_WALLET_BALANCE' ||
+      'REDEMPTION_ACCOUNTING_CONFLICT' ||
+      'REWARD_ACCOUNTING_CONFLICT' ||
+      'REWARD_RECIPIENT_MISMATCH' ||
+      'COMPLETION_NOT_VERIFIED' ||
+      'INVALID_PARTICIPATION_LINK' => (
+        'This record needs an account check. Refresh your wallet and ask the coordinator for help.',
+        'Rekod ini memerlukan semakan akaun. Muat semula dompet dan minta bantuan penyelaras.',
+      ),
       'HELPER_UNAVAILABLE' => (
         'This companion is unavailable for the whole session. Choose another pairing or change the time.',
         'Teman ini tidak tersedia sepanjang sesi. Pilih pasangan lain atau ubah masa.',
@@ -155,6 +178,7 @@ class BackendFailure implements Exception {
       'UNRELATED_HOUSEHOLD' ||
       'ELDER_ACCESS_DENIED' ||
       'ATTENDANCE_ACCESS_DENIED' ||
+      'WALLET_ACCESS_DENIED' ||
       'CONSENT_REQUIRED' => (
         'Access is no longer permitted. Private data has been cleared.',
         'Akses tidak dibenarkan. Data peribadi telah dipadam daripada paparan.',

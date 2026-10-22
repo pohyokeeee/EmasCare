@@ -7,6 +7,7 @@ import '../../shared/park_art.dart';
 import '../community/activity_catalog.dart';
 import '../community/companion_workspace.dart';
 import '../community/attendance_views.dart';
+import '../wallet/wallet_view.dart';
 
 String statusLabel(CheckInState? state, bool bm) => switch (state) {
   CheckInState.ok => bm ? 'Saya OK diterima' : 'Saya OK received',
@@ -25,6 +26,11 @@ class ConnectedHome extends StatelessWidget {
     final c = PreviewScope.of(context), s = c.session!;
     final p = s.profile;
     if (p == null) return const SizedBox.shrink();
+    if (c.destination == Destination.rewards &&
+        c.wallet != null &&
+        [AppRole.elder, AppRole.helper].contains(p.role)) {
+      return const WalletView();
+    }
     if (c.role == AppRole.coordinator &&
         c.destination == Destination.activities) {
       return c.attendance == null
@@ -121,8 +127,8 @@ class ConnectedHome extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             c.t(
-              'Statuses refresh when backend commands run. Automatic reminders, notifications and reward credits are not available in this stage.',
-              'Status dikemas kini apabila arahan pelayan dijalankan. Peringatan automatik, pemberitahuan dan kredit ganjaran belum tersedia.',
+              'Statuses refresh when backend commands run. Automatic reminders and notifications remain pending. Coin awards require approved earning rules.',
+              'Status dikemas kini apabila arahan pelayan dijalankan. Peringatan automatik dan pemberitahuan masih belum tersedia. Ganjaran syiling memerlukan peraturan pendapatan yang diluluskan.',
             ),
             style: Theme.of(context).textTheme.bodySmall,
           ),

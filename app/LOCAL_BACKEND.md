@@ -1,5 +1,8 @@
 # Flutter local backend and Stage 6 UI
 
+For the final MVP, follow the [single-command startup and connected walkthrough](FINAL_DEMO_GUIDE.md). From the repository root, run `.\app\demo.ps1`. It preserves demo history and can back up/restart saved emulator data; the manual reset workflow below is only for deliberately disposable fixtures.
+
+
 The default app connects to the local `demo-emascare` Firebase emulators. Stage 6 integration is delivered on `ui-phase-6`; its verification began against merged main `66c4854`. It preserves check-ins, companion sessions, attendance and the approved 20-coin rewards. No cloud deployment is configured. See [STAGE6_VERIFICATION.md](STAGE6_VERIFICATION.md) for coordination/progress/voice fallback, [PHASE5_VERIFICATION.md](PHASE5_VERIFICATION.md) for earned rewards, [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) for attendance and [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) for bookings/sessions.
 
 ## Start on this Windows computer

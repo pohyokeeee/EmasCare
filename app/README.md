@@ -1,5 +1,8 @@
 # EmasCare — Flutter Web
 
+For the final MVP, follow the [single-command startup and connected walkthrough](FINAL_DEMO_GUIDE.md). From the repository root, run `.\app\demo.ps1`. It preserves demo history and can back up/restart saved emulator data; the manual reset workflow below is only for deliberately disposable fixtures.
+
+
 A responsive Flutter Web app owned by Developer A, connected to Developer B's local Stage 2–6 Firebase APIs. **Read [LOCAL_BACKEND.md](LOCAL_BACKEND.md) first** for exact emulator startup, accounts, connected features and manual verification. [STAGE6_VERIFICATION.md](STAGE6_VERIFICATION.md) covers coordination, reports, updates, progress, cheers and voice fallback; [STAGE5_VERIFICATION.md](STAGE5_VERIFICATION.md) covers wallets/rewards/mock redemption; [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) covers attendance; [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) covers bookings and sessions. The default app requires the emulators. Account → design preview retains separate sample screens.
 
 ## Run on this Windows computer

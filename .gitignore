@@ -10,3 +10,4 @@ functions/lib/
 functions/.secret.local
 coverage/
 emulator-data/
+firebase-export-*/

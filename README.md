@@ -1,5 +1,8 @@
 # EmasCare
 
+For the final MVP, follow the [single-command startup and connected walkthrough](app/FINAL_DEMO_GUIDE.md). From the repository root, run `.\app\demo.ps1`. It preserves demo history and can back up/restart saved emulator data; the manual reset workflow below is only for deliberately disposable fixtures.
+
+
 The Flutter Web app in [`app/`](app/README.md) now connects to the local Firebase backend for sign-in, elder check-ins/settings, consent-gated family status and coordinator phone responses. It preserves responsive navigation, BM/EN and accessibility controls, with the original sample screens available in an explicit design-preview mode.
 
 Phase 3 connects companion booking, helper availability, coordinator assignment and the session lifecycle to B's Stage 3 emulator APIs. Elders and helpers confirm separately, and family request visibility follows current booking consent. The labelled design preview remains available. See [Stage 3 verification and review steps](app/STAGE3_VERIFICATION.md); [Phase 2 handover](app/PHASE2_HANDOVER.md) records the earlier sample-only delivery.

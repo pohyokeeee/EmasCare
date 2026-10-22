@@ -11,6 +11,7 @@ import '../community/request_form.dart';
 import '../community/session_ui.dart';
 import '../wallet/wallet_view.dart';
 import 'voice_booking_view.dart';
+import 'coordination_review.dart';
 
 void openCoordination(BuildContext context, {String section = 'updates'}) {
   final c = PreviewScope.of(context), w = c.coordination!;
@@ -203,46 +204,49 @@ class PendingCoordinationAction extends StatelessWidget {
     if (a == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Surface(
-        color: Palette.sand,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (a.busy) ...[
-              const LinearProgressIndicator(),
-              const SizedBox(height: 10),
-              Text(c.t('Saving your action…', 'Menyimpan tindakan anda…')),
-            ] else ...[
-              Text(
-                a.error?.message(c.malay) ??
-                    c.t('Ready to retry.', 'Sedia untuk dicuba semula.'),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                c.t(
-                  'Retry uses the same confirmed details and action.',
-                  'Cubaan semula menggunakan butiran dan tindakan disahkan yang sama.',
+      child: Semantics(
+        liveRegion: true,
+        child: Surface(
+          color: Palette.sand,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (a.busy) ...[
+                const LinearProgressIndicator(),
+                const SizedBox(height: 10),
+                Text(c.t('Saving your action…', 'Menyimpan tindakan anda…')),
+              ] else ...[
+                Text(
+                  a.error?.message(c.malay) ??
+                      c.t('Ready to retry.', 'Sedia untuk dicuba semula.'),
                 ),
-              ),
-              const SizedBox(height: 14),
-              EmasButton(
-                label: c.t('Retry saved action', 'Cuba semula tindakan'),
-                secondary: true,
-                onPressed: () async {
-                  if (await w.retryAction(id)) onSuccess?.call();
-                },
-              ),
-              TextButton(
-                onPressed: () => w.discard(id),
-                child: Text(
+                const SizedBox(height: 10),
+                Text(
                   c.t(
-                    'Stop retrying / choose again',
-                    'Hentikan cubaan / pilih semula',
+                    'Retry uses the same confirmed details and action.',
+                    'Cubaan semula menggunakan butiran dan tindakan disahkan yang sama.',
                   ),
                 ),
-              ),
+                const SizedBox(height: 14),
+                EmasButton(
+                  label: c.t('Retry saved action', 'Cuba semula tindakan'),
+                  secondary: true,
+                  onPressed: () async {
+                    if (await w.retryAction(id)) onSuccess?.call();
+                  },
+                ),
+                TextButton(
+                  onPressed: () => w.discard(id),
+                  child: Text(
+                    c.t(
+                      'Stop retrying / choose again',
+                      'Hentikan cubaan / pilih semula',
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -468,7 +472,8 @@ class _ProgressCard extends StatelessWidget {
         ? 'helpingSessions'
         : 'weekendGiveBack';
     final amount = r.counts[metric]!, target = r.targets[metric];
-    final latest = r.latestOuting;
+    // Household/township summaries never authorize an individual outing or cheer.
+    final latest = r.scope == 'elder' ? r.latestOuting : null;
     final already =
         latest != null &&
         w.cheers.any(
@@ -546,11 +551,20 @@ class _ProgressCard extends StatelessWidget {
                 const SizedBox(height: 14),
                 EmasButton(
                   key: const ValueKey('family-cheer'),
-                  label: already
+                  label:
+                      w.actions['cheer:${latest['participationId']}']?.busy ==
+                          true
+                      ? c.t('Sending cheer…', 'Menghantar semangat…')
+                      : already
                       ? c.t('Cheer sent', 'Semangat dihantar')
                       : c.t('Send a family cheer', 'Beri semangat keluarga'),
                   icon: Icons.favorite_border,
-                  onPressed: already
+                  onPressed:
+                      already ||
+                          w
+                                  .actions['cheer:${latest['participationId']}']
+                                  ?.busy ==
+                              true
                       ? null
                       : () async {
                           await w.run(
@@ -736,21 +750,27 @@ class _ReportsAndPlaces extends StatelessWidget {
                       children: [
                         if (r.state == 'new')
                           OutlinedButton(
-                            onPressed: () async {
-                              await w.run('review:${r.id}', 'reviewReport', {
-                                'reportId': r.id,
-                                'state': 'seen',
-                              });
-                            },
+                            onPressed: w.actions['review:${r.id}']?.busy == true
+                                ? null
+                                : () async {
+                                    await w.run(
+                                      'review:${r.id}',
+                                      'reviewReport',
+                                      {'reportId': r.id, 'state': 'seen'},
+                                    );
+                                  },
                             child: Text(c.t('Mark seen', 'Tandakan dilihat')),
                           ),
                         OutlinedButton(
-                          onPressed: () async {
-                            await w.run('review:${r.id}', 'reviewReport', {
-                              'reportId': r.id,
-                              'state': 'done',
-                            });
-                          },
+                          onPressed: w.actions['review:${r.id}']?.busy == true
+                              ? null
+                              : () async {
+                                  await w.run(
+                                    'review:${r.id}',
+                                    'reviewReport',
+                                    {'reportId': r.id, 'state': 'done'},
+                                  );
+                                },
                           child: Text(c.t('Mark done', 'Tandakan selesai')),
                         ),
                       ],
@@ -902,13 +922,17 @@ class _Operations extends StatelessWidget {
         const SizedBox(height: 16),
         EmasButton(
           key: const ValueKey('process-due-items'),
-          label: c.t(
-            'Process due check-ins now',
-            'Proses daftar masuk perlu tindakan',
-          ),
-          onPressed: () async {
-            await w.run('due', 'processDemoDueItems', {});
-          },
+          label: w.actions['due']?.busy == true
+              ? c.t('Processing check-ins…', 'Memproses daftar masuk…')
+              : c.t(
+                  'Process due check-ins now',
+                  'Proses daftar masuk perlu tindakan',
+                ),
+          onPressed: w.actions['due']?.busy == true
+              ? null
+              : () async {
+                  await w.run('due', 'processDemoDueItems', {});
+                },
         ),
         if (w.dueResult != null)
           Padding(
@@ -1120,6 +1144,8 @@ class _CoordinationFormState extends State<CoordinationForm> {
           const SizedBox(height: 16),
           Text(title),
           const SizedBox(height: 12),
+          CoordinationReview(kind: kind, fields: confirmed!),
+          const SizedBox(height: 16),
           Text(
             kind == 'setPlaceWarning' && confirmed!['warning'] == null
                 ? c.t(

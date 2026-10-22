@@ -118,7 +118,10 @@ class PreviewController extends ChangeNotifier {
           Destination.today => t('Overview', 'Ringkasan'),
           Destination.activities => t('Requests', 'Permintaan'),
           Destination.companion => t('Places', 'Tempat'),
-          Destination.rewards => t('People', 'Ahli'),
+          Destination.rewards =>
+            session?.connected == true
+                ? t('Tools', 'Alat')
+                : t('People', 'Ahli'),
         }
       : switch (d) {
           Destination.today => t('Today', 'Hari ini'),

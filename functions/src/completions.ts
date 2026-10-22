@@ -1,26 +1,16 @@
 import {DocumentData, Firestore, Timestamp, Transaction} from "firebase-admin/firestore";
-import {tupleId} from "./commands";
 import {fail} from "./errors";
-
-export function activityLockId(activityId: string, elderId: string): string {
-  return tupleId("activity-elder", activityId, elderId);
-}
-export function attendanceId(activityId: string, elderId: string): string {
-  return tupleId("attendance", activityId, elderId);
-}
-export function completionId(activityId: string | null, requestId: string): string {
-  return activityId ? tupleId("activity", activityId) : tupleId("help-session", requestId);
-}
-export function participationId(eventId: string, uid: string): string {
-  return tupleId("participation", eventId, uid);
-}
+import {attendanceId, completionId, participationId} from "./completion_ids";
+import {prepareReward, RewardAction} from "./rewards";
+export {activityLockId, attendanceId, completionId, participationId} from "./completion_ids";
 
 interface Beneficiary {uid: string; role: "elder" | "helper"; attendanceId: string | null}
 
 // Both evidence paths use the same event, participant, claim and progress keys.
-// All reads complete before any writes; existing claims are never overwritten.
+// All reads complete before any writes. Terminal reward outcomes stay unchanged;
+// pending outcomes may settle only under an approved applicable policy.
 async function recordCompletion(db: Firestore, tx: Transaction, eventId: string, townshipId: string,
-  activityId: string | null, requestId: string | null, beneficiaries: Beneficiary[], classification: string, now: Timestamp) {
+  activityId: string | null, requestId: string | null, beneficiaries: Beneficiary[], classification: string, action: RewardAction, now: Timestamp) {
   const eventRef = db.doc(`completionEvents/${eventId}`);
   const event = await tx.get(eventRef);
   const rows = [];
@@ -28,11 +18,14 @@ async function recordCompletion(db: Firestore, tx: Transaction, eventId: string,
     const id = participationId(eventId, beneficiary.uid);
     const refs = [db.doc(`participations/${id}`), db.doc(`rewardClaims/${id}`), db.doc(`completionMarkers/${id}`)];
     const snapshots = await tx.getAll(...refs);
-    rows.push({beneficiary, id, refs, snapshots});
+    const verifiedAt = snapshots[0]!.data()?.verifiedAt ?? now;
+    const reward = await prepareReward(db, tx, {participationId: id, completionEventId: eventId, uid: beneficiary.uid,
+      role: beneficiary.role, townshipId, action, verifiedAt}, now, snapshots[1]!.data());
+    rows.push({beneficiary, id, refs, snapshots, reward});
   }
   if (!event.exists) tx.create(eventRef, {townshipId, eventType: activityId ? "activity_occurrence" : "help_session",
     activityId, requestId: activityId ? null : requestId, firstVerifiedAt: now, createdAt: now, updatedAt: now});
-  for (const {beneficiary, id, refs, snapshots} of rows) {
+  for (const {beneficiary, id, refs, snapshots, reward} of rows) {
     const {uid, role} = beneficiary;
     const before = snapshots[0]!.data();
     const verifiedAt = before?.verifiedAt ?? now;
@@ -40,10 +33,7 @@ async function recordCompletion(db: Firestore, tx: Transaction, eventId: string,
       activityId, sourceRequestIds: [...new Set([...(before?.sourceRequestIds ?? []), ...(requestId ? [requestId] : [])])],
       attendanceId: beneficiary.attendanceId, verifiedAt, outingClassification: classification,
       createdAt: before?.createdAt ?? now, updatedAt: now});
-    if (!snapshots[1]!.exists) tx.create(refs[1]!, {participationId: id, completionEventId: eventId,
-      beneficiaryUid: uid, beneficiaryRole: role, townshipId, status: "pending_policy",
-      eligible: null, amountCoins: null, ruleId: null, ruleVersion: null, rateCoins: null, ledgerEntryId: null,
-      reason: "REWARD_POLICY_PENDING", verifiedAt, createdAt: now, updatedAt: now});
+    reward();
     if (!snapshots[2]!.exists) tx.create(refs[2]!, {participationId: id, completionEventId: eventId,
       beneficiaryUid: uid, beneficiaryRole: role, townshipId, outingClassification: classification, verifiedAt});
   }
@@ -60,7 +50,7 @@ export async function completeSession(db: Firestore, tx: Transaction, id: string
   await recordCompletion(db, tx, eventId, request.townshipId, request.activityId, id, [
     {uid: request.elderId, role: "elder", attendanceId: attendanceKey},
     {uid: request.helperId, role: "helper", attendanceId: null},
-  ], classification, now);
+  ], classification, request.activityId ? "activity_attendance" : request.taskType, now);
   if (attendanceKey && attendance?.status !== "verified") tx.set(db.doc(`activityAttendances/${attendanceKey}`), {townshipId: request.townshipId,
     householdId: request.householdId, activityId: request.activityId, elderId: request.elderId,
     mode: "companion_session", status: "verified", linkedRequestId: id, submittedAt: null,
@@ -74,6 +64,6 @@ export async function completeActivityAttendance(db: Firestore, tx: Transaction,
   const eventId = completionId(attendance.activityId, id);
   const participantId = participationId(eventId, attendance.elderId);
   await recordCompletion(db, tx, eventId, attendance.townshipId, attendance.activityId, null,
-    [{uid: attendance.elderId, role: "elder", attendanceId: id}], "counts", now);
+    [{uid: attendance.elderId, role: "elder", attendanceId: id}], "counts", "activity_attendance", now);
   return {completionEventId: eventId, participationId: participantId};
 }

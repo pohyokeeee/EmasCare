@@ -13,7 +13,41 @@ const {malaysiaDate, dailySchedule, unsubmittedState, createCheckInService} = re
 const {slotsInput,isoTime,daySegments,covers} = require('../functions/lib/scheduling.js');
 const {createSessionService} = require('../functions/lib/sessions.js');
 const {createAttendanceService} = require('../functions/lib/attendance.js');
+const {evaluatePolicy} = require('../functions/lib/rewards.js');
+const {createWalletService} = require('../functions/lib/wallet.js');
 const reason = (expected) => (error) => error.details?.reason === expected;
+
+test('reward policy fails closed for missing, unapproved, malformed, ambiguous and inapplicable decisions', () => {
+  const at=Timestamp.fromDate(new Date('2026-10-22T00:00:00Z'));
+  const context={role:'elder',action:'phone_help',verifiedAt:at,townshipId:'unit_test'};
+  // Isolated validation values, never a configured product reward rate.
+  const policy={townshipId:'unit_test',version:'unit-only',status:'approved',approvedBy:'unit-test',approvalReference:'Synthetic validation only',
+    approvedAt:at,effectiveFrom:at,effectiveUntil:null,rules:[{id:'unit-rule',role:'elder',action:'phone_help',eligible:true,rateCoins:1,reason:'UNIT_ONLY'}]};
+  assert.equal(evaluatePolicy(undefined,context).status,'pending_policy');
+  assert.equal(evaluatePolicy({...policy,status:'draft'},context).status,'pending_policy');
+  assert.equal(evaluatePolicy(policy,context).amountCoins,1);
+  assert.equal(evaluatePolicy(policy,{...context,role:'helper'}).status,'pending_policy');
+  assert.equal(evaluatePolicy({...policy,effectiveFrom:Timestamp.fromMillis(at.toMillis()+1)},context).reason,'REWARD_POLICY_NOT_APPLICABLE');
+  assert.equal(evaluatePolicy({...policy,effectiveFrom:Timestamp.fromMillis(at.toMillis()-1),effectiveUntil:at},context).reason,'REWARD_POLICY_NOT_APPLICABLE');
+  for(const rateCoins of [0,-1,1.5,Number.MAX_SAFE_INTEGER+1,null]){
+    assert.equal(evaluatePolicy({...policy,rules:[{...policy.rules[0],rateCoins}]},context).reason,'REWARD_POLICY_INVALID');
+  }
+  const unknown={...policy.rules[0],eligible:null,rateCoins:null};
+  assert.equal(evaluatePolicy({...policy,rules:[unknown]},context).eligible,null);
+  const excluded={...unknown,eligible:false};
+  assert.equal(evaluatePolicy({...policy,rules:[excluded]},context).amountCoins,0);
+  assert.equal(evaluatePolicy({...policy,rules:[policy.rules[0],{...policy.rules[0],id:'other'}]},context).reason,'REWARD_RULE_AMBIGUOUS');
+  assert.equal(evaluatePolicy({...policy,approvalReference:''},context).reason,'REWARD_POLICY_INVALID');
+  assert.equal(evaluatePolicy({...policy,rules:[{...policy.rules[0],action:'checkin'}]},context).reason,'REWARD_POLICY_INVALID');
+});
+
+test('redemption accepts only voucher ID and cannot be given a recipient, price or balance by the client', async()=>{
+  const service=createWalletService({});
+  for(const extra of [{ownerUid:'someone_else'},{costCoins:1},{balance:100000},{amount:100}]){
+    await assert.rejects(service.redeemDemoVoucher('elder_demo',{contractVersion:1,idempotencyKey:'validation',voucherId:'voucher_demo',...extra}),reason('UNKNOWN_FIELD'));
+  }
+  await assert.rejects(service.redeemDemoVoucher('elder_demo',{contractVersion:1,idempotencyKey:'validation',voucherId:'../wallet'}),reason('INVALID_ID'));
+});
 
 test('attendance review requires explicit evidence method and factual note; caller cannot supply completion fields', async () => {
   const service=createAttendanceService({});

@@ -9,6 +9,7 @@ import {documentId, envelope, inputObject, stringField} from "./validation";
 import {createCheckInService} from "./checkins";
 import {createSessionService} from "./sessions";
 import {createAttendanceService} from "./attendance";
+import {createWalletService} from "./wallet";
 
 initializeApp();
 setGlobalOptions({region: "asia-southeast1", maxInstances: 3});
@@ -16,6 +17,7 @@ const db = getFirestore();
 const checkins = createCheckInService(db);
 const sessions = createSessionService(db);
 const attendance = createAttendanceService(db);
+const wallet = createWalletService(db);
 
 export const saveElderSettings = onCall((request) => checkins.saveElderSettings(authenticatedUid(request.auth), request.data));
 export const submitCheckIn = onCall((request) => checkins.submitCheckIn(authenticatedUid(request.auth), request.data));
@@ -26,6 +28,7 @@ export const assignRequest = onCall((request) => sessions.assignRequest(authenti
 export const transitionRequest = onCall((request) => sessions.transitionRequest(authenticatedUid(request.auth), request.data));
 export const submitActivityAttendance = onCall((request) => attendance.submitActivityAttendance(authenticatedUid(request.auth), request.data));
 export const reviewActivityAttendance = onCall((request) => attendance.reviewActivityAttendance(authenticatedUid(request.auth), request.data));
+export const redeemDemoVoucher = onCall((request) => wallet.redeemDemoVoucher(authenticatedUid(request.auth), request.data));
 
 // Foundation diagnostics only; not replacements for agreed domain callables.
 export const getBackendContext = onCall(async (request) => {

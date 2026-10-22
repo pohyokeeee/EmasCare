@@ -1,0 +1,23 @@
+{
+  "description": "DRAFT REVIEW ONLY. Not an approved or active policy; no earning rate is specified. Convert dates to Firestore Timestamp only after explicit approval.",
+  "townshipId": "township_demo",
+  "version": "pending-v1",
+  "status": "draft",
+  "approvedBy": null,
+  "approvalReference": null,
+  "approvedAt": null,
+  "effectiveFrom": null,
+  "effectiveUntil": null,
+  "rules": [
+    {"id":"activity-elder","action":"activity_attendance","role":"elder","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"activity-helper","action":"activity_attendance","role":"helper","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"walk-elder","action":"walk_with_me","role":"elder","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"walk-helper","action":"walk_with_me","role":"helper","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"sit-elder","action":"sit_with_me","role":"elder","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"sit-helper","action":"sit_with_me","role":"helper","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"carry-elder","action":"carry_light_item","role":"elder","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"carry-helper","action":"carry_light_item","role":"helper","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"phone-elder","action":"phone_help","role":"elder","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"},
+    {"id":"phone-helper","action":"phone_help","role":"helper","eligible":null,"rateCoins":null,"reason":"REWARD_POLICY_PENDING"}
+  ]
+}

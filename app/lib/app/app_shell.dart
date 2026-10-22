@@ -246,7 +246,13 @@ class _NavItem extends StatelessWidget {
     final c = PreviewScope.of(context);
     final active = c.destination == destination;
     final icon = Icon(
-      navIcon(destination),
+      destination == Destination.rewards &&
+              c.role == AppRole.coordinator &&
+              c.session?.connected == true
+          ? CupertinoIcons.slider_horizontal_3
+          : destination == Destination.rewards && c.role == AppRole.family
+          ? CupertinoIcons.person_3
+          : navIcon(destination),
       size: 22,
       color: active ? Palette.green : Palette.muted,
     );

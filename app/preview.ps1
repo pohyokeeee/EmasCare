@@ -37,6 +37,8 @@ try {
             if ($LASTEXITCODE -ne 0) { throw 'Firebase initialization tests failed.' }
             & node --test 'tool/voice_bridge.test.cjs'
             if ($LASTEXITCODE -ne 0) { throw 'Voice booking bridge tests failed.' }
+            & node --test 'tool/demo_runtime.test.cjs'
+            if ($LASTEXITCODE -ne 0) { throw 'Local demo runtime tests failed.' }
         } elseif ($Mode -eq 'dev') {
             Invoke-LocalFlutter run -d web-server --web-hostname 127.0.0.1 --web-port $Port
         } else {

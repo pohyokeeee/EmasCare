@@ -43,6 +43,12 @@ ThemeData emasTheme() => ThemeData(
   tooltipTheme: const TooltipThemeData(
     waitDuration: Duration(milliseconds: 450),
   ),
+  outlinedButtonTheme: OutlinedButtonThemeData(
+    style: OutlinedButton.styleFrom(minimumSize: const Size(44, 44)),
+  ),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+  ),
   dividerTheme: const DividerThemeData(color: Palette.line, space: 30),
   bottomSheetTheme: const BottomSheetThemeData(
     backgroundColor: Colors.transparent,

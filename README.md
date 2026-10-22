@@ -12,7 +12,7 @@ Stage 5 connects My rewards to the elder/helper's saved wallet, reward outcomes,
 
 The [Phase 5 completion audit](app/PHASE5_VERIFICATION.md) on `ui-phase-5` covers translation, receipt and purchase-feedback/retry fixes, the approved 20-coin configuration and earned-coins redemption verification.
 
-Port 8090 is the app's default; Firestore uses 8080. Bare seed/reset leaves the foundation policy unconfigured until the approved configuration command is run. Stage 6 adds coordinator operations, consent-scoped notifications, progress/availability summaries and a server-side voice-booking parser. Live Gemini/audio verification requires local provider configuration. Flutter Stage 6 integration remains with Developer A. No cloud services have been deployed.
+Port 8090 is the app's default; Firestore uses 8080. Bare seed/reset leaves the foundation policy unconfigured until the approved configuration command is run. Stage 6 connects coordinator operations, reports, place warnings, consent-scoped in-app updates, family cheers and progress/availability summaries to Flutter. Voice/text booking uses the backend parser with manual booking available when the provider is disabled. Live Gemini/audio verification requires local provider configuration. See [Stage 6 verification and walkthrough](app/STAGE6_VERIFICATION.md). No cloud services have been deployed.
 
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)

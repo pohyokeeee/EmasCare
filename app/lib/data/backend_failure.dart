@@ -24,6 +24,56 @@ class BackendFailure implements Exception {
   }
   String message(bool bm) {
     final pair = switch (reason ?? code) {
+      'REPORT_ACCESS_DENIED' ||
+      'NOTIFICATION_ACCESS_DENIED' ||
+      'PROGRESS_ACCESS_DENIED' => (
+        'This information is no longer available with your current permissions. Refresh your account access and try again.',
+        'Maklumat ini tidak lagi tersedia dengan kebenaran semasa. Muat semula akses akaun dan cuba lagi.',
+      ),
+      'VERIFIED_OUTING_REQUIRED' => (
+        'Family cheers need a verified outing. Phone-only and unclassified outings cannot receive cheers.',
+        'Sokongan keluarga memerlukan aktiviti keluar yang disahkan. Sesi telefon dan aktiviti belum ditakrif tidak boleh menerima sokongan.',
+      ),
+      'HELPER_RELATION_REQUIRED' => (
+        'Choose a helper already linked to this elder through a pairing or request.',
+        'Pilih pembantu yang sudah terpaut dengan warga emas ini melalui pasangan atau permintaan.',
+      ),
+      'SUMMARY_SUPPRESSED' => (
+        'Community counts are hidden because the group is too small. Your permitted personal progress is still available.',
+        'Bilangan komuniti disembunyikan kerana kumpulan terlalu kecil. Kemajuan peribadi yang dibenarkan masih tersedia.',
+      ),
+      'SUMMARY_NOT_CONFIGURED' || 'INVALID_SUMMARY_INPUT' => (
+        'The demo availability table is not configured yet. Ask the coordinator to load the Stage 6 demo setup.',
+        'Jadual ketersediaan demo belum dikonfigurasi. Minta penyelaras memuatkan persediaan demo Peringkat 6.',
+      ),
+      'VOICE_SERVICE_UNAVAILABLE' => (
+        'Voice booking is not configured on this local backend. Use manual booking to continue.',
+        'Tempahan suara belum dikonfigurasi pada pelayan setempat ini. Gunakan tempahan manual untuk meneruskan.',
+      ),
+      'VOICE_TIMEOUT' || 'VOICE_INVALID_RESPONSE' => (
+        'The voice service could not prepare a reliable draft. Try again or use manual booking.',
+        'Perkhidmatan suara tidak dapat menyediakan draf yang boleh dipercayai. Cuba lagi atau gunakan tempahan manual.',
+      ),
+      'VOICE_RATE_LIMIT' => (
+        'Too many voice attempts this minute. Wait a little or use manual booking.',
+        'Terlalu banyak cubaan suara pada minit ini. Tunggu sebentar atau gunakan tempahan manual.',
+      ),
+      'INVALID_AUDIO' || 'UNSUPPORTED_AUDIO_TYPE' => (
+        'This recording is unsupported or too large. Record a shorter message, use text, or book manually.',
+        'Rakaman ini tidak disokong atau terlalu besar. Rakam mesej lebih pendek, gunakan teks, atau tempah secara manual.',
+      ),
+      'HELPER_BLOCKED' || 'BLOCKED_HELPER' => (
+        'This helper is blocked for this elder. Ask the coordinator for another companion.',
+        'Pembantu ini disekat untuk warga emas ini. Minta penyelaras mendapatkan teman lain.',
+      ),
+      'INVALID_WARNING' || 'INVALID_WARNING_EXPIRY' || 'INVALID_EXPIRY' => (
+        'Enter a short warning and a future review time.',
+        'Masukkan amaran ringkas dan masa semakan akan datang.',
+      ),
+      'DEMO_LIMIT_EXCEEDED' => (
+        'This demo has reached its record limit. Ask the coordinator to review the demo data.',
+        'Demo ini telah mencapai had rekod. Minta penyelaras menyemak data demo.',
+      ),
       'INSUFFICIENT_BALANCE' => (
         'Not enough coins. This demo voucher needs 100 coins. Pending rewards are not spendable.',
         'Syiling tidak mencukupi. Baucar demo ini memerlukan 100 syiling. Ganjaran tertunda belum boleh digunakan.',

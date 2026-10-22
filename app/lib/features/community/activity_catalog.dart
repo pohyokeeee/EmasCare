@@ -288,10 +288,15 @@ class _ActivityCard extends StatelessWidget {
                           ),
                       ],
                     ),
-                    if (notice?.activeAt(communityNow(c)) == true) ...[
+                    if (notice != null) ...[
                       const SizedBox(height: 14),
                       Pill(
-                        c.t('Place notice', 'Notis tempat'),
+                        notice.activeAt(communityNow(c))
+                            ? c.t('Place notice', 'Notis tempat')
+                            : c.t(
+                                'Needs coordinator review',
+                                'Perlu semakan penyelaras',
+                              ),
                         gold: true,
                         icon: Icons.info_outline,
                       ),
@@ -529,7 +534,7 @@ class PlaceAccessDetails extends StatelessWidget {
             padding: const EdgeInsets.only(top: 14),
             child: Text(p.notes.inLanguage(c.malay)),
           ),
-        if (notice != null && notice.activeAt(communityNow(c)))
+        if (notice != null)
           Padding(
             padding: const EdgeInsets.only(top: 20),
             child: Surface(
@@ -548,7 +553,12 @@ class PlaceAccessDetails extends StatelessWidget {
                       const SizedBox(width: 9),
                       Expanded(
                         child: Text(
-                          c.t('Place notice', 'Notis tempat'),
+                          notice.activeAt(communityNow(c))
+                              ? c.t('Place notice', 'Notis tempat')
+                              : c.t(
+                                  'Needs coordinator review',
+                                  'Perlu semakan penyelaras',
+                                ),
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             color: Palette.gold,
@@ -559,6 +569,13 @@ class PlaceAccessDetails extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(notice.text.inLanguage(c.malay)),
+                  if (!notice.activeAt(communityNow(c)))
+                    Text(
+                      c.t(
+                        'Expiry does not mean the place is safe. Ask the coordinator to review.',
+                        'Tamat tempoh tidak bermakna tempat selamat. Minta penyelaras menyemak.',
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   Text(
                     notice.expiresAt == null

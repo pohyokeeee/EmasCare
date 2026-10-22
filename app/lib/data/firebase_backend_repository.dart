@@ -14,6 +14,7 @@ import '../models/attendance_models.dart';
 import 'wallet_repository.dart';
 import '../models/wallet_models.dart';
 import 'backend_failure.dart';
+import 'coordination_repository.dart';
 
 /// Local-only adapter. No SDK read, listener or callable starts before connect.
 class FirebaseBackendRepository
@@ -22,11 +23,108 @@ class FirebaseBackendRepository
         CommunityRepository,
         SessionRepository,
         AttendanceRepository,
-        WalletRepository {
+        WalletRepository,
+        CoordinationRepository {
   FirebaseBackendRepository._(this.auth, this.db, this.functions);
   final FirebaseAuth auth;
   final FirebaseFirestore db;
   final FirebaseFunctions functions;
+
+  @override
+  Future<Json> coordinationCall(
+    String name,
+    Json fields, {
+    String? idempotencyKey,
+  }) {
+    if (!coordinationReads.contains(name) &&
+        !coordinationMutations.contains(name)) {
+      throw const FormatException('Unknown coordination operation');
+    }
+    if (coordinationMutations.contains(name) &&
+        (idempotencyKey == null || idempotencyKey.isEmpty)) {
+      throw const FormatException('Mutation requires an action key');
+    }
+    return _call(name, {
+      ...fields,
+      if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
+    });
+  }
+
+  Stream<List<Json>> _coordRows(Query<Json> query) => query
+      .snapshots(includeMetadataChanges: true)
+      .where((s) => !s.metadata.isFromCache)
+      .map(
+        (s) => [
+          for (final d in s.docs) {...d.data(), 'id': d.id},
+        ],
+      );
+
+  @override
+  Stream<List<Json>> watchCoordinationReports(
+    BackendProfile p, {
+    String? requestId,
+    String? elderId,
+    String? householdId,
+  }) {
+    Query<Json> q = db
+        .collection('reports')
+        .where('townshipId', isEqualTo: p.townshipId);
+    if (p.role != AppRole.coordinator) {
+      q = q.where('createdBy', isEqualTo: p.uid);
+      q = requestId == null
+          ? q.where('elderId', isNull: true)
+          : q
+                .where('requestId', isEqualTo: requestId)
+                .where('elderId', isEqualTo: elderId!)
+                .where('householdId', isEqualTo: householdId!);
+    }
+    return _coordRows(q.orderBy('createdAt', descending: true));
+  }
+
+  @override
+  Stream<List<Json>> watchNotices(
+    BackendProfile p,
+    String elderId,
+    String consentScope,
+  ) => _coordRows(
+    db
+        .collection('notifications')
+        .where('recipientUid', isEqualTo: p.uid)
+        .where('elderId', isEqualTo: elderId)
+        .where('consentScope', isEqualTo: consentScope)
+        .orderBy('createdAt', descending: true),
+  );
+
+  @override
+  Stream<List<Json>> watchCheers(String elderId) => _coordRows(
+    db
+        .collection('cheers')
+        .where('elderId', isEqualTo: elderId)
+        .orderBy('createdAt', descending: true),
+  );
+
+  @override
+  Stream<List<Json>> watchTownshipElders(BackendProfile p) => db
+      .collection('users')
+      .where('townshipId', isEqualTo: p.townshipId)
+      .where('role', isEqualTo: 'elder')
+      .snapshots()
+      .where((s) => !s.metadata.isFromCache)
+      .map(
+        (s) => [
+          for (final d in s.docs)
+            {'id': d.id, 'displayName': d.data()['displayName']},
+        ],
+      );
+
+  @override
+  Stream<List<Json>> watchHelperBlocks(BackendProfile p) {
+    Query<Json> q = db
+        .collection('helperBlocks')
+        .where('townshipId', isEqualTo: p.townshipId);
+    if (p.role != AppRole.coordinator) q = q.where('elderId', isEqualTo: p.uid);
+    return _coordRows(q);
+  }
 
   void _walletOwner(BackendProfile p) {
     if (![AppRole.elder, AppRole.helper].contains(p.role)) {

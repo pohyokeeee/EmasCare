@@ -8,6 +8,7 @@ import '../../models/preview_models.dart';
 import '../../shared/design_system.dart';
 import 'community_ui.dart';
 import 'request_form.dart';
+import 'live_session_workspace.dart';
 
 class CompanionWorkspace extends StatelessWidget {
   const CompanionWorkspace({super.key});
@@ -42,7 +43,12 @@ class CompanionWorkspace extends StatelessWidget {
             'Wajah dikenali, rancangan jelas dan sedikit keyakinan tambahan.',
           ),
         ),
-        if (live) const _ConnectedCompanions() else const _SampleCompanions(),
+        if (live && c.sessions != null)
+          const LiveSessionWorkspace()
+        else if (live)
+          const _ConnectedCompanions()
+        else
+          const _SampleCompanions(),
       ],
     );
   }

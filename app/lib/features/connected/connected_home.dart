@@ -6,6 +6,7 @@ import '../../shared/design_system.dart';
 import '../../shared/park_art.dart';
 import '../community/activity_catalog.dart';
 import '../community/companion_workspace.dart';
+import '../community/attendance_views.dart';
 
 String statusLabel(CheckInState? state, bool bm) => switch (state) {
   CheckInState.ok => bm ? 'Saya OK diterima' : 'Saya OK received',
@@ -26,7 +27,9 @@ class ConnectedHome extends StatelessWidget {
     if (p == null) return const SizedBox.shrink();
     if (c.role == AppRole.coordinator &&
         c.destination == Destination.activities) {
-      return const CompanionWorkspace();
+      return c.attendance == null
+          ? const CompanionWorkspace()
+          : const _CoordinatorRequests();
     }
     if (c.role == AppRole.coordinator &&
         c.destination == Destination.companion) {
@@ -124,6 +127,48 @@ class ConnectedHome extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
+      ],
+    );
+  }
+}
+
+class _CoordinatorRequests extends StatefulWidget {
+  const _CoordinatorRequests();
+  @override
+  State<_CoordinatorRequests> createState() => _CoordinatorRequestsState();
+}
+
+class _CoordinatorRequestsState extends State<_CoordinatorRequests> {
+  bool attendance = false;
+  @override
+  Widget build(BuildContext context) {
+    final c = PreviewScope.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            ChoiceChip(
+              key: const ValueKey('companion-requests-tab'),
+              label: Text(c.t('Companion requests', 'Permintaan teman')),
+              selected: !attendance,
+              onSelected: (_) => setState(() => attendance = false),
+            ),
+            ChoiceChip(
+              key: const ValueKey('attendance-review-tab'),
+              label: Text(c.t('Attendance review', 'Semakan kehadiran')),
+              selected: attendance,
+              onSelected: (_) => setState(() => attendance = true),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        if (attendance)
+          const AttendanceReviewQueue()
+        else
+          const CompanionWorkspace(),
       ],
     );
   }
@@ -346,8 +391,8 @@ class _SettingsFormState extends State<_SettingsForm> {
               ),
               subtitle: Text(
                 c.t(
-                  'Consent only. Booking is a future feature.',
-                  'Kebenaran sahaja. Tempahan ialah ciri akan datang.',
+                  'Allows linked family to arrange companion requests.',
+                  'Membenarkan keluarga terpaut mengatur permintaan teman.',
                 ),
               ),
               value: booking,
@@ -599,8 +644,8 @@ class _FamilyView extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               c.t(
-                'Booking permission is independent of daily sharing. Booking will connect in a later stage.',
-                'Kebenaran tempahan berasingan daripada perkongsian harian. Tempahan akan disambungkan kemudian.',
+                'Booking permission is independent of daily sharing. Open My companion to view permitted requests.',
+                'Kebenaran tempahan berasingan daripada perkongsian harian. Buka Teman saya untuk melihat permintaan yang dibenarkan.',
               ),
               style: const TextStyle(color: Palette.muted),
             ),

@@ -452,7 +452,8 @@ void main() {
       fake.householdEvents.add(stage2.household(fake.current, booking: false));
       await tester.pumpAndSettle();
       expect(find.text('Does this look right?'), findsNothing);
-      expect(find.text('Booking needs your elder’s consent.'), findsOneWidget);
+      expect(find.text('Booking needs your elder’s consent.'), findsNothing);
+      expect(find.byTooltip('Close'), findsNothing);
       await session.signOut();
       await tester.pumpAndSettle();
       expect(find.text('Booking needs your elder’s consent.'), findsNothing);

@@ -27,5 +27,10 @@ export async function prepareLocalFirebase({
     popupRedirectResolver: authSdk.browserPopupRedirectResolver,
   });
   // No await or other Auth operation between initialization and connection.
-  authSdk.connectAuthEmulator(auth, 'http://127.0.0.1:9099');
+  // The app already labels this loopback-only build throughout sign-in and
+  // navigation. The SDK's fixed banner obscures phone navigation and dialogs.
+  authSdk.connectAuthEmulator(auth, 'http://127.0.0.1:9099', {disableWarnings: true});
+  // Finish the preconnected Auth restore before FlutterFire installs its own
+  // initial-state listener. This avoids a startup race in the pinned web SDK.
+  await auth.authStateReady();
 }

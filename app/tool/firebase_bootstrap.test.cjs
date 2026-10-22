@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 test('Auth emulator connects immediately after initialization with matching FlutterFire dependencies', async () => {
   const {prepareLocalFirebase} = await import('../web/firebase_local.mjs');
   const calls = [];
+  const localAuth = {async authStateReady() { calls.push('ready'); }};
   const authSdk = {
     indexedDBLocalPersistence: {}, browserLocalPersistence: {}, browserSessionPersistence: {},
     browserPopupRedirectResolver: {}, debugErrorMap: {},
@@ -11,9 +12,9 @@ test('Auth emulator connects immediately after initialization with matching Flut
       calls.push('initialize');
       assert.equal(app, 'app');
       assert.deepEqual(options.persistence, [authSdk.indexedDBLocalPersistence, authSdk.browserLocalPersistence, authSdk.browserSessionPersistence]);
-      return 'auth';
+      return localAuth;
     },
-    connectAuthEmulator(auth, url) { calls.push('connect'); assert.equal(auth, 'auth'); assert.equal(url, 'http://127.0.0.1:9099'); },
+    connectAuthEmulator(auth, url, options) { calls.push('connect'); assert.equal(auth, localAuth); assert.equal(url, 'http://127.0.0.1:9099'); assert.deepEqual(options, {disableWarnings:true}); },
   };
   const core = {initializeApp(options, name) {
     assert.deepEqual(options, {
@@ -24,7 +25,7 @@ test('Auth emulator connects immediately after initialization with matching Flut
     assert.equal(name, 'emascare-local'); return 'app';
   }};
   await prepareLocalFirebase({host:'127.0.0.1', load:async (url) => url.endsWith('/firebase-app.js') ? core : authSdk});
-  assert.deepEqual(calls, ['initialize', 'connect']);
+  assert.deepEqual(calls, ['initialize', 'connect', 'ready']);
 });
 
 test('non-loopback origins fail before any SDK loads or Auth operations', async () => {

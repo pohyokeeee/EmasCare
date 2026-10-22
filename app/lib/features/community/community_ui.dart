@@ -26,7 +26,7 @@ String stageName(DemoSessionStage stage, bool bm) => switch (stage) {
   DemoSessionStage.cancelled => bm ? 'Dibatalkan' : 'Cancelled',
 };
 String scopeToken(PreviewController c) => c.session?.connected == true
-    ? '${c.session!.profile!.uid}/${c.session!.profile!.role}/${c.session!.profile!.townshipId}/${c.session!.profile!.householdId}/${c.role == AppRole.family ? c.session!.selectedElderId : "self"}'
+    ? '${c.session!.profile!.uid}/${c.session!.profile!.role}/${c.session!.profile!.townshipId}/${c.session!.profile!.householdId}/${c.role == AppRole.family ? "${c.session!.selectedElderId}/${c.session!.selectedElder?.booking}" : "self"}'
     : 'preview/${c.role.name}';
 
 /// Clears an open detail/form before an old account's content can remain visible.

@@ -65,8 +65,8 @@ class AppShell extends StatelessWidget {
                               Text(
                                 c.session?.connected == true
                                     ? c.t(
-                                        'Local Firebase demo · Check-ins save on the emulator. Activities and pairings are read-only; bookings and sessions are pending.',
-                                        'Demo Firebase setempat · Daftar masuk disimpan pada emulator. Aktiviti dan pasangan untuk bacaan sahaja; tempahan dan sesi belum tersedia.',
+                                        'Local Firebase demo · Check-ins, requests, sessions and attendance save on the emulator. Activity and place details are read-only.',
+                                        'Demo Firebase setempat · Daftar masuk, permintaan, sesi dan kehadiran disimpan pada emulator. Butiran aktiviti dan tempat untuk bacaan sahaja.',
                                       )
                                     : c.t(
                                         'Design preview · Sample people, places and progress. Changes reset on reload.',
@@ -748,8 +748,8 @@ void showPreviewInfo(BuildContext context) {
         const SizedBox(height: 14),
         Text(
           c.t(
-            'Sign in to the local demo for saved check-ins and consent. Bookings, session completion, coins and redemption connect in later stages. No messages are sent.',
-            'Log masuk ke demo setempat untuk daftar masuk dan kebenaran tersimpan. Tempahan, pengesahan sesi, syiling dan penebusan akan disambungkan kemudian. Tiada mesej dihantar.',
+            'Sign in to the local demo for saved check-ins, consent, companion requests and session confirmations. Coin awards and redemption are pending. No messages are sent.',
+            'Log masuk ke demo setempat untuk daftar masuk, kebenaran, permintaan teman dan pengesahan sesi tersimpan. Pemberian syiling dan penebusan belum tersedia. Tiada mesej dihantar.',
           ),
         ),
         const SizedBox(height: 22),

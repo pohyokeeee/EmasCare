@@ -10,6 +10,7 @@ import '../../shared/design_system.dart';
 import '../../shared/park_art.dart';
 import 'community_ui.dart';
 import 'request_form.dart';
+import 'attendance_views.dart';
 
 List<ActivityRecord> visibleActivities(PreviewController c) =>
     c.session?.connected == true
@@ -30,10 +31,12 @@ class CommunityActivities extends StatefulWidget {
 
 class _CommunityActivitiesState extends State<CommunityActivities> {
   int filter = 0;
+  bool history = false;
   @override
   Widget build(BuildContext context) {
     final c = PreviewScope.of(context);
     final live = c.session?.connected == true;
+    final attendance = live && c.attendance != null;
     final now = communityNow(c);
     final wall = malaysiaWallTime(now);
     final week = DateTime.utc(
@@ -43,7 +46,9 @@ class _CommunityActivitiesState extends State<CommunityActivities> {
     ).subtract(Duration(days: wall.weekday - 1));
     final places = visiblePlaces(c);
     final activities = visibleActivities(c).where((a) {
-      if (!a.endsAt.isAfter(now)) return false;
+      if (filter == 3 ? a.endsAt.isAfter(now) : !a.endsAt.isAfter(now)) {
+        return false;
+      }
       if (filter == 1) {
         final at = malaysiaWallTime(a.startsAt);
         return !at.isBefore(week) &&
@@ -55,6 +60,26 @@ class _CommunityActivitiesState extends State<CommunityActivities> {
       }
       return true;
     }).toList();
+    if (history &&
+        attendance &&
+        (c.role == AppRole.elder || c.role == AppRole.family)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const ValueKey('back-to-activities'),
+              onPressed: () => setState(() => history = false),
+              icon: const Icon(Icons.arrow_back),
+              label: Text(c.t('Browse activities', 'Lihat aktiviti')),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const AttendanceHistory(),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -70,11 +95,24 @@ class _CommunityActivitiesState extends State<CommunityActivities> {
           eyebrow: c.t('AROUND THE NEIGHBOURHOOD', 'SEKITAR KEJIRANAN'),
         ),
         if (!live) const SampleJourneyBanner(),
+        if (attendance &&
+            (c.role == AppRole.elder || c.role == AppRole.family)) ...[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const ValueKey('open-attendance-history'),
+              icon: const Icon(Icons.fact_check_outlined),
+              onPressed: () => setState(() => history = true),
+              label: Text(c.t('Attendance history', 'Sejarah kehadiran')),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         Wrap(
           spacing: 9,
           runSpacing: 8,
           children: [
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < (attendance ? 4 : 3); i++)
               ChoiceChip(
                 key: ValueKey('activity-filter-$i'),
                 label: Text(
@@ -82,6 +120,7 @@ class _CommunityActivitiesState extends State<CommunityActivities> {
                     c.t('All activities', 'Semua aktiviti'),
                     c.t('This week', 'Minggu ini'),
                     c.t('Step-free', 'Tanpa tangga'),
+                    c.t('Past activities', 'Aktiviti lalu'),
                   ][i],
                 ),
                 selected: filter == i,
@@ -110,8 +149,8 @@ class _CommunityActivitiesState extends State<CommunityActivities> {
               'Sedikit ruang dalam kalendar.',
             ),
             description: c.t(
-              'No upcoming activities match this view. Try another filter or check back later.',
-              'Tiada aktiviti akan datang sepadan dengan paparan ini. Cuba penapis lain atau semak kemudian.',
+              'No activities match this view. Try another filter or check back later.',
+              'Tiada aktiviti sepadan dengan paparan ini. Cuba penapis lain atau semak kemudian.',
             ),
           )
         else
@@ -367,6 +406,8 @@ class _ActivityDetailState extends State<_ActivityDetail> {
           ),
           style: const TextStyle(color: Palette.muted),
         ),
+        if (c.session?.connected == true && c.attendance != null)
+          AttendanceActionPanel(a),
         const Divider(),
         if (place != null)
           PlaceAccessDetails(place)
@@ -380,16 +421,33 @@ class _ActivityDetailState extends State<_ActivityDetail> {
         const SizedBox(height: 24),
         if (c.role == AppRole.elder || c.role == AppRole.family)
           EmasButton(
-            label: c.session?.connected == true
+            label: c.session?.connected == true && c.sessions == null
                 ? c.t(
                     'Preview a companion request',
                     'Pratonton permintaan teman',
                   )
                 : c.t('Request a companion', 'Minta teman'),
             icon: Icons.people_outline,
-            onPressed: a.endsAt.isAfter(communityNow(c))
+            onPressed:
+                (c.session?.connected == true && c.sessions != null
+                    ? a.startsAt.isAfter(communityNow(c)) &&
+                          a.participationMode == 'in_person'
+                    : a.endsAt.isAfter(communityNow(c)))
                 ? () => setState(() => request = true)
                 : null,
+          ),
+        if (c.session?.connected == true &&
+            c.sessions != null &&
+            (!a.startsAt.isAfter(communityNow(c)) ||
+                a.participationMode != 'in_person'))
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              c.t(
+                'Companion requests must be arranged before an in-person activity starts.',
+                'Permintaan teman mesti diatur sebelum aktiviti bersemuka bermula.',
+              ),
+            ),
           ),
       ],
     );

@@ -1,37 +1,130 @@
 # EmasCare
 
-For the final MVP, follow the [single-command startup and connected walkthrough](app/FINAL_DEMO_GUIDE.md). From the repository root, run `.\app\demo.ps1`. It preserves demo history and can back up/restart saved emulator data; the manual reset workflow below is only for deliberately disposable fixtures.
+A community companionship app for older residents of a township. Elders check in daily, book outings and neighbourly company, and earn small rewards for taking part. Families see only what the elder consents to share. Helpers and coordinators run the sessions.
 
+> **Status:** MVP prototype running locally on Firebase emulators (`demo-emascare`). No cloud services are deployed.
 
-The Flutter Web app in [`app/`](app/README.md) now connects to the local Firebase backend for sign-in, elder check-ins/settings, consent-gated family status and coordinator phone responses. It preserves responsive navigation, BM/EN and accessibility controls, with the original sample screens available in an explicit design-preview mode.
+## Features
 
-Phase 3 connects companion booking, helper availability, coordinator assignment and the session lifecycle to B's Stage 3 emulator APIs. Elders and helpers confirm separately, and family request visibility follows current booking consent. The labelled design preview remains available. See [Stage 3 verification and review steps](app/STAGE3_VERIFICATION.md); [Phase 2 handover](app/PHASE2_HANDOVER.md) records the earlier sample-only delivery.
+### For elders
+- **Saya OK:** one button to say "I'm fine today". The elder sets a due time and a grace period, and can pause a day. If a check-in is missed, the coordinator sees it as an exception.
+- **Jom Keluar (activities and outings):** a list of upcoming community activities. Each shows the place's access details (step-free access, toilet, seating, walking time, notes) and a Maps link. Residents can filter for step-free places, and a warning shows if a place has a problem or is closed.
+- **Minta Teman (companion booking):** the elder asks for a companion for a walk, sitting together, carrying light items, or phone help. They choose a date, time and meeting place, review the request, then confirm.
+- **Voice and text booking:** the elder describes the request in words and the app prepares a draft to read back before they confirm. If the AI provider is switched off, the app says so and offers the normal booking form.
+- **My rewards:** a wallet of coins earned from verified activities and sessions, with a history of credits and a mock voucher the elder can redeem.
+- **Consent controls:** two separate switches. One lets family see daily status and progress. The other lets family book on the elder's behalf.
 
-On Windows, start and seed the backend first, then run `app/preview.ps1` and open `http://127.0.0.1:8090`. Flutter, Node.js and a JDK are required. Follow the [exact local startup and manual verification steps](app/LOCAL_BACKEND.md).
+### For family
+- **Daily status:** see whether the elder checked in, but only while the elder has allowed sharing. Turning sharing off clears it straight away.
+- **Proxy booking:** book a companion for the elder, only while booking consent is on.
+- **Progress and cheers:** see the elder's outings and send a cheer. A cheer doesn't earn coins.
 
-Phase 4 adds elder submission for ended in-person activities, coordinator attendance verification/rejection and saved elder/family history. Family attendance follows sharing consent independently of booking. See [Phase 4 verification and walkthrough](app/STAGE4_VERIFICATION.md).
+### For helpers (neighbour companions)
+- **Availability:** set the weekly times they can help.
+- **Assigned sessions:** see only the sessions assigned to them. They accept, start and finish each one, then confirm.
+- **My rewards:** the same wallet and mock voucher as elders.
 
-Stage 5 connects My rewards to the elder/helper's saved wallet, reward outcomes, coin history, mock voucher catalogue and demo redemption. The owner-approved reward is **20 coins per verified activity or helping session for both roles**. After seeding the local emulators, run `npm.cmd run demo:configure-rewards` to apply it and settle earlier verified pending records. Five distinct credits fund the 100-coin demo voucher. See [current Phase 5 verification](app/PHASE5_VERIFICATION.md).
+### For coordinators
+- **Assign requests:** match a request to a permitted, available helper.
+- **Verify attendance:** approve or reject activity attendance submitted by elders.
+- **Place warnings:** set a warning with an expiry. It stays visible as "needs review" after it expires until a coordinator clears it.
+- **Reports and blocking:** review place problems and helper reports, and block a helper from an elder.
+- **Check-in exceptions:** process due check-ins and record a phone response. This records a reported response and doesn't place a call.
 
-The [Phase 5 completion audit](app/PHASE5_VERIFICATION.md) on `ui-phase-5` covers translation, receipt and purchase-feedback/retry fixes, the approved 20-coin configuration and earned-coins redemption verification.
+### How rules and rewards work
+- A two-person session only completes after **both** the elder and the helper confirm. One confirmation alone earns nothing.
+- Each verified activity or session gives **20 coins to each participant**, once, even if the action is retried. Five credits pay for the 100-coin **mock voucher**. There is no real shop or payment.
+- Check-ins, cheers and cancelled or half-confirmed sessions earn no coins.
+- Each role only sees its own data. An unrelated family account sees nothing about other households.
 
-Port 8090 is the app's default; Firestore uses 8080. Bare seed/reset leaves the foundation policy unconfigured until the approved configuration command is run. Stage 6 connects coordinator operations, reports, place warnings, consent-scoped in-app updates, family cheers and progress/availability summaries to Flutter. Voice/text booking uses the backend parser with manual booking available when the provider is disabled. Live Gemini/audio verification requires local provider configuration. See [Stage 6 verification and walkthrough](app/STAGE6_VERIFICATION.md). No cloud services have been deployed.
+### Also included
+- **Languages and accessibility:** English and Bahasa Malaysia, larger text, gentler motion and solid navigation.
+- **Design preview:** a sample-data mode, reached from the sign-in page, for looking around without the backend.
 
-- [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
-- [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)
-- [Original three-day implementation plan (reference)](docs/FULL_IMPLEMENTATION_PLAN_3_DAYS.md)
-- [Backend Stage 1: local setup, demo accounts and teammate handover](docs/BACKEND_FOUNDATION.md)
-- [Backend Stage 2: check-ins, consent and frontend handover](docs/BACKEND_CHECKINS.md)
-- [Backend Stage 3: companion requests, sessions and frontend handover](docs/BACKEND_SESSIONS.md)
-- [Backend Stage 4: standalone attendance, coordinator verification and frontend handover](docs/BACKEND_ATTENDANCE.md)
-- [Backend Stage 5: configured rewards, wallets and mock redemption](docs/BACKEND_WALLET.md)
-- [Backend Stage 6: coordinator APIs, notifications, progress, voice parsing and teammate fixtures](docs/BACKEND_COORDINATION.md)
-- [Integration rehearsal: safe setup, real API walkthrough and frontend handoff](docs/INTEGRATION_REHEARSAL.md)
+## Setup (Windows)
 
-Scope decision (21 Oct 2026): Tanya Dulu is a future feature and is excluded from the current MVP and prototype builds.
+You do this once. After that, starting the app is one command.
 
-Reward decision (22 Oct 2026): each verified community activity, walk, sitting session, carrying-help session or phone-help session awards **20 coins to each actual elder/helper participant**. Existing verified pending participation is included, once per canonical participation. This replaces earlier role-rate suggestions and the old monthly award. The separately shared contract v1, revision 2, defines the interface; outing classifications remain separate. Local foundation wallets start at zero and gain funds only through verified evidence.
+**1. Install three things**
+- **Flutter** (the app toolkit).
+- **Java (JDK 21 or newer)**, which the local database needs.
+- **Node.js.** The repository includes the version it needs, so you usually don't install it yourself.
 
-Developer A owns all Flutter code, including the coordinator screen, shared Dart models and repository adapter. Developer B owns the backend. This overrides the older ownership table in the implementation plan.
+**2. Get the code and install packages.** In PowerShell:
 
-The backend currently runs locally on Firebase Auth, Firestore and Functions emulators using `demo-emascare`. See the setup guide before starting. No cloud resources or hosted release have been provisioned.
+```powershell
+git clone https://github.com/pohyokeeee/EmasCare.git
+cd EmasCare
+npm.cmd ci
+```
+
+**3. Start everything**
+
+```powershell
+.\app\demo.ps1
+```
+
+The first run builds the app and starts a local test backend, so it takes a few minutes. Wait for the word **Ready**.
+
+**4. Open the app** at http://127.0.0.1:8090 and sign in with a demo account from the table below.
+
+**5. When you're done**
+
+```powershell
+.\app\demo.ps1 -Mode backup   # save your changes
+.\app\demo.ps1 -Mode stop
+```
+
+Notes:
+- Everything runs on your own computer with fake test data. Nothing is sent to the cloud.
+- If port 8090 is already in use, add `-Port 8091` to each command and open that address.
+- Don't run `npm run demo:reset` unless you want to erase the saved demo history.
+- If something fails, check `.cache/ui-demo/backend.err.log`.
+- Other launcher commands: `.\app\demo.ps1 -Mode status`, and `-SkipBuild` when the existing web build is current.
+
+## Demo accounts
+
+All use the emulator-only password `EmasCare-local-2026!`.
+
+| Role | Email |
+| --- | --- |
+| Elder | elder@emascare.test |
+| Family | family@emascare.test |
+| Helper | helper@emascare.test |
+| Coordinator | coordinator@emascare.test |
+| Standalone elder | solo@emascare.test |
+| Unrelated family | unrelated@emascare.test |
+
+Open each role in its own new tab. "Explore the design preview" on the sign-in page is a separate sample-data mode.
+
+## Testing
+
+```powershell
+.\app\preview.ps1 -Mode check   # analyze + Flutter + browser/launcher tests
+.\app\preview.ps1 -Mode build   # release web build
+npm.cmd run test:unit           # backend unit tests
+npm.cmd run demo:check          # read-only integration checks
+```
+
+## Repository layout
+
+```text
+app/         Flutter Web app (developer A)
+functions/   Cloud Functions in TypeScript (developer B)
+docs/        Plans, backend stage guides, fixtures
+scripts/     Seed, reset, reward and integration scripts
+tests/       Backend and rules tests
+```
+
+## Documentation
+
+- **Run and demo:** [Final demo guide](app/FINAL_DEMO_GUIDE.md) · [Local backend setup](app/LOCAL_BACKEND.md) · [Final verification record](app/FINAL_VERIFICATION.md)
+- **Plans:** [Current plan](docs/PROTOTYPE_PLAN_2_DAYS.md) · [Product plan](Township%20%28SimeDarby%29%20Hackathon%202026.md) · [Original 3-day plan (reference)](docs/FULL_IMPLEMENTATION_PLAN_3_DAYS.md)
+- **Backend stages:** [1 Foundation](docs/BACKEND_FOUNDATION.md) · [2 Check-ins](docs/BACKEND_CHECKINS.md) · [3 Sessions](docs/BACKEND_SESSIONS.md) · [4 Attendance](docs/BACKEND_ATTENDANCE.md) · [5 Wallet](docs/BACKEND_WALLET.md) · [6 Coordination](docs/BACKEND_COORDINATION.md) · [Integration rehearsal](docs/INTEGRATION_REHEARSAL.md)
+- **Frontend verification by phase:** [Stage 3](app/STAGE3_VERIFICATION.md) · [Stage 4](app/STAGE4_VERIFICATION.md) · [Phase 5](app/PHASE5_VERIFICATION.md) · [Stage 6](app/STAGE6_VERIFICATION.md)
+
+## Scope and decisions
+
+- **Out of scope for the MVP:** Tanya Dulu (future), cloud deployment, push delivery, automatic scheduling, and live Gemini/microphone audio.
+- **Rewards (22 Oct 2026):** 20 coins to each actual participant per verified session. This replaces the earlier role-rate and monthly-award designs.
+- **Ownership:** developer A owns all Flutter code, and developer B owns the backend.

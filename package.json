@@ -6,12 +6,13 @@
   "engines": {"node": ">=22 <25"},
   "scripts": {
     "build": "tsc -p functions/tsconfig.json",
-    "test:unit": "node --test tests/unit.test.mjs",
+    "test:unit": "node --test tests/unit.test.mjs tests/reward-policy.test.mjs",
     "test": "npm run build && npm run test:unit && node scripts/emulators.mjs test",
     "emulators": "npm run build && node scripts/emulators.mjs start",
     "demo:seed": "node scripts/demo.mjs seed",
     "demo:reset": "node scripts/demo.mjs reset",
     "demo:reconcile-rewards": "npm run build && node scripts/reconcile-rewards.mjs",
+    "demo:configure-rewards": "npm run build && node scripts/configure-rewards.mjs && node scripts/reconcile-rewards.mjs",
     "demo:smoke": "node --test tests/backend.test.mjs",
     "test:integration": "node --test --test-concurrency=1 tests/backend.test.mjs tests/checkins.test.mjs tests/rules.test.mjs tests/sessions.test.mjs tests/attendance.test.mjs tests/wallet.test.mjs"
   },

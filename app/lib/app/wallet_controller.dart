@@ -181,6 +181,11 @@ class WalletController extends ChangeNotifier {
           result.redemption.townshipId != p.townshipId) {
         throw const BackendFailure('permission-denied', 'WALLET_ACCESS_DENIED');
       }
+      if (result.redemption.voucherId != pending.fields['voucherId']) {
+        throw const FormatException(
+          'Redemption does not match the confirmed voucher',
+        );
+      }
       // Never copy a receipt's possibly stale balance over the wallet stream.
       savedRedemptionId = result.redemption.id;
       action = null;

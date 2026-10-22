@@ -8,6 +8,8 @@ import {demoAccounts,demoPassword} from '../../scripts/fixtures.mjs';
 
 localEnvironment();
 const defaults = process.argv.includes('--expect-default-demo');
+const earned = process.argv.includes('--expect-20-coin-demo');
+assert(!(defaults && earned),'Choose either the bare default demo or configured earned-rewards demo');
 let checks=0;
 for (const account of demoAccounts) {
   const app=initializeApp({apiKey:'local-demo-key',projectId,appId:'1:1234567890:web:emascare-demo'},`wallet-read-${account.uid}`);
@@ -32,7 +34,7 @@ for (const account of demoAccounts) {
       ]) {
         const snapshot=await getDocsFromServer(query(collection(db,path),where(owner,'==',account.uid),where('townshipId','==',p.townshipId),orderBy(time,'desc')));
         assert(snapshot.docs.every(d=>d.data()[owner]===account.uid&&d.data().townshipId===p.townshipId));checks++;
-        rows.push(snapshot.docs.map(d=>d.data()));
+        rows.push(snapshot.docs.map(d=>({...d.data(),id:d.id})));
       }
       const other=account.uid==='elder_demo'?'helper_demo':'elder_demo';
       await assert.rejects(read(`wallets/${other}`),{code:'permission-denied'});checks++;
@@ -40,6 +42,22 @@ for (const account of demoAccounts) {
         assert.equal(wallet.balance,0);assert.equal(rows[0].length,0);assert.equal(rows[1].length,0);
         assert(rows[2].every(c=>c.status==='pending_policy'&&c.amountCoins===null&&c.ledgerEntryId===null));checks++;
         if(account.uid==='elder_demo'){assert(rows[2].length>0,'Verify the main elder attendance in the browser first');checks++;}
+      }
+      if (earned) {
+        const credits=rows[0].filter(e=>e.type==='completion_reward');
+        const debits=rows[0].filter(e=>e.type==='voucher_redemption');
+        assert(credits.every(e=>e.amount===20&&e.rateCoins===20&&e.ruleVersion==='owner-20-all-v1'));
+        assert.equal(new Set(credits.map(e=>e.participationId)).size,credits.length);checks++;
+        assert.equal(wallet.balance,rows[0].reduce((sum,e)=>sum+e.amount,0));checks++;
+        assert(debits.every(e=>e.amount===-100));
+        assert.equal(debits.length,rows[1].length);
+        assert(rows[1].every(r=>r.costCoins===100&&r.isDemo===true&&r.code.startsWith('DEMO-')&&debits.some(e=>e.referenceId===r.id)));checks++;
+        assert.equal(rows[2].length,credits.length);
+        assert(rows[2].every(c=>c.status==='credited'&&c.amountCoins===20&&credits.some(e=>e.participationId===c.participationId)));checks++;
+        if (['elder_demo','helper_demo'].includes(account.uid)) {
+          assert(credits.length>=5,'Complete five distinct verified participations for this recipient');
+          assert.equal(rows[1].length,1,'Redeem one earned 100-coin demo voucher in this recipient’s UI');checks++;
+        }
       }
     } else if(p.role==='family') {
       await assert.rejects(read('wallets/elder_demo'),{code:'permission-denied'});checks++;
@@ -52,4 +70,4 @@ for (const account of demoAccounts) {
     console.log(`PASS ${account.email}: wallet query and privacy boundaries`);
   } finally {await terminate(db);await deleteApp(app);}
 }
-console.log(`Passed ${checks} read-only wallet checks${defaults?', including pending-only rewards and zero balances/transactions/redemptions':''}.`);
+console.log(`Passed ${checks} read-only wallet checks${defaults?', including pending-only rewards and zero balances/transactions/redemptions':earned?', including approved 20-coin credits, earned redemptions and ledger consistency':''}.`);

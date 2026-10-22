@@ -1,5 +1,7 @@
 # Stage 5: wallet UI integration
 
+Historical PR #11 integration record. The owner's later 22 Oct approval enables 20-coin rewards; use [PHASE5_VERIFICATION.md](PHASE5_VERIFICATION.md) for the current configuration, earned-redemption results and startup steps. The unconfigured-policy and 84-test evidence below describes the original delivery.
+
 Branch: `ui-stage5-wallet`, based on merged main `c178eb5`. The owner approved using the existing My rewards destination with the current Apple-inspired visual design and BM/EN. Backend Functions, rules, indexes, scripts and earning policy are unchanged. No cloud deployment is included.
 
 ## Connected experience

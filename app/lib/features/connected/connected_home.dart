@@ -8,6 +8,7 @@ import '../community/activity_catalog.dart';
 import '../community/companion_workspace.dart';
 import '../community/attendance_views.dart';
 import '../wallet/wallet_view.dart';
+import '../coordination/coordination_view.dart';
 
 String statusLabel(CheckInState? state, bool bm) => switch (state) {
   CheckInState.ok => bm ? 'Saya OK diterima' : 'Saya OK received',
@@ -23,9 +24,25 @@ class ConnectedHome extends StatelessWidget {
   const ConnectedHome({super.key});
   @override
   Widget build(BuildContext context) {
+    final c = PreviewScope.of(context);
+    if (c.coordination == null) return _content(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [const CoordinationEntry(), _content(context)],
+    );
+  }
+
+  Widget _content(BuildContext context) {
     final c = PreviewScope.of(context), s = c.session!;
     final p = s.profile;
     if (p == null) return const SizedBox.shrink();
+    if (c.coordination != null &&
+        c.destination == Destination.rewards &&
+        (c.role == AppRole.family || c.role == AppRole.coordinator)) {
+      return CoordinationPanel(
+        initial: c.role == AppRole.coordinator ? 'operations' : 'progress',
+      );
+    }
     if (c.destination == Destination.rewards &&
         c.wallet != null &&
         [AppRole.elder, AppRole.helper].contains(p.role)) {
@@ -127,8 +144,8 @@ class ConnectedHome extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             c.t(
-              'Statuses refresh when backend commands run. Automatic reminders and notifications remain pending. Coin awards require approved earning rules.',
-              'Status dikemas kini apabila arahan pelayan dijalankan. Peringatan automatik dan pemberitahuan masih belum tersedia. Ganjaran syiling memerlukan peraturan pendapatan yang diluluskan.',
+              'In-app updates follow your permissions. Coordinators run check-in follow-up manually. Verified activities earn coins under the saved reward rules.',
+              'Kemas kini dalam aplikasi mengikut kebenaran anda. Penyelaras menjalankan susulan daftar masuk secara manual. Aktiviti disahkan menerima syiling mengikut peraturan tersimpan.',
             ),
             style: Theme.of(context).textTheme.bodySmall,
           ),

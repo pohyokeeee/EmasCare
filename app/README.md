@@ -1,6 +1,6 @@
 # EmasCare — Flutter Web
 
-A responsive Flutter Web app owned by Developer A, connected to Developer B's local Stage 2–5 Firebase APIs. **Read [LOCAL_BACKEND.md](LOCAL_BACKEND.md) first** for exact emulator startup, accounts, connected features and manual verification. [STAGE5_VERIFICATION.md](STAGE5_VERIFICATION.md) covers wallets/rewards/mock redemption; [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) covers attendance; [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) covers bookings and sessions. The default app requires the emulators. Account → design preview retains separate sample screens.
+A responsive Flutter Web app owned by Developer A, connected to Developer B's local Stage 2–6 Firebase APIs. **Read [LOCAL_BACKEND.md](LOCAL_BACKEND.md) first** for exact emulator startup, accounts, connected features and manual verification. [STAGE6_VERIFICATION.md](STAGE6_VERIFICATION.md) covers coordination, reports, updates, progress, cheers and voice fallback; [STAGE5_VERIFICATION.md](STAGE5_VERIFICATION.md) covers wallets/rewards/mock redemption; [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) covers attendance; [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) covers bookings and sessions. The default app requires the emulators. Account → design preview retains separate sample screens.
 
 ## Run on this Windows computer
 
@@ -65,7 +65,9 @@ Phase 4 adds Past activities and Attendance history under Activities. Actual eld
 
 Stage 5 connects the existing My rewards destination to the actual elder/helper's own wallet, participation outcomes, immutable coin history, mock voucher catalogue and saved DEMO codes. A confirmed purchase uses the protected redemption callable and preserves its key across retries. Missing/denied data is not shown as zero, and old receipt balances cannot overwrite current streams. Family/coordinators have no proxy spending interface.
 
-Notifications/automatic reminders, family cheers and AI voice parsing remain pending. In design-preview mode, the request → assignment → helper session → two-participant confirmation journey uses separate in-memory samples that disappear on reload. Connected attendance and wallet history contain server records only. After seed/reset, run `npm.cmd run demo:configure-rewards` from the repository root to apply the approved 20-coin rule and reconcile earlier verified pending records. Wallets start at zero and are funded through verified participation, not positive-balance seeds. The SDP entry remains a mock module entry.
+Stage 6 adds Updates, Progress & community and Reports & places. Coordinators review reports, update/explicitly clear place warnings, block a recorded companion and run the manual check-in follow-up processor. Expired warnings remain visible for review. Updates are scoped by recipient, elder and independent family consent; read status persists. Progress keeps outing definitions separate from rewards, labels illustrative history, and hides small-group aggregate counts. Sharing-consented family can cheer a verified outing once, without extra coins. Voice/text booking prepares a server-validated draft for a separate booking confirmation; provider failures retain the existing manual form. Gemini remains disabled in the local walkthrough. Automatic scheduling, push delivery and live provider/audio verification remain pending.
+
+In design-preview mode, the request → assignment → helper session → two-participant confirmation journey uses separate in-memory samples that disappear on reload. Connected attendance and wallet history contain server records only. After seed/reset, run `npm.cmd run demo:configure-rewards` from the repository root to apply the approved 20-coin rule and reconcile earlier verified pending records. Wallets start at zero and are funded through verified participation, not positive-balance seeds. The SDP entry remains a mock module entry.
 
 The owner's 22 Oct reward decision is **20 coins per verified activity/helping session for both elders and helpers**. All five supported action types and earlier verified pending participations are included, once per canonical participation. Five credits fund the 100-coin demo voucher. The Stage 5 response shapes are documented in B's handover. This app does not implement the superseded monthly award or fabricate wallet balances. Tanya Dulu is future work and has no screen here.
 
@@ -77,12 +79,14 @@ Browser API availability is not proof of successful microphone capture or audibl
 | --- | --- |
 | `lib/app/` | App/router, shared preview state and responsive shell |
 | `lib/shared/` | Theme, reusable components, spring feedback and illustrations |
-| `lib/models/` | Separate fixture UI models and documented Stage 2–5 backend records |
+| `lib/models/` | Separate fixture UI models and documented Stage 2–6 backend records |
 | `lib/data/emas_repository.dart` | Repository interface and local mock |
 | `lib/data/community_repository.dart`, `lib/models/community_models.dart` | Scoped read-only catalogue, place, pairing and helper records |
 | `lib/data/session_repository.dart`, `lib/models/session_models.dart`, `lib/app/session_workflow_controller.dart` | Stage 3 typed callables, scoped request streams, frozen retries and cleanup |
 | `lib/data/attendance_repository.dart`, `lib/models/attendance_models.dart`, `lib/app/attendance_controller.dart`, `lib/features/community/attendance_views.dart` | Stage 4 attendance submission, scoped history, coordinator review and retry/consent cleanup |
 | `lib/data/wallet_repository.dart`, `lib/models/wallet_models.dart`, `lib/app/wallet_controller.dart`, `lib/features/wallet/wallet_view.dart` | Stage 5 owner-scoped wallet, reward outcomes, ledger, demo vouchers and guarded redemption |
+| `lib/data/coordination_repository.dart`, `lib/models/coordination_models.dart`, `lib/app/coordination_controller.dart`, `lib/features/coordination/` | Stage 6 scoped updates/reports, progress, coordinator actions and confirmed voice/manual booking |
+| `web/voice_bridge.js`, `tool/voice_bridge.test.cjs`, `tool/verify_coordination.mjs` | Explicit capped audio capture/readback, device fallback tests and read-only emulator privacy checks |
 | `lib/features/community/` | Phase 2 catalogue, access details, request/review and companion/session UI |
 | `lib/app/companion_demo_controller.dart`, `lib/models/companion_ui_models.dart` | Explicitly local sample workflow; no Stage 3 wire contract |
 | `lib/features/role_views.dart` | Four role previews and activity/companion/reward views |

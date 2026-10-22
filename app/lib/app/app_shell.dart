@@ -65,8 +65,8 @@ class AppShell extends StatelessWidget {
                               Text(
                                 c.session?.connected == true
                                     ? c.t(
-                                        'Local Firebase demo · Check-ins, requests, sessions, attendance and wallets save on the emulator. Activity and place details are read-only.',
-                                        'Demo Firebase setempat · Daftar masuk, permintaan, sesi, kehadiran dan dompet disimpan pada emulator. Butiran aktiviti dan tempat untuk bacaan sahaja.',
+                                        'Local Firebase demo · Your permitted records save on this emulator. Coordinators review reports and place warnings; check current conditions before visiting.',
+                                        'Demo Firebase setempat · Rekod yang dibenarkan disimpan pada emulator ini. Penyelaras menyemak laporan dan amaran tempat; semak keadaan semasa sebelum berkunjung.',
                                       )
                                     : c.t(
                                         'Design preview · Sample people, places and progress. Changes reset on reload.',

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import '../data/emas_repository.dart';
 import '../models/preview_models.dart';
@@ -12,6 +13,8 @@ import '../data/attendance_repository.dart';
 import 'attendance_controller.dart';
 import '../data/wallet_repository.dart';
 import 'wallet_controller.dart';
+import '../data/coordination_repository.dart';
+import 'coordination_controller.dart';
 
 class PreviewController extends ChangeNotifier {
   PreviewController(this.repository, {this.session}) {
@@ -21,10 +24,19 @@ class PreviewController extends ChangeNotifier {
     sessions?.addListener(notifyListeners);
     attendance?.addListener(notifyListeners);
     wallet?.addListener(notifyListeners);
+    coordination?.addListener(notifyListeners);
     demo.addListener(notifyListeners);
   }
   final EmasRepository repository;
   final SessionController? session;
+  late final CoordinationController? coordination =
+      session != null && session!.repository is CoordinationRepository
+      ? CoordinationController(
+          session!,
+          session!.repository as CoordinationRepository,
+          sessions,
+        )
+      : null;
   late final WalletController? wallet =
       session != null && session!.repository is WalletRepository
       ? WalletController(session!, session!.repository as WalletRepository)
@@ -122,6 +134,7 @@ class PreviewController extends ChangeNotifier {
       session?.connected == true ? session!.profile!.role : role ?? this.role,
       destination ?? (role == null ? this.destination : Destination.today),
     );
+    if (session?.connected == true) unawaited(coordination?.refresh());
     notifyListeners();
   }
 
@@ -187,6 +200,8 @@ class PreviewController extends ChangeNotifier {
     attendance?.dispose();
     wallet?.removeListener(notifyListeners);
     wallet?.dispose();
+    coordination?.removeListener(notifyListeners);
+    coordination?.dispose();
     demo.removeListener(notifyListeners);
     demo.dispose();
     super.dispose();

@@ -304,45 +304,51 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('live access notice disappears at expiry without navigation', (
-    tester,
-  ) async {
-    var clockNow = now;
-    final fake = CommunityFake();
-    final session = SessionController(fake, clock: () => clockNow);
-    final mock = MockEmasRepository();
-    final c = PreviewController(mock, session: session);
-    await tester.pumpWidget(EmasCareApp(controller: c));
-    await tester.runAsync(() async {
-      await session.signIn('elder@test', 'demo');
-      await Future<void>.delayed(Duration.zero);
-    });
-    fake.activityEvents.add(sampleActivities(now));
-    fake.placeEvents.add([
-      PlaceRecord.fromJson({
-        'id': 'sample_garden',
-        'townshipId': 'township_demo',
-        'name': 'Sample garden',
-        'liveStatus': {
-          'level': 'caution',
-          'text': 'Notice expires in five seconds',
-          'expiresAt': now.add(const Duration(seconds: 5)).toIso8601String(),
-        },
-      }),
-    ]);
-    c.navigate(destination: Destination.activities);
-    await tester.pumpAndSettle();
-    await tapVisible(tester, find.byKey(const ValueKey('activity-garden')));
-    expect(find.text('Notice expires in five seconds'), findsOneWidget);
-    clockNow = now.add(const Duration(seconds: 5));
-    await tester.pump(const Duration(seconds: 5));
-    expect(find.text('Notice expires in five seconds'), findsNothing);
-    await tester.pumpWidget(const SizedBox.shrink());
-    c.dispose();
-    session.dispose();
-    mock.dispose();
-    await fake.close();
-  });
+  testWidgets(
+    'expired access notice stays visible and needs review without navigation',
+    (tester) async {
+      var clockNow = now;
+      final fake = CommunityFake();
+      final session = SessionController(fake, clock: () => clockNow);
+      final mock = MockEmasRepository();
+      final c = PreviewController(mock, session: session);
+      await tester.pumpWidget(EmasCareApp(controller: c));
+      await tester.runAsync(() async {
+        await session.signIn('elder@test', 'demo');
+        await Future<void>.delayed(Duration.zero);
+      });
+      fake.activityEvents.add(sampleActivities(now));
+      fake.placeEvents.add([
+        PlaceRecord.fromJson({
+          'id': 'sample_garden',
+          'townshipId': 'township_demo',
+          'name': 'Sample garden',
+          'liveStatus': {
+            'level': 'caution',
+            'text': 'Notice expires in five seconds',
+            'expiresAt': now.add(const Duration(seconds: 5)).toIso8601String(),
+          },
+        }),
+      ]);
+      c.navigate(destination: Destination.activities);
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.byKey(const ValueKey('activity-garden')));
+      expect(find.text('Notice expires in five seconds'), findsOneWidget);
+      clockNow = now.add(const Duration(seconds: 5));
+      await tester.pump(const Duration(seconds: 5));
+      expect(find.text('Notice expires in five seconds'), findsOneWidget);
+      expect(find.text('Needs coordinator review'), findsWidgets);
+      expect(
+        find.textContaining('Expiry does not mean the place is safe'),
+        findsOneWidget,
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+      c.dispose();
+      session.dispose();
+      mock.dispose();
+      await fake.close();
+    },
+  );
 
   testWidgets(
     'complete sample request crosses roles and requires separate confirmations',

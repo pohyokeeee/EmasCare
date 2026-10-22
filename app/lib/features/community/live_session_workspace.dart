@@ -240,8 +240,8 @@ class LiveSessionWorkspace extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           c.t(
-            'Confirmed participation is saved. Coin awards and redemption will follow the agreed reward policy.',
-            'Penyertaan yang disahkan disimpan. Pemberian syiling dan penebusan akan mengikut dasar ganjaran yang dipersetujui.',
+            'Verified participation follows the saved reward rules. Each actual participant has their own wallet.',
+            'Penyertaan yang disahkan mengikut dasar ganjaran tersimpan. Setiap peserta sebenar mempunyai dompet sendiri.',
           ),
           style: Theme.of(context).textTheme.bodySmall,
         ),

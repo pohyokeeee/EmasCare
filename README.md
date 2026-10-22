@@ -8,7 +8,7 @@ On Windows, start and seed the backend first, then run `app/preview.ps1` and ope
 
 Phase 4 adds elder submission for ended in-person activities, coordinator attendance verification/rejection and saved elder/family history. Family attendance follows sharing consent independently of booking. See [Phase 4 verification and walkthrough](app/STAGE4_VERIFICATION.md).
 
-Port 8090 is the app's default; Firestore uses 8080. Stage 5 adds configurable backend reward accounting and protected mock redemption; actual awards remain pending an approved reward policy. Flutter wallet/redemption integration and voice APIs remain pending. No cloud services have been deployed.
+Port 8090 is the app's default; Firestore uses 8080. Stage 5 adds configurable backend reward accounting and protected mock redemption; actual awards remain pending an approved reward policy. Stage 6 adds coordinator operations, consent-scoped notifications, progress/availability summaries and a server-side voice-booking parser. Live Gemini/audio verification requires local provider configuration. Flutter wallet and Stage 6 integration remain with Developer A. No cloud services have been deployed.
 
 - [Current implementation plan: two people, two days, Flutter Web MVP demo](docs/PROTOTYPE_PLAN_2_DAYS.md)
 - [Product and pilot plan](Township%20%28SimeDarby%29%20Hackathon%202026.md)
@@ -18,6 +18,7 @@ Port 8090 is the app's default; Firestore uses 8080. Stage 5 adds configurable b
 - [Backend Stage 3: companion requests, sessions and frontend handover](docs/BACKEND_SESSIONS.md)
 - [Backend Stage 4: standalone attendance, coordinator verification and frontend handover](docs/BACKEND_ATTENDANCE.md)
 - [Backend Stage 5: configured rewards, wallets, mock redemption and remaining policy decisions](docs/BACKEND_WALLET.md)
+- [Backend Stage 6: coordinator APIs, notifications, progress, voice parsing and teammate fixtures](docs/BACKEND_COORDINATION.md)
 
 Scope decision (21 Oct 2026): Tanya Dulu is a future feature and is excluded from the current MVP and prototype builds.
 

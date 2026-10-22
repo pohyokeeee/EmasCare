@@ -27,6 +27,22 @@ export function fixtureDocuments(now = new Date()) {
   };
   const documents = [];
   const add = (path, data) => documents.push({path, data});
+  // Fixed synthetic cohorts are illustrative aggregate inputs, not assignable
+  // helpers or Auth accounts. Private membership never leaves the backend.
+  const cells = [
+    {weekday:4,startMinute:540,endMinute:660,cohort:'retiree',helperIds:Array.from({length:6},(_,i)=>`synthetic_retiree_${i}`),requestIds:['synthetic_request_a','synthetic_request_b']},
+    {weekday:4,startMinute:660,endMinute:780,cohort:'student',helperIds:Array.from({length:3},(_,i)=>`synthetic_student_${i}`),requestIds:['synthetic_request_c']},
+  ];
+  add(`availabilityDemoInputs/${townshipId}`,{townshipId,cells,isDemo:true,updatedAt:at});
+  add(`availabilitySummaries/${townshipId}`,{townshipId,cells:cells.map(({helperIds,requestIds,...cell})=>({...cell,
+    helperCount:helperIds.length<5?null:helperIds.length,requestCount:helperIds.length<5?null:requestIds.length,suppressed:helperIds.length<5})),isDemo:true,updatedAt:at});
+  add(`progressTargets/${townshipId}`,{township:{week:{outings:20}},household:{month:{weekendGiveBack:2}},updatedAt:at});
+  const previousSaturday = new Date(now.getTime()+8*3600000);
+  previousSaturday.setUTCDate(previousSaturday.getUTCDate()-((previousSaturday.getUTCDay()+1)%7 || 7));
+  previousSaturday.setUTCHours(10,0,0,0);
+  const syntheticWeekend = Timestamp.fromMillis(previousSaturday.getTime()-8*3600000);
+  add('demoProgressHistory/household_household_helper',{townshipId,isDemo:true,entries:[{at:syntheticWeekend,metric:'weekendGiveBack',count:1}],updatedAt:at});
+  add(`demoProgressHistory/township_${townshipId}`,{townshipId,isDemo:true,entries:[{at:syntheticWeekend,metric:'outings',count:2}],updatedAt:at});
   const localDate = (date) => new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Kuala_Lumpur', year:'numeric', month:'2-digit', day:'2-digit'}).format(date);
   for (const account of demoAccounts) {
     const {uid, email: _email, ...profile} = account;

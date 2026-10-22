@@ -2,6 +2,7 @@ import {DocumentData, Firestore, Timestamp, Transaction} from "firebase-admin/fi
 import {fail} from "./errors";
 import {attendanceId, completionId, participationId} from "./completion_ids";
 import {prepareReward, RewardAction} from "./rewards";
+import {prepareElderNotices} from "./notifications";
 export {activityLockId, attendanceId, completionId, participationId} from "./completion_ids";
 
 interface Beneficiary {uid: string; role: "elder" | "helper"; attendanceId: string | null}
@@ -47,10 +48,12 @@ export async function completeSession(db: Firestore, tx: Transaction, id: string
   if (attendance?.status === "rejected") fail("failed-precondition", "ATTENDANCE_ALREADY_REVIEWED");
   const classification = request.activityId || request.taskType === "walk_with_me" ? "counts" :
     request.taskType === "phone_help" ? "does_not_count" : "pending_definition";
+  const notices = await prepareElderNotices(db, tx, request.elderId, "request_updated", id, "family_booking", "completed", {state: "completed"}, now, request.helperId);
   await recordCompletion(db, tx, eventId, request.townshipId, request.activityId, id, [
     {uid: request.elderId, role: "elder", attendanceId: attendanceKey},
     {uid: request.helperId, role: "helper", attendanceId: null},
   ], classification, request.activityId ? "activity_attendance" : request.taskType, now);
+  notices.write();
   if (attendanceKey && attendance?.status !== "verified") tx.set(db.doc(`activityAttendances/${attendanceKey}`), {townshipId: request.townshipId,
     householdId: request.householdId, activityId: request.activityId, elderId: request.elderId,
     mode: "companion_session", status: "verified", linkedRequestId: id, submittedAt: null,
@@ -63,7 +66,9 @@ export async function completeSession(db: Firestore, tx: Transaction, id: string
 export async function completeActivityAttendance(db: Firestore, tx: Transaction, id: string, attendance: DocumentData, now: Timestamp) {
   const eventId = completionId(attendance.activityId, id);
   const participantId = participationId(eventId, attendance.elderId);
+  const notices = await prepareElderNotices(db, tx, attendance.elderId, "attendance_review", id, "daily_sharing", "verified", {state: "verified"}, now);
   await recordCompletion(db, tx, eventId, attendance.townshipId, attendance.activityId, null,
     [{uid: attendance.elderId, role: "elder", attendanceId: id}], "counts", "activity_attendance", now);
+  notices.write();
   return {completionEventId: eventId, participationId: participantId};
 }

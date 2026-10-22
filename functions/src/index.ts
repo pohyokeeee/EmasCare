@@ -10,6 +10,10 @@ import {createCheckInService} from "./checkins";
 import {createSessionService} from "./sessions";
 import {createAttendanceService} from "./attendance";
 import {createWalletService} from "./wallet";
+import {createOperationsService} from "./operations";
+import {createNotificationService} from "./notifications";
+import {createSummaryService} from "./summaries";
+import {createVoiceService} from "./voice";
 
 initializeApp();
 setGlobalOptions({region: "asia-southeast1", maxInstances: 3});
@@ -18,6 +22,10 @@ const checkins = createCheckInService(db);
 const sessions = createSessionService(db);
 const attendance = createAttendanceService(db);
 const wallet = createWalletService(db);
+const operations = createOperationsService(db);
+const notifications = createNotificationService(db);
+const summaries = createSummaryService(db);
+const voice = createVoiceService(db);
 
 export const saveElderSettings = onCall((request) => checkins.saveElderSettings(authenticatedUid(request.auth), request.data));
 export const submitCheckIn = onCall((request) => checkins.submitCheckIn(authenticatedUid(request.auth), request.data));
@@ -29,6 +37,17 @@ export const transitionRequest = onCall((request) => sessions.transitionRequest(
 export const submitActivityAttendance = onCall((request) => attendance.submitActivityAttendance(authenticatedUid(request.auth), request.data));
 export const reviewActivityAttendance = onCall((request) => attendance.reviewActivityAttendance(authenticatedUid(request.auth), request.data));
 export const redeemDemoVoucher = onCall((request) => wallet.redeemDemoVoucher(authenticatedUid(request.auth), request.data));
+export const setPlaceWarning = onCall((r) => operations.setPlaceWarning(authenticatedUid(r.auth), r.data));
+export const submitReport = onCall((r) => operations.submitReport(authenticatedUid(r.auth), r.data));
+export const reviewReport = onCall((r) => operations.reviewReport(authenticatedUid(r.auth), r.data));
+export const blockHelper = onCall((r) => operations.blockHelper(authenticatedUid(r.auth), r.data));
+export const sendFamilyCheer = onCall((r) => operations.sendFamilyCheer(authenticatedUid(r.auth), r.data));
+export const markNotificationRead = onCall((r) => notifications.markNotificationRead(authenticatedUid(r.auth), r.data));
+export const processDemoDueItems = onCall((r) => checkins.processDemoDueItems(authenticatedUid(r.auth), r.data));
+export const getProgress = onCall((r) => summaries.getProgress(authenticatedUid(r.auth), r.data));
+export const getAvailabilitySummary = onCall((r) => summaries.getAvailabilitySummary(authenticatedUid(r.auth), r.data));
+export const getCoordinatorSummary = onCall((r) => summaries.getCoordinatorSummary(authenticatedUid(r.auth), r.data));
+export const parseVoiceBooking = onCall({timeoutSeconds: 40, memory: "256MiB"}, (r) => voice.parseVoiceBooking(authenticatedUid(r.auth), r.data));
 
 // Foundation diagnostics only; not replacements for agreed domain callables.
 export const getBackendContext = onCall(async (request) => {

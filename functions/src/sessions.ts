@@ -5,6 +5,7 @@ import {fail} from "./errors";
 import {documentId, envelope, inputObject} from "./validation";
 import {covers, daySegments, isoTime, slotsInput, taskTiers, Task, wireRecord} from "./scheduling";
 import {activityLockId, attendanceId, completeSession} from "./completions";
+import {prepareElderNotices} from "./notifications";
 
 export function reservationId(helperId: string, localDate: string): string { return tupleId("helper-date", helperId, localDate); }
 export function helperBlockId(elderId: string, helperId: string): string { return tupleId("helper-block", elderId, helperId); }
@@ -16,7 +17,7 @@ async function elderHousehold(db: Firestore, tx: Transaction, elder: Actor) {
       !household.memberUids?.includes(elder.uid)) fail("permission-denied", "UNRELATED_HOUSEHOLD");
 }
 
-async function requestAccess(db: Firestore, tx: Transaction, actor: Actor, id: string) {
+export async function requestAccess(db: Firestore, tx: Transaction, actor: Actor, id: string) {
   const snap = await tx.get(db.doc(`requests/${id}`));
   if (!snap.exists) fail("not-found", "REQUEST_NOT_FOUND");
   const request = snap.data()!;
@@ -120,9 +121,11 @@ export function createSessionService(db: Firestore, clock: () => Timestamp = Tim
           helperDisplay: null, assignedAt: null, acceptedAt: null, startedAt: null, finishedAt: null,
           elderConfirmation: null, helperConfirmation: null, completedAt: null, cancelledAt: null,
           completionEventId: null, participationIds: {elder: null, helper: null}, createdAt: now, updatedAt: now};
+        const notices = await prepareElderNotices(db, tx, elderId, "request_updated", id, "family_booking", "requested", {state: "requested"}, now);
         if (activityId) tx.set(db.doc(`activityElderLocks/${activityLockId(activityId, elderId)}`),
           {activityId, elderId, townshipId: actor.townshipId, requestId: id, state: "active", updatedAt: now});
         tx.create(db.doc(`requests/${id}`), request);
+        notices.write();
         return envelope({request: wireRecord(id, request)});
       }});
   }
@@ -162,9 +165,11 @@ export function createSessionService(db: Firestore, clock: () => Timestamp = Tim
         }
         const next = {...request, state: "assigned", pairingId, helperId: helper.uid,
           helperDisplay: {displayName: helper.displayName, tier: profile.tier}, assignedAt: now, updatedAt: now};
+        const notices = await prepareElderNotices(db, tx, request.elderId, "request_updated", id, "family_booking", "assigned", {state: "assigned"}, now, helper.uid);
         for (const row of rows) tx.set(row.ref, {helperId: helper.uid, townshipId: actor.townshipId, localDate: row.localDate,
           slots: [...(row.data?.slots ?? []), {requestId: id, startsAt: request.startsAt, endsAt: request.endsAt}], updatedAt: now});
         tx.set(db.doc(`requests/${id}`), next);
+        notices.write();
         return envelope({request: wireRecord(id, next)});
       }});
   }

@@ -5,6 +5,7 @@ import {activityLockId, attendanceId, completeActivityAttendance, completionId, 
 import {fail} from "./errors";
 import {wireRecord} from "./scheduling";
 import {documentId, envelope, inputObject, stringField} from "./validation";
+import {prepareElderNotices} from "./notifications";
 
 async function elderScope(db: Firestore, tx: Transaction, actor: Actor, elder: Actor, householdId: string | null) {
   if (elder.role !== "elder") fail("permission-denied", "ELDER_ACCESS_DENIED");
@@ -114,7 +115,9 @@ export function createAttendanceService(db: Firestore, clock: () => Timestamp = 
         if (before.mode !== "standalone" || before.status !== "submitted") fail("failed-precondition", "ATTENDANCE_ALREADY_REVIEWED");
         const next = {...before, status: decision === "verify" ? "verified" : "rejected", verifiedAt: decision === "verify" ? now : null,
           verificationMethod: input.verificationMethod, reviewedBy: uid, reviewedAt: now, reviewNote: note, updatedAt: now};
+        const notices = decision === "reject" ? await prepareElderNotices(db, tx, before.elderId, "attendance_review", id, "daily_sharing", "rejected", {state: "rejected"}, now) : null;
         if (decision === "verify") Object.assign(next, await completeActivityAttendance(db, tx, id, before, now));
+        notices?.write();
         tx.set(db.doc(`activityAttendances/${id}`), next);
         tx.set(lockRef, {activityId: before.activityId, elderId: before.elderId, townshipId: before.townshipId,
           requestId: null, attendanceId: id, state: decision === "verify" ? "completed" : "attendance_rejected", updatedAt: now});

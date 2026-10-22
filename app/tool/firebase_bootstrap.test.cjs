@@ -14,7 +14,7 @@ test('Auth emulator connects immediately after initialization with matching Flut
       assert.deepEqual(options.persistence, [authSdk.indexedDBLocalPersistence, authSdk.browserLocalPersistence, authSdk.browserSessionPersistence]);
       return localAuth;
     },
-    connectAuthEmulator(auth, url) { calls.push('connect'); assert.equal(auth, localAuth); assert.equal(url, 'http://127.0.0.1:9099'); },
+    connectAuthEmulator(auth, url, options) { calls.push('connect'); assert.equal(auth, localAuth); assert.equal(url, 'http://127.0.0.1:9099'); assert.deepEqual(options, {disableWarnings:true}); },
   };
   const core = {initializeApp(options, name) {
     assert.deepEqual(options, {

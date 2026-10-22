@@ -1,6 +1,6 @@
-# Flutter local backend and Phase 3 UI
+# Flutter local backend and Phase 4 UI
 
-The default app connects to the local `demo-emascare` Firebase emulators. Phase 3 implementation is on `ui-phase-3`, based on merged main `adb1b63`. It connects B's Stage 3 companion APIs and preserves the Stage 2 integration. No cloud deployment is configured. See [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) for the live booking/session walkthrough.
+The default app connects to the local `demo-emascare` Firebase emulators. Phase 4 is on `ui-phase-4`, based on merged main `d3bd841`. It adds B's Stage 4 attendance APIs and preserves check-ins and companion sessions. No cloud deployment is configured. See [STAGE4_VERIFICATION.md](STAGE4_VERIFICATION.md) for attendance and [STAGE3_VERIFICATION.md](STAGE3_VERIFICATION.md) for bookings/sessions.
 
 ## Start on this Windows computer
 
@@ -63,6 +63,8 @@ Auth uses tab-scoped session persistence: refresh keeps the session, and separat
 
 The release entry point configures the Auth emulator immediately after JS Auth initialization, before FlutterFire restores a saved user. This is necessary because the pinned FlutterFire Auth web plugin reapplies its stored emulator origin automatically only in debug mode. `web/firebase_local.mjs` uses the same SDK version and initialization dependencies as the pinned plugin; review it when upgrading FlutterFire. The Dart adapter connects all three emulators again before subscriptions or callables.
 
+The Auth SDK's fixed warning banner is disabled in this loopback-only bootstrap because it covered phone navigation and dialog controls. The sign-in screen, toolbar and footer still label the local demo. This changes presentation only; emulator connection and origin guards are retained.
+
 ## Manual acceptance walkthrough
 
 1. Sign in as elder in one tab and family in a separate tab. Press **Saya OK** in the elder tab. Both should show **Saya OK received** with the same MYT submission time. Repeated responses preserve the first response.
@@ -90,9 +92,11 @@ For backend checks while development emulators are already running, use `npm.cmd
 
 ## Current limits
 
-Authentication, elder settings/check-ins, family consent-gated daily status, coordinator phone reporting, companion requests/assignment, helper availability and session actions are connected. Township activities/places and permitted pairings are read-only. Participant pairing queries require both the participant ID and township constraints. All domain writes use the supplied Stage 2/3 callables, with version 1 envelopes and action-specific retry keys. Stream snapshots remain authoritative, so replayed responses cannot overwrite newer state.
+Authentication, elder settings/check-ins, family consent-gated daily status, coordinator phone reporting, companion requests/assignment, helper availability, sessions and attendance are connected. Township activities/places and permitted pairings are read-only. Participant pairing queries require both the participant ID and township constraints. All domain writes use the supplied Stage 2–4 callables, with version 1 envelopes and action-specific retry keys. Stream snapshots remain authoritative, so replayed responses cannot overwrite newer state.
 
-Account → design preview retains a labelled in-memory journey. Connected mode uses real persisted requests and sessions. Coin awards/redemption, voice/model, automatic reminders/notifications, standalone attendance UI and scheduler features remain outside this integration. No check-in, sample or live session directly credits coins; live completion creates pending-policy claims through the backend. Tanya Dulu remains future work. Backend Functions, rules, indexes and scripts were not modified.
+Account → design preview retains a labelled in-memory journey. Connected mode uses real persisted requests, sessions and attendance. Elders submit ended in-person attendance from Activities → Past activities; coordinators verify/reject in Requests → Attendance review; elders and sharing-consented family read Attendance history. Booking consent does not grant attendance access. Coin awards/redemption, voice/model, automatic reminders/notifications and scheduler features remain outside this integration. No check-in, sample or live completion directly credits coins; verified participation creates pending-policy claims through the backend. Tanya Dulu remains future work. Backend Functions, rules, indexes and scripts were not modified.
+
+Run `node app/tool/verify_attendance.mjs` from the repository root for read-only checks of the exact attendance queries. After the documented elder-verification/solo-rejection browser walkthrough, add `--expect-browser-results` to validate those saved reviews, privacy boundaries and unchanged zero coin balances. The verifier does not reset or mutate data.
 
 Run `node app/tool/verify_community.mjs` from the repository root for read-only catalogue/companion permission checks against the running emulators. It signs into the six demo accounts without resetting or changing domain data.
 

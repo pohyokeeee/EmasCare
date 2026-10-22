@@ -264,17 +264,6 @@ class WalletView extends StatelessWidget {
                         'Penyertaan ini tidak menerima syiling mengikut peraturan yang diluluskan.',
                       ),
                     }),
-                    if (claim.ruleVersion != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          c.t(
-                            'Reward rule · ${claim.ruleVersion}',
-                            'Peraturan ganjaran · ${claim.ruleVersion}',
-                          ),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
                   ],
                 ),
               ),
@@ -420,12 +409,29 @@ class _RedemptionReview extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = PreviewScope.of(context), w = c.wallet!;
     final voucher = w.vouchers.where((v) => v.id == voucherId).firstOrNull;
+    void closeIfCurrent() {
+      if (context.mounted && ModalRoute.of(context)?.isCurrent == true) {
+        Navigator.pop(context);
+      }
+    }
+
     if (voucher == null || !voucher.redeemable) {
-      return _WalletEmpty(
-        c.t(
-          'This voucher is no longer available. Close this sheet to check the catalogue.',
-          'Baucar ini tidak lagi tersedia. Tutup helaian ini untuk menyemak katalog.',
-        ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _WalletEmpty(
+            w.action == null
+                ? c.t(
+                    'This voucher is no longer available. Close this sheet to check the catalogue.',
+                    'Baucar ini tidak lagi tersedia. Tutup helaian ini untuk menyemak katalog.',
+                  )
+                : c.t(
+                    'This voucher is unavailable for new purchases. You can retry your existing purchase below.',
+                    'Baucar ini tidak tersedia untuk pembelian baharu. Anda boleh mencuba semula pembelian sedia ada di bawah.',
+                  ),
+          ),
+          _PurchaseFeedback(showSaved: false, onSuccess: closeIfCurrent),
+        ],
       );
     }
     return Column(
@@ -480,27 +486,22 @@ class _RedemptionReview extends StatelessWidget {
                   }
                 },
         ),
-        _PurchaseFeedback(
-          onSuccess: () {
-            if (context.mounted && ModalRoute.of(context)?.isCurrent == true) {
-              Navigator.pop(context);
-            }
-          },
-        ),
+        _PurchaseFeedback(showSaved: false, onSuccess: closeIfCurrent),
       ],
     );
   }
 }
 
 class _PurchaseFeedback extends StatelessWidget {
-  const _PurchaseFeedback({this.onSuccess});
+  const _PurchaseFeedback({this.onSuccess, this.showSaved = true});
   final VoidCallback? onSuccess;
+  final bool showSaved;
   @override
   Widget build(BuildContext context) {
     final c = PreviewScope.of(context), w = c.wallet!;
     final action = w.action;
     if (action == null) {
-      return w.savedRedemptionId == null
+      return !showSaved || w.savedRedemptionId == null
           ? const SizedBox.shrink()
           : Padding(
               padding: const EdgeInsets.only(top: 12),

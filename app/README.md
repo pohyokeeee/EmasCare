@@ -65,9 +65,9 @@ Phase 4 adds Past activities and Attendance history under Activities. Actual eld
 
 Stage 5 connects the existing My rewards destination to the actual elder/helper's own wallet, participation outcomes, immutable coin history, mock voucher catalogue and saved DEMO codes. A confirmed purchase uses the protected redemption callable and preserves its key across retries. Missing/denied data is not shown as zero, and old receipt balances cannot overwrite current streams. Family/coordinators have no proxy spending interface.
 
-Notifications/automatic reminders, family cheers and AI voice parsing remain pending. In design-preview mode, the request → assignment → helper session → two-participant confirmation journey uses separate in-memory samples that disappear on reload. Connected attendance and wallet history contain server records only. Default earning policy is unconfigured, so verified completions remain pending and zero wallets cannot redeem. Funded redemption success is covered by isolated UI/backend tests, with no positive-balance seed. The SDP entry remains a mock module entry.
+Notifications/automatic reminders, family cheers and AI voice parsing remain pending. In design-preview mode, the request → assignment → helper session → two-participant confirmation journey uses separate in-memory samples that disappear on reload. Connected attendance and wallet history contain server records only. After seed/reset, run `npm.cmd run demo:configure-rewards` from the repository root to apply the approved 20-coin rule and reconcile earlier verified pending records. Wallets start at zero and are funded through verified participation, not positive-balance seeds. The SDP entry remains a mock module entry.
 
-The reward decision remains **coins for elders and helpers after each eligible verified completion**. Earning rates, detailed eligibility and applicability to existing pending completions still require agreement; the Stage 5 response shapes are documented in B's handover. This app does not implement the superseded monthly award or fabricate wallet balances. Tanya Dulu is future work and has no screen here.
+The owner's 22 Oct reward decision is **20 coins per verified activity/helping session for both elders and helpers**. All five supported action types and earlier verified pending participations are included, once per canonical participation. Five credits fund the 100-coin demo voucher. The Stage 5 response shapes are documented in B's handover. This app does not implement the superseded monthly award or fabricate wallet balances. Tanya Dulu is future work and has no screen here.
 
 Browser API availability is not proof of successful microphone capture or audible speech on the presentation device. Try the device check there; keep the manual activity UI available if audio fails.
 
@@ -103,6 +103,8 @@ See [Stage 3 verification](STAGE3_VERIFICATION.md) for the current connected com
 See [Stage 4 verification](STAGE4_VERIFICATION.md) for attendance scenarios, current test results and the read-only attendance verifier.
 
 See [Stage 5 verification](STAGE5_VERIFICATION.md) for connected wallet/redemption scenarios, current test results, screenshots and the read-only financial query verifier.
+
+See the [Phase 5 completion audit](PHASE5_VERIFICATION.md) for the additional voucher translation, receipt validation and purchase-feedback/retry regressions on `ui-phase-5`, the approved 20-coin configuration and the earned-coins demo verification.
 
 See [the Phase 1 verification record](PHASE1_VERIFICATION.md) for observed browser results, screenshots and device-audio limits.
 

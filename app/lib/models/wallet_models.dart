@@ -112,16 +112,29 @@ class DemoVoucher {
   DemoVoucher.fromJson(Json j)
     : id = j['id'] as String,
       townshipId = j['townshipId'] as String,
-      title = jsonObject(j['title']),
+      title = Map<String, dynamic>.unmodifiable(jsonObject(j['title'])),
       costCoins = coinInteger(j['costCoins']),
       active = j['active'] == true,
-      isDemo = j['isDemo'] == true;
+      isDemo = j['isDemo'] == true {
+    if (![
+      title['en'],
+      title['bm'],
+    ].any((value) => value is String && value.trim().isNotEmpty)) {
+      throw const FormatException('Voucher title is unavailable');
+    }
+  }
   final String id, townshipId;
   final Json title;
   final int costCoins;
   final bool active, isDemo;
   bool get redeemable => active && isDemo && costCoins == 100;
-  String name(bool bm) => title[bm ? 'bm' : 'en'] as String;
+  String name(bool bm) {
+    final preferred = title[bm ? 'bm' : 'en'];
+    if (preferred is String && preferred.trim().isNotEmpty) {
+      return preferred.trim();
+    }
+    return (title[bm ? 'en' : 'bm'] as String).trim();
+  }
 }
 
 class VoucherRedemption {

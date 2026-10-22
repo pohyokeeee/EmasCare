@@ -275,6 +275,62 @@ void main() {
     },
   );
   test(
+    'voucher names fall back between BM/EN and reject unusable titles before rendering',
+    () {
+      Json voucher(Json title) => {
+        'id': 'voucher_demo',
+        'townshipId': 'township_demo',
+        'title': title,
+        'costCoins': 100,
+        'active': true,
+        'isDemo': true,
+      };
+      expect(
+        DemoVoucher.fromJson(voucher({'en': 'Mock voucher'})).name(true),
+        'Mock voucher',
+      );
+      expect(
+        DemoVoucher.fromJson(voucher({'bm': 'Baucar contoh'})).name(false),
+        'Baucar contoh',
+      );
+      expect(
+        DemoVoucher.fromJson(
+          voucher({'en': '  ', 'bm': 'Baucar contoh'}),
+        ).name(false),
+        'Baucar contoh',
+      );
+      expect(
+        () => DemoVoucher.fromJson(voucher({'en': 123, 'bm': ''})),
+        throwsFormatException,
+      );
+    },
+  );
+  test(
+    'a receipt for another voucher cannot mark the confirmed purchase successful',
+    () async {
+      final f = WalletFake(),
+          s = SessionController(f),
+          w = WalletController(s, f);
+      addTearDown(() async {
+        w.dispose();
+        s.dispose();
+        await f.close();
+      });
+      await sign(f, s, AppRole.elder);
+      final receipt = resultJson();
+      f.purchase = (_, _) async => RedemptionResult.fromJson({
+        ...receipt,
+        'redemption': {
+          ...jsonObject(receipt['redemption']),
+          'voucherId': 'different-voucher',
+        },
+      });
+      expect(await w.redeem('voucher_demo'), false);
+      expect(w.savedRedemptionId, isNull);
+      expect(w.action!.error!.code, 'invalid-data');
+    },
+  );
+  test(
     'one purchase per confirmation, immutable retry key/payload, new intent gets a new key',
     () async {
       final f = WalletFake(),
@@ -537,7 +593,74 @@ void main() {
     },
   );
   testWidgets(
-    'BM and larger text fit wallet, outcomes, debit, code and purchase at 320/390/768/1440 widths',
+    'a new confirmation never announces a previous purchase as its success',
+    (t) async {
+      desktop(t);
+      final f = WalletFake()..balance = 200,
+          s = SessionController(f),
+          mock = MockEmasRepository(),
+          c = PreviewController(mock, session: s);
+      try {
+        await t.pumpWidget(EmasCareApp(controller: c));
+        await login(t, f, s, AppRole.elder);
+        c.navigate(destination: Destination.rewards);
+        await t.pumpAndSettle();
+        await tap(t, find.byKey(const ValueKey('redeem-voucher_demo')));
+        await tap(t, find.byKey(const ValueKey('confirm-demo-redemption')));
+        expect(c.wallet!.savedRedemptionId, isNotNull);
+        await tap(t, find.byKey(const ValueKey('redeem-voucher_demo')));
+        expect(
+          find.descendant(
+            of: find.byType(BottomSheet),
+            matching: find.textContaining('Demo redemption saved.'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('confirm-demo-redemption')),
+          findsOneWidget,
+        );
+      } finally {
+        await finish(t, c, s, mock, f);
+      }
+    },
+  );
+  testWidgets(
+    'deactivated voucher retains the existing purchase retry and its original key',
+    (t) async {
+      desktop(t);
+      final f = WalletFake(),
+          s = SessionController(f),
+          mock = MockEmasRepository(),
+          c = PreviewController(mock, session: s);
+      try {
+        f.purchase = (_, _) async => throw const BackendFailure('unavailable');
+        await t.pumpWidget(EmasCareApp(controller: c));
+        await login(t, f, s, AppRole.elder);
+        c.navigate(destination: Destination.rewards);
+        await t.pumpAndSettle();
+        await tap(t, find.byKey(const ValueKey('redeem-voucher_demo')));
+        await tap(t, find.byKey(const ValueKey('confirm-demo-redemption')));
+        final key = f.purchases.single.$2;
+        f.active = false;
+        f.emitWallet();
+        await t.pumpAndSettle();
+        final retry = find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('Retry same redemption'),
+        );
+        expect(retry, findsOneWidget);
+        f.purchase = (_, _) async => RedemptionResult.fromJson(resultJson());
+        await tap(t, retry);
+        expect(f.purchases.last.$2, key);
+        expect(find.byType(BottomSheet), findsNothing);
+      } finally {
+        await finish(t, c, s, mock, f);
+      }
+    },
+  );
+  testWidgets(
+    'BM and larger text fit wallet, purchase and unavailable voucher retry at 320/390/768/1440 widths',
     (t) async {
       for (final width in [320.0, 390.0, 768.0, 1440.0]) {
         t.view.physicalSize = Size(width, 1100);
@@ -565,6 +688,24 @@ void main() {
         expect(t.takeException(), isNull, reason: 'wallet $width');
         await tap(t, find.byKey(const ValueKey('redeem-voucher_demo')));
         expect(t.takeException(), isNull, reason: 'confirmation $width');
+        f.purchase = (_, _) async => throw const BackendFailure('unavailable');
+        await tap(t, find.byKey(const ValueKey('confirm-demo-redemption')));
+        expect(t.takeException(), isNull, reason: 'failed purchase $width');
+        final purchaseKey = f.purchases.single.$2;
+        f.active = false;
+        f.emitWallet();
+        await t.pumpAndSettle();
+        expect(t.takeException(), isNull, reason: 'unavailable voucher $width');
+        final retry = find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('Cuba semula penebusan sama'),
+        );
+        expect(retry, findsOneWidget);
+        await tap(t, retry);
+        expect(t.takeException(), isNull, reason: 'retry $width');
+        expect(f.purchases.length, 2);
+        expect(f.purchases.last.$2, purchaseKey);
+        expect(c.wallet!.wallet!.balance, 100);
         await tap(t, find.byTooltip('Tutup'));
         await finish(t, c, s, mock, f);
       }

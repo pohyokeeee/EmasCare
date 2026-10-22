@@ -11,6 +11,9 @@ import '../models/community_models.dart';
 import '../models/preview_models.dart';
 import 'attendance_repository.dart';
 import '../models/attendance_models.dart';
+import 'wallet_repository.dart';
+import '../models/wallet_models.dart';
+import 'backend_failure.dart';
 
 /// Local-only adapter. No SDK read, listener or callable starts before connect.
 class FirebaseBackendRepository
@@ -18,11 +21,88 @@ class FirebaseBackendRepository
         BackendRepository,
         CommunityRepository,
         SessionRepository,
-        AttendanceRepository {
+        AttendanceRepository,
+        WalletRepository {
   FirebaseBackendRepository._(this.auth, this.db, this.functions);
   final FirebaseAuth auth;
   final FirebaseFirestore db;
   final FirebaseFunctions functions;
+
+  void _walletOwner(BackendProfile p) {
+    if (![AppRole.elder, AppRole.helper].contains(p.role)) {
+      throw const BackendFailure('permission-denied', 'ROLE_NOT_ALLOWED');
+    }
+  }
+
+  Stream<List<T>> _walletRows<T>(Query<Json> q, T Function(Json) parse) => q
+      .snapshots(includeMetadataChanges: true)
+      .where((s) => !s.metadata.isFromCache)
+      .map((s) => s.docs.map((d) => parse({...d.data(), 'id': d.id})).toList());
+  @override
+  Stream<WalletRecord?> watchWallet(BackendProfile profile) {
+    _walletOwner(profile);
+    return db
+        .doc('wallets/${profile.uid}')
+        .snapshots(includeMetadataChanges: true)
+        .where((s) => !s.metadata.isFromCache)
+        .map((s) => s.exists ? WalletRecord.fromJson(s.data()!) : null);
+  }
+
+  @override
+  Stream<List<WalletEntry>> watchWalletEntries(BackendProfile p) {
+    _walletOwner(p);
+    return _walletRows(
+      db
+          .collection('wallets/${p.uid}/entries')
+          .where('ownerUid', isEqualTo: p.uid)
+          .where('townshipId', isEqualTo: p.townshipId)
+          .orderBy('createdAt', descending: true),
+      WalletEntry.fromJson,
+    );
+  }
+
+  @override
+  Stream<List<RewardClaim>> watchRewardClaims(BackendProfile p) {
+    _walletOwner(p);
+    return _walletRows(
+      db
+          .collection('rewardClaims')
+          .where('beneficiaryUid', isEqualTo: p.uid)
+          .where('townshipId', isEqualTo: p.townshipId)
+          .orderBy('verifiedAt', descending: true),
+      RewardClaim.fromJson,
+    );
+  }
+
+  @override
+  Stream<List<DemoVoucher>> watchVouchers(BackendProfile p) {
+    _walletOwner(p);
+    return _walletRows(
+      db
+          .collection('voucherCatalog')
+          .where('townshipId', isEqualTo: p.townshipId),
+      DemoVoucher.fromJson,
+    );
+  }
+
+  @override
+  Stream<List<VoucherRedemption>> watchRedemptions(BackendProfile p) {
+    _walletOwner(p);
+    return _walletRows(
+      db
+          .collection('redemptions')
+          .where('ownerUid', isEqualTo: p.uid)
+          .where('townshipId', isEqualTo: p.townshipId)
+          .orderBy('issuedAt', descending: true),
+      VoucherRedemption.fromJson,
+    );
+  }
+
+  @override
+  Future<RedemptionResult> redeemDemoVoucher(Json fields, String key) async =>
+      RedemptionResult.fromJson(
+        await _call('redeemDemoVoucher', {...fields, 'idempotencyKey': key}),
+      );
 
   @override
   Stream<List<ActivityAttendance>> watchAttendance(

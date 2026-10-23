@@ -42,13 +42,13 @@ For hands-on Flutter testing of uncompleted sessions, use `demo:prepare` and `de
 | Saya OK and due processing | Persisted check-in, repeatable due action and retained warning-review semantics |
 | Five companion/help sessions | Helper accept/start/finish, then separate helper and elder confirmations |
 | Standalone activity | Elder submission and coordinator roster verification of the seeded ended demo activity |
-| Rewards | 20 coins per actual verified participant; five helper credits, six elder credits on a clean store |
-| Voucher purchase | Each actual owner redeems 100 earned coins; same-key retry gives the same persisted mock voucher |
+| Rewards | 20-coin `pending_monthly` claim per actual verified participant; release is next MYT calendar month |
+| Voucher purchase | Current-month claims cannot be spent; the 100-coin threshold remains enforced until coordinator settlement |
 | Consent and cheers | One clap for a verified outing; sharing withdrawal denies progress/read-receipt replay while booking access stays available; original settings restored in `finally` |
 | Coordinator actions | Report review to done, explicit place warning and a separate solo-elder helper block |
 | Privacy/readiness | Own financial streams, family denial, sanitized progress and small-cohort suppression |
 
-On a clean prepared store the elder ends with **20 coins**, the helper with **0**, and both own one saved 100-coin demo voucher. These balances come from the existing completion reward engine. No positive wallet opening balance, reward entry, completed session or attendance verification is seeded.
+On a clean prepared store, verified participants have pending monthly claims and zero spendable coins. No positive wallet opening balance, reward entry, completed session or attendance verification is seeded. A coordinator must call `settleDueMonthlyRewards` after the MYT month boundary before voucher redemption can succeed.
 
 The extra assigned fixtures are `request_rehearsal_1` (walk), `_2` (sit), `_3` (carry), `_4` (phone), alongside the existing `request_demo_ready` (phone). They have distinct underlying help-session identities and non-overlapping past synthetic schedules. Their final completion time is the real server time of confirmation. Walk and standalone activity count as two outings; phone does not count, and standalone sit/carry remains pending definition independently of earning eligibility.
 
@@ -69,7 +69,7 @@ Send Developer A [the Stage 6 guide](BACKEND_COORDINATION.md), [exact fixtures](
 - [ ] Actual elder/coordinator blocking; family denial; blocked helper cannot be assigned or accept/start.
 - [ ] Operator due processing, notification lists/read actions, and current recipient permissions.
 - [ ] Sharing withdrawal hides old sharing notices/progress/cheers; booking consent stays separate.
-- [ ] Activity/session completion and owner-visible 20-coin claims/ledger; retries preserve balances.
+- [ ] Activity/session completion and owner-visible 20-coin pending claims; next-month settlement creates one ledger entry per participation and retries preserve balances.
 - [ ] Standalone attendance, family clap and progress refresh; phone excluded and sit/carry pending classification.
 - [ ] Availability demo/suppression labels; no individual schedules or reconstructing totals.
 - [ ] Existing create -> coordinator assign -> helper lifecycle -> separate participant confirmations through Flutter.
@@ -82,6 +82,6 @@ Live Gemini/BM-EN microphone verification is **pending** until a supported model
 
 With no emulators already running, `npm.cmd run test:journey` starts/stops local emulators and runs the fresh-store, preserved-state, real-callable walkthrough, repeated-run and corruption-guard checks. It resets only known demo actors in its isolated test run. Keep these automated tests separate from the manually preserved rehearsal store.
 
-Verified locally on 22 October 2026: TypeScript build, all 24 unit checks and all 8 integration-rehearsal tests passed. The actual `demo:prepare`, `demo:check` and `demo:rehearse` commands also passed, producing 12 journey steps plus 14 read-only readiness checks. The saved prepared store has elder balance 20, helper balance 0, and one earned demo voucher for each. Repeating the tested journey added no credits or purchases. These results do not claim connected Flutter or live audio verification.
+The rehearsal verifies authenticated completion, pending monthly claims, consent boundaries, coordinator operations and voucher threshold protection. It does not advance the emulator clock across a MYT month boundary, so it intentionally does not claim a released wallet balance or successful voucher purchase. These results do not claim connected Flutter or live audio verification.
 
 After changes are reviewed: commit, push and open a PR for this integration tooling. Share the handoff with Developer A, record the joint UI outcomes, resolve actual integration defects and perform a final demo rehearsal before deployment work.

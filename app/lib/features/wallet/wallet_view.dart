@@ -14,6 +14,8 @@ String whenLabel(DateTime time, bool bm) =>
 String rewardLabel(RewardOutcome outcome, bool bm) => switch (outcome) {
   RewardOutcome.pendingPolicy =>
     bm ? 'Menunggu dasar ganjaran' : 'Awaiting reward policy',
+  RewardOutcome.pendingMonthly =>
+    bm ? 'Menunggu kredit bulanan' : 'Scheduled for monthly credit',
   RewardOutcome.credited => bm ? 'Syiling dikreditkan' : 'Coins credited',
   RewardOutcome.ineligible =>
     bm ? 'Tidak layak untuk syiling' : 'Not eligible for coins',
@@ -86,6 +88,14 @@ class WalletView extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
+          const SizedBox(height: 6),
+          Text(
+            c.t(
+              'Redeemable rewards unlock at 100 coins.',
+              'Ganjaran boleh ditebus apabila mencapai 100 syiling.',
+            ),
+            style: const TextStyle(color: Color(0xFFDCE8DA)),
+          ),
           const SizedBox(height: 14),
           Text(
             c.t(
@@ -152,7 +162,7 @@ class WalletView extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
                         c.t(
-                          'You need ${voucher.costCoins - wallet.balance} more coins. Pending rewards are not a balance.',
+                          'You need ${voucher.costCoins - wallet.balance} more coins. Monthly rewards are not available until credited.',
                           'Anda memerlukan ${voucher.costCoins - wallet.balance} syiling lagi. Ganjaran tertunda bukan baki.',
                         ),
                       ),
@@ -220,8 +230,8 @@ class WalletView extends StatelessWidget {
           color: Palette.soft,
           child: Text(
             c.t(
-              'Pending rewards do not add to your balance. Only eligible rewards under an approved rule add coins after verification.',
-              'Ganjaran tertunda tidak menambah baki anda. Hanya ganjaran layak mengikut peraturan diluluskan menambah syiling selepas pengesahan.',
+              'Eligible completed activities and helping sessions are scheduled for the next monthly credit. Only credited coins can be redeemed; the demo voucher needs 100 coins.',
+              'Aktiviti dan sesi bantuan yang layak dijadualkan untuk kredit bulanan seterusnya. Hanya syiling dikreditkan boleh ditebus; baucar demo memerlukan 100 syiling.',
             ),
           ),
         ),
@@ -255,6 +265,14 @@ class WalletView extends StatelessWidget {
                         'Recorded, awaiting an applicable approved reward rule. No coins have been added.',
                         'Direkodkan, menunggu peraturan ganjaran diluluskan yang terpakai. Tiada syiling ditambah.',
                       ),
+                      RewardOutcome.pendingMonthly => c.t(
+                        claim.releaseAt == null
+                            ? 'Eligible participation recorded. It will be credited in the next monthly settlement.'
+                            : 'Eligible participation recorded. Monthly credit is scheduled for ${activityDate(claim.releaseAt!, c.malay)}.',
+                        claim.releaseAt == null
+                            ? 'Penyertaan layak direkodkan. Ia akan dikreditkan dalam penyelesaian bulanan seterusnya.'
+                            : 'Penyertaan layak direkodkan. Kredit bulanan dijadualkan pada ${activityDate(claim.releaseAt!, c.malay)}.',
+                      ),
                       RewardOutcome.credited => c.t(
                         '${claim.amountCoins} coins added to your wallet.',
                         '${claim.amountCoins} syiling ditambah ke dompet anda.',
@@ -284,6 +302,8 @@ class WalletView extends StatelessWidget {
                     Text(
                       entry.type == 'completion_reward'
                           ? c.t('Participation reward', 'Ganjaran penyertaan')
+                          : entry.type == 'demo_opening_credit'
+                          ? c.t('Demo starting balance', 'Baki permulaan demo')
                           : c.t(
                               'Demo voucher redemption',
                               'Penebusan baucar demo',
@@ -299,6 +319,17 @@ class WalletView extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(whenLabel(entry.createdAt, c.malay)),
+                    if (entry.type == 'demo_opening_credit')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          c.t(
+                            'Demo-only starting coins; not an earned completion reward.',
+                            'Syiling permulaan untuk demo sahaja; bukan ganjaran penyertaan yang diperoleh.',
+                          ),
+                          style: const TextStyle(color: Palette.muted),
+                        ),
+                      ),
                   ],
                 ),
               ),

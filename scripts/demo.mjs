@@ -3,7 +3,9 @@ import {localEnvironment, projectId} from './local.mjs';
 import {demoAccounts, demoPassword, fixtureDocuments} from './fixtures.mjs';
 const resettableCommands = new Set(['foundationProbe','saveElderSettings','submitCheckIn','recordPhoneResponse',
   'setHelperAvailability','createRequest','assignRequest','transitionRequest','submitActivityAttendance','reviewActivityAttendance','redeemDemoVoucher',
-  'setPlaceWarning','submitReport','reviewReport','blockHelper','sendFamilyCheer','markNotificationRead','processDemoDueItems']);
+  'setCompanionAvailability',
+  'setPlaceWarning','submitReport','reviewReport','blockHelper','sendFamilyCheer','markNotificationRead','processDemoDueItems',
+  'listSessionMessages','sendSessionMessage','settleDueMonthlyRewards']);
 
 export async function demoClients() {
   const env = localEnvironment();
@@ -54,6 +56,7 @@ export async function resetDemo({auth, db}) {
       await deleteOwnedDocuments(db,(await db.collection(name).where(field,'==',uid).get()).docs);
     }
     await db.doc(`voiceLimits/${uid}`).delete();
+    await db.doc(`companionAvailability/${uid}`).delete();
   }
   for (const {uid,role} of demoAccounts) if (role === 'elder' || role === 'helper') {
     await deleteOwnedDocuments(db,(await db.collection(`wallets/${uid}/entries`).get()).docs);
@@ -100,6 +103,11 @@ async function resetCompanions(db) {
     if (snapshot.data().helperId) helpers.add(snapshot.data().helperId);
     for (const row of (await db.collection('participations').where('sourceRequestIds','array-contains',id).get()).docs) participants.set(row.id,row);
   }
+  const messages = [];
+  for (const requestId of requests.keys()) {
+    messages.push(...(await db.collection('sessionMessages').where('requestId','==',requestId).get()).docs);
+  }
+  await deleteOwnedDocuments(db, messages);
   for (const [id,snapshot] of participants) {
     const data = snapshot.data(), remaining = (data.sourceRequestIds ?? []).filter((requestId) => !requests.has(requestId));
     if (!actors.has(data.beneficiaryUid)) {

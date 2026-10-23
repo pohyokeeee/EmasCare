@@ -11,6 +11,7 @@
     "emulators": "npm run build && node scripts/emulators.mjs start",
     "demo:seed": "node scripts/demo.mjs seed",
     "demo:reset": "node scripts/demo.mjs reset",
+    "demo:wallet": "node scripts/demo-wallet.mjs",
     "demo:reconcile-rewards": "npm run build && node scripts/reconcile-rewards.mjs",
     "demo:configure-rewards": "npm run build && node scripts/configure-rewards.mjs && node scripts/reconcile-rewards.mjs",
     "demo:prepare": "npm run build && node scripts/prepare-integration.mjs",

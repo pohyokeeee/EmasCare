@@ -46,6 +46,16 @@ export function evaluatePolicy(policy: DocumentData | undefined, context: Pick<R
 
 export function rewardEntryId(id: string): string { return tupleId("completion-reward", id); }
 
+const MYT_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+export function monthlyRewardWindow(verifiedAt: Timestamp): {rewardMonth: string; releaseAt: Timestamp} {
+  const local = new Date(verifiedAt.toMillis() + MYT_OFFSET_MS);
+  const year = local.getUTCFullYear(), month = local.getUTCMonth();
+  const rewardMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
+  const releaseAt = Timestamp.fromMillis(Date.UTC(year, month + 1, 1) - MYT_OFFSET_MS);
+  return {rewardMonth, releaseAt};
+}
+
 export function walletBalance(wallet: DocumentData | undefined, uid: string, townshipId: string): number {
   if (!wallet) fail("failed-precondition", "WALLET_REQUIRED");
   if (wallet.ownerUid !== uid || wallet.townshipId !== townshipId) fail("permission-denied", "WALLET_ACCESS_DENIED");
@@ -68,7 +78,7 @@ export async function prepareReward(db: Firestore, tx: Transaction, context: Rew
       before.participationId !== id || before.completionEventId !== completionEventId)) fail("failed-precondition", "REWARD_ACCOUNTING_CONFLICT");
   if (entry) {
     if (entry.type !== "completion_reward" || entry.ownerUid !== uid || entry.townshipId !== townshipId ||
-        entry.participationId !== id || entry.completionEventId !== completionEventId ||
+        entry.participationId !== id || entry.completionEventId !== completionEventId || entry.referenceId !== id ||
         !Number.isSafeInteger(entry.amount) || entry.amount <= 0 || entry.rateCoins !== entry.amount ||
         !text(entry.ruleId) || !text(entry.ruleVersion) || !(entry.createdAt instanceof Timestamp) ||
         !Number.isSafeInteger(entry.balanceAfter) || entry.balanceAfter < entry.amount || before?.status === "ineligible") {
@@ -81,11 +91,22 @@ export async function prepareReward(db: Firestore, tx: Transaction, context: Rew
       }
       return () => {};
     }
+    if (before?.status === "pending_monthly") {
+      if (before.ledgerEntryId !== null || before.amountCoins !== entry.amount || before.rateCoins !== entry.rateCoins ||
+          before.ruleId !== entry.ruleId || before.ruleVersion !== entry.ruleVersion) {
+        fail("failed-precondition", "REWARD_ACCOUNTING_CONFLICT");
+      }
+      return () => {};
+    }
     return () => tx.set(claimRef, {...base, status: "credited", eligible: true, amountCoins: entry.amount,
-      rateCoins: entry.rateCoins, ruleId: entry.ruleId, ruleVersion: entry.ruleVersion, ledgerEntryId: entryId, reason: "RECOVERED_REWARD_ENTRY"});
+      rateCoins: entry.rateCoins, ruleId: entry.ruleId, ruleVersion: entry.ruleVersion, ledgerEntryId: entryId,
+      reason: "RECOVERED_REWARD_ENTRY", releasedAt: before?.releasedAt ?? now,
+      releaseAt: before?.releaseAt ?? monthlyRewardWindow(context.verifiedAt).releaseAt,
+      rewardMonth: before?.rewardMonth ?? monthlyRewardWindow(context.verifiedAt).rewardMonth});
   }
   if (before?.status === "credited") fail("failed-precondition", "REWARD_ACCOUNTING_CONFLICT");
   if (before?.status === "ineligible") return () => {};
+  if (before?.status === "pending_monthly") return () => {};
   const pointer = (await tx.get(db.doc(`rewardPolicies/${townshipId}`))).data();
   let policy: DocumentData | undefined;
   let invalidReference = false;
@@ -97,14 +118,9 @@ export async function prepareReward(db: Firestore, tx: Transaction, context: Rew
   const decision = invalidReference ? pending("REWARD_POLICY_INVALID") : evaluatePolicy(policy, context);
   if (decision.status === "pending_policy" && before?.status === "pending_policy") return () => {};
   if (decision.status !== "credited") return () => tx.set(claimRef, {...base, ...decision, ledgerEntryId: null});
-  const walletRef = db.doc(`wallets/${uid}`), wallet = (await tx.get(walletRef)).data();
-  const balance = walletBalance(wallet, uid, townshipId) + decision.amountCoins!;
-  if (!Number.isSafeInteger(balance)) fail("failed-precondition", "INVALID_WALLET_BALANCE");
-  return () => {
-    tx.create(entryRef, {ownerUid: uid, townshipId, type: "completion_reward", amount: decision.amountCoins, balanceAfter: balance,
-      participationId: id, completionEventId, ruleId: decision.ruleId, ruleVersion: decision.ruleVersion,
-      rateCoins: decision.rateCoins, referenceId: id, createdAt: now});
-    tx.set(walletRef, {ownerUid: uid, townshipId, balance, updatedAt: now});
-    tx.set(claimRef, {...base, ...decision, ledgerEntryId: entryId});
-  };
+  const window = monthlyRewardWindow(context.verifiedAt);
+  return () => tx.set(claimRef, {...base, status: "pending_monthly", eligible: true,
+    amountCoins: decision.amountCoins, rateCoins: decision.rateCoins, ruleId: decision.ruleId,
+    ruleVersion: decision.ruleVersion, reason: decision.reason, ledgerEntryId: null,
+    rewardMonth: window.rewardMonth, releaseAt: window.releaseAt, releasedAt: null});
 }

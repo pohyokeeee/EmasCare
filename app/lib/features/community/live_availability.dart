@@ -45,8 +45,8 @@ class LiveAvailabilityCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             c.t(
-              'Set the hours that work for you. Existing sessions stay on your schedule.',
-              'Tetapkan waktu yang sesuai. Sesi sedia ada kekal dalam jadual anda.',
+              'Check in when you are free to help. Existing sessions stay on your schedule.',
+              'Daftar masuk apabila anda lapang untuk membantu. Sesi sedia ada kekal dalam jadual anda.',
             ),
             style: const TextStyle(color: Palette.muted),
           ),
@@ -115,6 +115,75 @@ class LiveAvailabilityCard extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Family members can signal that they are free to be considered for a future
+/// companion request. This is an availability signal only: the backend never
+/// treats a family account as an assignable helper or grants session access.
+class FamilyAvailabilityCard extends StatelessWidget {
+  const FamilyAvailabilityCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = PreviewScope.of(context), w = c.sessions!;
+    final record = c.community?.companionAvailability;
+    final name = 'companion-availability';
+    final pending = w.actions[name] != null;
+    final available = record?.available == true;
+    return Surface(
+      color: Palette.soft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            c.t('Open to helping a neighbour?', 'Sedia membantu jiran?'),
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            c.t(
+              'Check in when you are free. The coordinator can see your availability, but this does not create or confirm a booking.',
+              'Daftar masuk apabila anda lapang. Penyelaras boleh melihat ketersediaan anda, tetapi ini tidak mencipta atau mengesahkan tempahan.',
+            ),
+            style: const TextStyle(color: Palette.muted),
+          ),
+          const SizedBox(height: 12),
+          if (c.community?.catalogError != null)
+            CommunityError(
+              c.community!.catalogError!.message(c.malay),
+              retry: c.community!.retry,
+            )
+          else
+            SwitchListTile(
+              key: const ValueKey('family-availability'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                available
+                    ? c.t('Available to be contacted', 'Sedia dihubungi')
+                    : c.t('Not currently available', 'Belum tersedia'),
+              ),
+              value: available,
+              onChanged: pending
+                  ? null
+                  : (value) async {
+                      final saved = await w.run(name, 'companionAvailability', {
+                        'available': value,
+                        'slots': const <Json>[],
+                      });
+                      if (saved && context.mounted) {
+                        sessionToast(
+                          context,
+                          value ? 'Availability checked in.' : 'Availability checked out.',
+                          value ? 'Ketersediaan didaftarkan.' : 'Ketersediaan dibatalkan.',
+                        );
+                      }
+                    },
+            ),
+          if (pending) PendingSessionAction(name),
         ],
       ),
     );

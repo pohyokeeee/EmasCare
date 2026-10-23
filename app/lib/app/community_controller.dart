@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../data/backend_failure.dart';
 import '../data/community_repository.dart';
+import '../data/availability_repository.dart';
 import '../models/backend_models.dart';
 import '../models/community_models.dart';
 import '../models/preview_models.dart';
@@ -28,6 +29,7 @@ class CommunityController extends ChangeNotifier {
   List<PlaceRecord> places = [];
   List<PairingRecord> pairings = [];
   HelperProfileRecord? helper;
+  CompanionAvailabilityRecord? companionAvailability;
   bool catalogLoading = false, pairingLoading = false, helperLoading = false;
   BackendFailure? catalogError, pairingError, helperError;
   DateTime get now => session.clock().toUtc();
@@ -44,6 +46,7 @@ class CommunityController extends ChangeNotifier {
     places = [];
     pairings = [];
     helper = null;
+    companionAvailability = null;
     catalogLoading = false;
     pairingLoading = false;
     helperLoading = false;
@@ -156,6 +159,20 @@ class CommunityController extends ChangeNotifier {
           notifyListeners();
         }, onError: catalogFailure),
       );
+    }
+    if (p.role == AppRole.family || p.role == AppRole.helper) {
+      final availability = repository is AvailabilityRepository
+          ? repository as AvailabilityRepository
+          : null;
+      if (availability != null) {
+        _subscriptions.add(
+          availability.watchCompanionAvailability(p.uid).listen((value) {
+            if (!valid()) return;
+            companionAvailability = value;
+            notifyListeners();
+          }, onError: catalogFailure),
+        );
+      }
     }
     notifyListeners();
   }

@@ -20,7 +20,7 @@ Share this guide and [the executable JSON fixtures](fixtures/stage6_coordination
 | `getProgress` | Scope-specific permission below: `scope`, `entityId`, `periodType`, `periodKey` | `{progress}` |
 | `getAvailabilitySummary` | Signed-in profile: no business fields | `{availabilitySummary}` |
 | `getCoordinatorSummary` | Coordinator: no business fields | `{summary}` |
-| `parseVoiceBooking` | Actual elder or booking-consented family: `elderId`, `locale`, `input` | `{transcript, draft, missingFields, clarification, readBackText, canConfirm}` |
+| `parseVoiceBooking` | Actual elder: `elderId`, `locale`, `input` | `{transcript, draft, missingFields, clarification, readBackText, canConfirm}` |
 
 The three named summary read APIs make the previously specified authorized summary reads concrete. They are additive to contract v1; existing settings, availability, session and attendance response envelopes remain unchanged. Use `getProgress` for current results rather than a cached `progress` document. Refresh after completion/review or when the user opens the progress view. `getCoordinatorSummary` is a read snapshot; refresh after an operator action.
 
@@ -73,7 +73,7 @@ Progress fields are `id`, `scope`, `entityId`, `periodType`, `periodKey`, `count
 - Household: current members or coordinator. Weekend helping counts completed help by helpers currently in that household. It does not disclose hidden elder check-ins/outings. Reporting period uses final confirmation time; weekend classification uses the request's scheduled Malaysia start day.
 - Township: current township profiles. Live outings count **elder** participations only, avoiding an extra outing for the companion. Residents receive `SUMMARY_SUPPRESSED` if fewer than five current elder profiles exist; coordinators may inspect their operational aggregate. No individual outing details are returned for this scope.
 
-Elder `latestOuting` is null or `{participationId, requestId, attendanceId, activityTitle: {bm,en}, completedAt}`. Only this safe projection reaches consented family; underlying reward claims, ledger and participant finance records remain private. Final verification time determines reporting period, not reward eligibility by month.
+Elder `latestOuting` is null or `{participationId, requestId, attendanceId, activityTitle: {bm,en}, completedAt}`. Only this safe projection reaches consented family; underlying reward claims, ledger and participant finance records remain private. Final verification time determines reporting period; the reward claim uses that verified time only to calculate its next-MYT-month release date.
 
 `sendFamilyCheer` accepts this verified outing's `participationId`. One family member can clap once per underlying participation, even with different action keys or simultaneous taps. No cheer reward exists. Unverified, phone-only and pending-definition outings cannot be cheered. Read cheers with `elderId == selectedElderId` and `createdAt desc`, under current sharing consent.
 

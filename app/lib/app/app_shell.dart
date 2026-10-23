@@ -754,8 +754,8 @@ void showPreviewInfo(BuildContext context) {
         const SizedBox(height: 14),
         Text(
           c.t(
-            'Sign in to the local demo for saved check-ins, consent, companion requests and session confirmations. Coin awards and redemption are pending. No messages are sent.',
-            'Log masuk ke demo setempat untuk daftar masuk, kebenaran, permintaan teman dan pengesahan sesi tersimpan. Pemberian syiling dan penebusan belum tersedia. Tiada mesej dihantar.',
+            'Sign in to the local demo for saved check-ins, consent, elder-created companion requests, session chat and confirmations. Eligible coins are credited monthly and the demo voucher needs 100 coins.',
+            'Log masuk ke demo setempat untuk daftar masuk, kebenaran, permintaan teman oleh warga emas, sembang dan pengesahan sesi tersimpan. Syiling layak dikreditkan bulanan dan baucar demo memerlukan 100 syiling.',
           ),
         ),
         const SizedBox(height: 22),

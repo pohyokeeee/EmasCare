@@ -12,16 +12,18 @@ A community companionship app for older residents of a township. Elders check in
 - **Minta Teman (companion booking):** the elder asks for a companion for a walk, sitting together, carrying light items, or phone help. They choose a date, time and meeting place, review the request, then confirm.
 - **Voice and text booking:** the elder describes the request in words and the app prepares a draft to read back before they confirm. If the AI provider is switched off, the app says so and offers the normal booking form.
 - **My rewards:** a wallet of coins earned from verified activities and sessions, with a history of credits and a mock voucher the elder can redeem.
-- **Consent controls:** two separate switches. One lets family see daily status and progress. The other lets family book on the elder's behalf.
+- **Consent controls:** sharing consent lets linked family see the permitted daily status, progress and session history. Companion requests are created only by the elder; family has no booking or session-mutation controls.
 
 ### For family
 - **Daily status:** see whether the elder checked in, but only while the elder has allowed sharing. Turning sharing off clears it straight away.
-- **Proxy booking:** book a companion for the elder, only while booking consent is on.
+- **Session visibility:** see the elder's permitted session status and history while sharing consent is on. Family cannot create, cancel, assign or confirm a session.
+- **Community availability:** check in or out when free to be contacted. This is an informational availability signal, not a booking or helper assignment.
 - **Progress and cheers:** see the elder's outings and send a cheer. A cheer doesn't earn coins.
 
 ### For helpers (neighbour companions)
 - **Availability:** set the weekly times they can help.
 - **Assigned sessions:** see only the sessions assigned to them. They accept, start and finish each one, then confirm.
+- **Session chat:** chat with the assigned elder after assignment, including follow-up after completion.
 - **My rewards:** the same wallet and mock voucher as elders.
 
 ### For coordinators
@@ -33,7 +35,7 @@ A community companionship app for older residents of a township. Elders check in
 
 ### How rules and rewards work
 - A two-person session only completes after **both** the elder and the helper confirm. One confirmation alone earns nothing.
-- Each verified activity or session gives **20 coins to each participant**, once, even if the action is retried. Five credits pay for the 100-coin **mock voucher**. There is no real shop or payment.
+- Each eligible verified activity or session creates a monthly reward claim for **20 coins for each actual participant**, once, even if the action is retried. Claims release on the first day of the next Malaysia-time calendar month through a coordinator settlement; five released credits pay for the 100-coin **mock voucher**. There is no real shop or payment.
 - Check-ins, cheers and cancelled or half-confirmed sessions earn no coins.
 - Each role only sees its own data. An unrelated family account sees nothing about other households.
 
@@ -126,5 +128,5 @@ tests/       Backend and rules tests
 ## Scope and decisions
 
 - **Out of scope for the MVP:** Tanya Dulu (future), cloud deployment, push delivery, automatic scheduling, and live Gemini/microphone audio.
-- **Rewards (22 Oct 2026):** 20 coins to each actual participant per verified session. This replaces the earlier role-rate and monthly-award designs.
+- **Rewards (current):** 20-coin monthly claims for each actual participant per verified session, released after the next MYT month boundary. This replaces the earlier fixed monthly award and role-rate designs.
 - **Ownership:** developer A owns all Flutter code, and developer B owns the backend.

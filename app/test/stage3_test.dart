@@ -712,7 +712,7 @@ void main() {
     },
   );
   testWidgets(
-    'live request draft hides on family booking withdrawal; sharing stays independent',
+    'family cannot open a live companion request; sharing stays independent',
     (tester) async {
       final fake = Stage3Fake(), mock = MockEmasRepository();
       final s = SessionController(fake, clock: () => testNow);
@@ -721,8 +721,8 @@ void main() {
       await login(tester, fake, s, AppRole.family, sharing: false);
       c.navigate(destination: Destination.companion);
       await tester.pumpAndSettle();
-      await tap(tester, find.text('New request'));
-      expect(find.text('A little company, arranged.'), findsOneWidget);
+      expect(find.text('New request'), findsNothing);
+      expect(find.text('A little company, arranged.'), findsNothing);
       fake.householdEvents.add(
         auth.household(fake.current, booking: false, sharing: true),
       );
@@ -779,7 +779,7 @@ void main() {
             );
           }
         }
-        if (role == AppRole.elder || role == AppRole.family) {
+        if (role == AppRole.elder) {
           c.navigate(destination: Destination.activities);
           for (final width in [320.0, 390.0, 768.0, 1440.0]) {
             tester.view.physicalSize = Size(width, 1100);

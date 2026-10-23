@@ -2,6 +2,7 @@ import {initializeApp} from "firebase-admin/app";
 import {getFirestore, Timestamp} from "firebase-admin/firestore";
 import {setGlobalOptions} from "firebase-functions/v2";
 import {onCall} from "firebase-functions/v2/https";
+import {onSchedule} from "firebase-functions/v2/scheduler";
 import {authenticatedUid, authorizeElder, loadActor, requireRole, requireTownship} from "./auth";
 import {runCommand} from "./commands";
 import {fail} from "./errors";
@@ -14,6 +15,8 @@ import {createOperationsService} from "./operations";
 import {createNotificationService} from "./notifications";
 import {createSummaryService} from "./summaries";
 import {createVoiceService} from "./voice";
+import {createChatService} from "./chat";
+import {createMonthlyRewardService} from "./monthly_rewards";
 
 initializeApp();
 setGlobalOptions({region: "asia-southeast1", maxInstances: 3});
@@ -26,11 +29,14 @@ const operations = createOperationsService(db);
 const notifications = createNotificationService(db);
 const summaries = createSummaryService(db);
 const voice = createVoiceService(db);
+const chat = createChatService(db);
+const monthlyRewards = createMonthlyRewardService(db);
 
 export const saveElderSettings = onCall((request) => checkins.saveElderSettings(authenticatedUid(request.auth), request.data));
 export const submitCheckIn = onCall((request) => checkins.submitCheckIn(authenticatedUid(request.auth), request.data));
 export const recordPhoneResponse = onCall((request) => checkins.recordPhoneResponse(authenticatedUid(request.auth), request.data));
 export const setHelperAvailability = onCall((request) => sessions.setHelperAvailability(authenticatedUid(request.auth), request.data));
+export const setCompanionAvailability = onCall((request) => sessions.setCompanionAvailability(authenticatedUid(request.auth), request.data));
 export const createRequest = onCall((request) => sessions.createRequest(authenticatedUid(request.auth), request.data));
 export const assignRequest = onCall((request) => sessions.assignRequest(authenticatedUid(request.auth), request.data));
 export const transitionRequest = onCall((request) => sessions.transitionRequest(authenticatedUid(request.auth), request.data));
@@ -48,6 +54,17 @@ export const getProgress = onCall((r) => summaries.getProgress(authenticatedUid(
 export const getAvailabilitySummary = onCall((r) => summaries.getAvailabilitySummary(authenticatedUid(r.auth), r.data));
 export const getCoordinatorSummary = onCall((r) => summaries.getCoordinatorSummary(authenticatedUid(r.auth), r.data));
 export const parseVoiceBooking = onCall({timeoutSeconds: 40, memory: "256MiB"}, (r) => voice.parseVoiceBooking(authenticatedUid(r.auth), r.data));
+export const listSessionMessages = onCall((r) => chat.listSessionMessages(authenticatedUid(r.auth), r.data));
+export const sendSessionMessage = onCall((r) => chat.sendSessionMessage(authenticatedUid(r.auth), r.data));
+export const settleDueMonthlyRewards = onCall((r) => monthlyRewards.settleDueMonthlyRewards(authenticatedUid(r.auth), r.data));
+export const settleDueMonthlyRewardsScheduled = onSchedule({
+  schedule: "0 0 1 * *",
+  timeZone: "Asia/Kuala_Lumpur",
+  timeoutSeconds: 540,
+}, async () => {
+  const result = await monthlyRewards.settleDueMonthlyRewardsScheduled();
+  console.log("Monthly reward settlement completed", result);
+});
 
 // Foundation diagnostics only; not replacements for agreed domain callables.
 export const getBackendContext = onCall(async (request) => {

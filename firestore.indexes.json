@@ -15,6 +15,7 @@
     {"collectionGroup":"activityAttendances","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"status","order":"ASCENDING"},{"fieldPath":"submittedAt","order":"ASCENDING"}]},
     {"collectionGroup":"participations","queryScope":"COLLECTION","fields":[{"fieldPath":"beneficiaryUid","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"verifiedAt","order":"DESCENDING"}]},
     {"collectionGroup":"rewardClaims","queryScope":"COLLECTION","fields":[{"fieldPath":"beneficiaryUid","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"verifiedAt","order":"DESCENDING"}]},
+    {"collectionGroup":"rewardClaims","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"status","order":"ASCENDING"},{"fieldPath":"releaseAt","order":"ASCENDING"}]},
     {"collectionGroup":"entries","queryScope":"COLLECTION","fields":[{"fieldPath":"ownerUid","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]},
     {"collectionGroup":"redemptions","queryScope":"COLLECTION","fields":[{"fieldPath":"ownerUid","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"issuedAt","order":"DESCENDING"}]},
     {"collectionGroup":"pairings","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"helperId","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"}]},
@@ -22,7 +23,8 @@
     {"collectionGroup":"reports","queryScope":"COLLECTION","fields":[{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"state","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]},
     {"collectionGroup":"reports","queryScope":"COLLECTION","fields":[{"fieldPath":"createdBy","order":"ASCENDING"},{"fieldPath":"townshipId","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]},
     {"collectionGroup":"cheers","queryScope":"COLLECTION","fields":[{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]},
-    {"collectionGroup":"notifications","queryScope":"COLLECTION","fields":[{"fieldPath":"recipientUid","order":"ASCENDING"},{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"consentScope","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]}
+    {"collectionGroup":"notifications","queryScope":"COLLECTION","fields":[{"fieldPath":"recipientUid","order":"ASCENDING"},{"fieldPath":"elderId","order":"ASCENDING"},{"fieldPath":"consentScope","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]},
+    {"collectionGroup":"sessionMessages","queryScope":"COLLECTION","fields":[{"fieldPath":"requestId","order":"ASCENDING"},{"fieldPath":"createdAt","order":"ASCENDING"}]}
   ],
   "fieldOverrides": []
 }

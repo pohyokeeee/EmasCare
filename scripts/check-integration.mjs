@@ -15,8 +15,12 @@ export async function verifyWallet(client,uid){
   const redemptions=await client.list(uid,'redemptions',filter,'issuedAt');
   assert(wallet&&wallet.ownerUid===uid&&wallet.townshipId===townshipId,'Own wallet scope');
   assert(Number.isSafeInteger(wallet.balance)&&wallet.balance>=0,'Nonnegative integer wallet balance');
-  assert(entries.every(e=>['completion_reward','voucher_redemption'].includes(e.type)),'Known ledger entry types');
+  assert(entries.every(e=>['completion_reward','voucher_redemption','demo_opening_credit'].includes(e.type)),'Known ledger entry types');
   assert.equal(wallet.balance,entries.reduce((sum,e)=>sum+e.amount,0),'Wallet must equal its immutable ledger');
+  const demoEntries=entries.filter(e=>e.type==='demo_opening_credit');
+  assert(demoEntries.length===0||(
+    demoEntries.length===1&&demoEntries[0].amount===50&&demoEntries[0].balanceAfter===50&&
+    demoEntries[0].referenceId==='demo-opening-50'),'Valid demo opening credit');
   const credits=entries.filter(e=>e.type==='completion_reward'),debits=entries.filter(e=>e.type==='voucher_redemption');
   assert.equal(new Set(credits.map(e=>e.participationId)).size,credits.length,'No duplicate participation credits');
   for(const entry of credits){
@@ -26,7 +30,7 @@ export async function verifyWallet(client,uid){
   for(const entry of debits)assert.equal(entry.amount,-100,'Backend voucher price');
   assert.equal(debits.length,redemptions.length,'One debit per redemption');
   for(const r of redemptions)assert(r.isDemo===true&&r.costCoins===100&&r.code.startsWith('DEMO-')&&debits.some(e=>e.referenceId===r.id),'Persisted mock voucher/debit pair');
-  return {balance:wallet.balance,credits:credits.length,redemptions:redemptions.length};
+  return {balance:wallet.balance,credits:credits.length,demoOpeningCredits:demoEntries.length,redemptions:redemptions.length};
 }
 
 export async function checkIntegration(client){

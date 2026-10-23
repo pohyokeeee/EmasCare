@@ -50,7 +50,13 @@ service cloud.firestore {
     match /requests/{id} {
       allow read: if coordinator(resource.data.townshipId) || ownElder(resource.data.elderId)
         || (sameTownship(resource.data.townshipId) && profile().role == 'helper' && request.auth.uid == resource.data.helperId)
-        || familyAccess(resource.data.elderId, resource.data.householdId, 'familyBookingEnabled');
+        || familyAccess(resource.data.elderId, resource.data.householdId, 'familySharingEnabled');
+    }
+    match /sessionMessages/{id} {
+      allow read: if signedIn()
+        && sameTownship(resource.data.townshipId)
+        && ((profile().role == 'elder' && request.auth.uid == resource.data.elderId)
+          || (profile().role == 'helper' && request.auth.uid == resource.data.helperId));
     }
     match /activityAttendances/{id} {
       allow read: if coordinator(resource.data.townshipId) || ownElder(resource.data.elderId)
@@ -68,6 +74,10 @@ service cloud.firestore {
     match /helperProfiles/{uid} {
       allow read: if signedIn() && ((request.auth.uid == uid && profile().role == 'helper')
         || coordinator(get(/databases/$(database)/documents/users/$(uid)).data.townshipId));
+    }
+    match /companionAvailability/{uid} {
+      allow read: if signedIn() && ((request.auth.uid == uid && profile().role in ['family', 'helper'])
+        || coordinator(resource.data.townshipId));
     }
     match /pairings/{id} {
       allow read: if coordinator(resource.data.townshipId)

@@ -116,13 +116,11 @@ class _LiveRequestFormState extends State<LiveRequestForm> {
   @override
   Widget build(BuildContext context) {
     final c = PreviewScope.of(context), w = c.sessions!;
-    final family = c.role == AppRole.family;
-    if ((family && c.session!.selectedElder?.booking != true) ||
-        (!family && c.role != AppRole.elder)) {
+    if (c.role != AppRole.elder) {
       return CommunityError(
         c.t(
-          'Booking needs your elder’s consent.',
-          'Tempahan memerlukan kebenaran warga emas.',
+          'Only the elder can request a companion.',
+          'Hanya warga emas boleh meminta teman.',
         ),
       );
     }
@@ -136,9 +134,7 @@ class _LiveRequestFormState extends State<LiveRequestForm> {
       );
     }
     final pending = w.actions[_action] != null;
-    final elder = family
-        ? c.session!.selectedElder!.displayName
-        : c.session!.profile!.displayName;
+    final elder = c.session!.profile!.displayName;
     if (_review != null) {
       final r = _review!;
       final place = c.community?.places

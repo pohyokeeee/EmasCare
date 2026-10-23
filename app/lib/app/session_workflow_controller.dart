@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../data/backend_failure.dart';
 import '../data/session_repository.dart';
+import '../data/availability_repository.dart';
 import '../models/backend_models.dart';
 import '../models/preview_models.dart';
 import '../models/session_models.dart';
@@ -142,9 +143,11 @@ class SessionWorkflowController extends ChangeNotifier {
   }
 
   Future<bool> run(String name, String kind, Json fields) async {
+    final availabilityAction = kind == 'companionAvailability';
     if (_disposed ||
-        _scope == null ||
-        _currentScope != _scope ||
+        (!availabilityAction && (_scope == null || _currentScope != _scope)) ||
+        (availabilityAction && (!session.connected ||
+            ![AppRole.family, AppRole.helper].contains(session.profile?.role))) ||
         error != null ||
         busy(name)) {
       return false;
@@ -167,6 +170,14 @@ class SessionWorkflowController extends ChangeNotifier {
           await repository.transitionRequest(action.fields, action.key);
         case 'availability':
           await repository.setHelperAvailability(action.fields, action.key);
+        case 'companionAvailability':
+          final availability = repository is AvailabilityRepository
+              ? repository as AvailabilityRepository
+              : null;
+          if (availability == null) {
+            throw const BackendFailure('failed-precondition', 'AVAILABILITY_NOT_CONNECTED');
+          }
+          await availability.setCompanionAvailability(action.fields, action.key);
         default:
           throw const BackendFailure('invalid-argument');
       }

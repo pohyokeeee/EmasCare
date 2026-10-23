@@ -424,7 +424,7 @@ class _ActivityDetailState extends State<_ActivityDetail> {
             ),
           ),
         const SizedBox(height: 24),
-        if (c.role == AppRole.elder || c.role == AppRole.family)
+        if (c.role == AppRole.elder)
           EmasButton(
             label: c.session?.connected == true && c.sessions == null
                 ? c.t(

@@ -15,6 +15,9 @@ import 'wallet_repository.dart';
 import '../models/wallet_models.dart';
 import 'backend_failure.dart';
 import 'coordination_repository.dart';
+import 'chat_repository.dart';
+import '../models/chat_models.dart';
+import 'availability_repository.dart';
 
 /// Local-only adapter. No SDK read, listener or callable starts before connect.
 class FirebaseBackendRepository
@@ -24,7 +27,9 @@ class FirebaseBackendRepository
         SessionRepository,
         AttendanceRepository,
         WalletRepository,
-        CoordinationRepository {
+        CoordinationRepository,
+        ChatRepository,
+        AvailabilityRepository {
   FirebaseBackendRepository._(this.auth, this.db, this.functions);
   final FirebaseAuth auth;
   final FirebaseFirestore db;
@@ -485,6 +490,17 @@ class FirebaseBackendRepository
       );
 
   @override
+  Stream<CompanionAvailabilityRecord?> watchCompanionAvailability(String uid) => db
+      .doc('companionAvailability/$uid')
+      .snapshots(includeMetadataChanges: true)
+      .where((s) => !s.metadata.isFromCache)
+      .map(
+        (s) => s.exists
+            ? CompanionAvailabilityRecord.fromJson({...s.data()!, 'id': s.id})
+            : null,
+      );
+
+  @override
   Stream<List<SessionRequest>> watchRequests(
     BackendProfile profile, {
     String? elderId,
@@ -534,6 +550,19 @@ class FirebaseBackendRepository
       }))['helperProfile'],
     ),
   );
+
+  @override
+  Future<CompanionAvailabilityRecord> setCompanionAvailability(
+    Json fields,
+    String key,
+  ) async => CompanionAvailabilityRecord.fromJson(
+    jsonObject(
+      (await _call('setCompanionAvailability', {
+        ...fields,
+        'idempotencyKey': key,
+      }))['availability'],
+    ),
+  );
   Future<SessionRequest> _requestCall(
     String name,
     Json fields,
@@ -552,4 +581,33 @@ class FirebaseBackendRepository
   @override
   Future<SessionRequest> transitionRequest(Json fields, String key) =>
       _requestCall('transitionRequest', fields, key);
+
+  @override
+  Future<List<SessionMessage>> listSessionMessages(
+    String requestId, {
+    int limit = 100,
+  }) async {
+    final data = await _call('listSessionMessages', {
+      'requestId': requestId,
+      'limit': limit,
+    });
+    return [
+      for (final value in (data['messages'] as List))
+        SessionMessage.fromJson(jsonObject(value)),
+    ];
+  }
+
+  @override
+  Future<SessionMessage> sendSessionMessage(
+    String requestId,
+    String text,
+    String key,
+  ) async {
+    final data = await _call('sendSessionMessage', {
+      'requestId': requestId,
+      'text': text,
+      'idempotencyKey': key,
+    });
+    return SessionMessage.fromJson(jsonObject(data['message']));
+  }
 }

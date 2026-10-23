@@ -103,7 +103,7 @@ export function createVoiceService(db: Firestore, provider: VoiceProvider = gemi
     if (!["bm", "en"].includes(input.locale as string)) fail("invalid-argument", "INVALID_LOCALE");
     const message = voiceInput(input.input), now = clock();
     const access = async (tx: import("firebase-admin/firestore").Transaction) => {
-      const actor = await loadActor(db, uid, tx); requireRole(actor, ["elder", "family"]);
+      const actor = await loadActor(db, uid, tx); requireRole(actor, ["elder"]);
       await authorizeElder(db, tx, actor, elderId, "family_booking"); return actor;
     };
     const context = await db.runTransaction(async (tx) => {

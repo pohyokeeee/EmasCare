@@ -148,3 +148,23 @@ class HelperProfileRecord {
   final List<String> languages, tasks;
   final List<Json> slots;
 }
+
+class CompanionAvailabilityRecord {
+  CompanionAvailabilityRecord.fromJson(Json data)
+    : id = data['id'] as String? ?? data['uid'] as String,
+      uid = data['uid'] as String,
+      townshipId = data['townshipId'] as String,
+      role = AppRole.values.byName(data['role'] as String),
+      displayName = data['displayName'] as String,
+      available = data['available'] == true,
+      slots = [
+        for (final s in (data['availabilitySlots'] as List? ?? const []))
+          jsonObject(s),
+      ],
+      updatedAt = utcTimestamp(data['updatedAt']);
+  final String id, uid, townshipId, displayName;
+  final AppRole role;
+  final bool available;
+  final List<Json> slots;
+  final DateTime? updatedAt;
+}

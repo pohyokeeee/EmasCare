@@ -70,6 +70,26 @@ export function createSessionService(db: Firestore, clock: () => Timestamp = Tim
       }});
   }
 
+  async function setCompanionAvailability(uid: string, value: unknown) {
+    const input = inputObject(value, ["available", "slots"], true);
+    if (typeof input.available !== "boolean") fail("invalid-argument", "INVALID_AVAILABILITY");
+    const slots = input.slots === undefined ? [] : slotsInput(input.slots);
+    return runCommand({db, uid, name: "setCompanionAvailability", key: input.idempotencyKey as string,
+      payload: {available: input.available, slots}, authorize: async (_tx, actor) => {
+        requireRole(actor, ["family", "helper"]);
+        return actor;
+      }, execute: async (tx, actor) => {
+        const now = clock();
+        const ref = db.doc(`companionAvailability/${actor.uid}`);
+        const before = (await tx.get(ref)).data();
+        const next = {uid: actor.uid, townshipId: actor.townshipId, householdId: actor.householdId ?? null,
+          role: actor.role, displayName: actor.displayName, available: input.available, availabilitySlots: slots,
+          isDemo: before?.isDemo === true, updatedAt: now, createdAt: before?.createdAt ?? now};
+        tx.set(ref, next);
+        return envelope({availability: wireRecord(actor.uid, next)});
+      }});
+  }
+
   async function createRequest(uid: string, value: unknown) {
     const input = inputObject(value, ["elderId", "activityId", "placeId", "startsAt", "endsAt", "taskType", "preferredLanguage", "preferredHelperGender"], true);
     const elderId = documentId(input.elderId);
@@ -89,7 +109,7 @@ export function createSessionService(db: Firestore, clock: () => Timestamp = Tim
     const id = tupleId("request", uid, input.idempotencyKey as string);
     return runCommand({db, uid, name: "createRequest", key: input.idempotencyKey as string, payload,
       authorize: async (tx, actor) => {
-        requireRole(actor, ["elder", "family"]);
+        requireRole(actor, ["elder"]);
         await authorizeElder(db, tx, actor, elderId, "family_booking");
         const elder = await loadActor(db, elderId, tx);
         await elderHousehold(db, tx, elder);
@@ -180,13 +200,14 @@ export function createSessionService(db: Firestore, clock: () => Timestamp = Tim
     if (!["accept", "start", "finish", "confirm", "cancel"].includes(action)) fail("invalid-argument", "INVALID_ACTION");
     return runCommand({db, uid, name: "transitionRequest", key: input.idempotencyKey as string, payload: {requestId: id, action},
       authorize: async (tx, actor) => {
+        if (actor.role === "family") fail("permission-denied", "ROLE_NOT_ALLOWED");
         const request = await requestAccess(db, tx, actor, id);
         if (["accept", "start", "finish"].includes(action) && (actor.role !== "helper" || request.helperId !== actor.uid)) {
           fail("permission-denied", "NOT_ASSIGNED_HELPER");
         }
         if (action === "confirm" && !(actor.role === "elder" && actor.uid === request.elderId) &&
             !(actor.role === "helper" && actor.uid === request.helperId)) fail("permission-denied", "ROLE_NOT_ALLOWED");
-        if (action === "cancel") requireRole(actor, ["elder", "family", "coordinator"]);
+        if (action === "cancel") requireRole(actor, ["elder", "coordinator"]);
         return request;
       }, execute: async (tx, actor, request) => {
         const now = clock();
@@ -237,5 +258,5 @@ export function createSessionService(db: Firestore, clock: () => Timestamp = Tim
         return envelope({request: wireRecord(id, next)});
       }});
   }
-  return {setHelperAvailability, createRequest, assignRequest, transitionRequest};
+  return {setHelperAvailability, setCompanionAvailability, createRequest, assignRequest, transitionRequest};
 }

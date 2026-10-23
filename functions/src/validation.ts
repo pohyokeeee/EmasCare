@@ -19,6 +19,11 @@ export function stringField(value: unknown, reason: string, max = 128): string {
   return value;
 }
 
+export function integerField(value: unknown, reason: string, min = 0, max = Number.MAX_SAFE_INTEGER): number {
+  if (!Number.isSafeInteger(value) || (value as number) < min || (value as number) > max) fail("invalid-argument", reason);
+  return value as number;
+}
+
 export function documentId(value: unknown): string {
   const id = stringField(value, "INVALID_ID");
   if (!/^[A-Za-z0-9_-]+$/.test(id)) fail("invalid-argument", "INVALID_ID");

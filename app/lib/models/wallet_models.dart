@@ -21,7 +21,7 @@ class WalletRecord {
   final DateTime updatedAt;
 }
 
-enum RewardOutcome { pendingPolicy, credited, ineligible }
+enum RewardOutcome { pendingPolicy, pendingMonthly, credited, ineligible }
 
 class RewardClaim {
   RewardClaim.fromJson(Json j)
@@ -33,6 +33,7 @@ class RewardClaim {
       completionEventId = j['completionEventId'] as String,
       outcome = switch (j['status']) {
         'pending_policy' => RewardOutcome.pendingPolicy,
+        'pending_monthly' => RewardOutcome.pendingMonthly,
         'credited' => RewardOutcome.credited,
         'ineligible' => RewardOutcome.ineligible,
         _ => throw const FormatException('Invalid reward outcome'),
@@ -46,6 +47,9 @@ class RewardClaim {
       ruleVersion = j['ruleVersion'] as String?,
       ledgerEntryId = j['ledgerEntryId'] as String?,
       reason = j['reason'] as String?,
+      rewardMonth = j['rewardMonth'] as String?,
+      releaseAt = utcTimestamp(j['releaseAt']),
+      releasedAt = utcTimestamp(j['releasedAt']),
       verifiedAt = utcTimestamp(j['verifiedAt'])!,
       createdAt = utcTimestamp(j['createdAt'])!,
       updatedAt = utcTimestamp(j['updatedAt'])! {
@@ -53,7 +57,21 @@ class RewardClaim {
             (eligible != null ||
                 amountCoins != null ||
                 rateCoins != null ||
-                ledgerEntryId != null)) ||
+                ledgerEntryId != null ||
+                rewardMonth != null ||
+                releaseAt != null ||
+                releasedAt != null)) ||
+        (outcome == RewardOutcome.pendingMonthly &&
+            (eligible != true ||
+                amountCoins == null ||
+                amountCoins! <= 0 ||
+                rateCoins != amountCoins ||
+                ledgerEntryId != null ||
+                ruleId == null ||
+                ruleVersion == null ||
+                rewardMonth == null ||
+                releaseAt == null ||
+                releasedAt != null)) ||
         (outcome == RewardOutcome.credited &&
             (eligible != true ||
                 amountCoins == null ||
@@ -63,7 +81,7 @@ class RewardClaim {
                 ruleId == null ||
                 ruleVersion == null)) ||
         (outcome == RewardOutcome.ineligible &&
-            (eligible != false || amountCoins != 0))) {
+            (eligible != false || amountCoins != 0 || rewardMonth != null || releaseAt != null || releasedAt != null))) {
       throw const FormatException('Inconsistent reward outcome');
     }
   }
@@ -76,7 +94,12 @@ class RewardClaim {
   final RewardOutcome outcome;
   final bool? eligible;
   final int? amountCoins, rateCoins;
-  final String? ruleId, ruleVersion, ledgerEntryId, reason;
+  final String? ruleId,
+      ruleVersion,
+      ledgerEntryId,
+      reason,
+      rewardMonth;
+  final DateTime? releaseAt, releasedAt;
   final DateTime verifiedAt, createdAt, updatedAt;
 }
 
@@ -95,9 +118,11 @@ class WalletEntry {
       rateCoins = j['rateCoins'] == null ? null : coinInteger(j['rateCoins']),
       referenceId = j['referenceId'] as String,
       createdAt = utcTimestamp(j['createdAt'])! {
-    if (!['completion_reward', 'voucher_redemption'].contains(type) ||
+    if (!['completion_reward', 'voucher_redemption', 'demo_opening_credit'].contains(type) ||
         (type == 'completion_reward' && amount <= 0) ||
-        (type == 'voucher_redemption' && amount != -100)) {
+        (type == 'voucher_redemption' && amount != -100) ||
+        (type == 'demo_opening_credit' &&
+            (amount != 50 || balanceAfter < amount || referenceId != 'demo-opening-50'))) {
       throw const FormatException('Inconsistent ledger entry');
     }
   }

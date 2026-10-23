@@ -38,10 +38,10 @@ test('Approved-reward API integration rehearsal and non-destructive demo prepara
       assert.deepEqual(await stored('checkins/elder_demo_'+new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kuala_Lumpur',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())),before);
       assert.equal((await db.collection('commandReceipts').get()).size,0);
     });
-    await t.test('real Auth/callable journey earns/redeems both wallets, verifies standalone attendance, consent and coordinator actions',async()=>{
+    await t.test('real Auth/callable journey creates monthly claims, verifies standalone attendance, consent and coordinator actions',async()=>{
       const report=await rehearseIntegration(client);assert.equal(report.completedRequests.length,5);
-      assert.deepEqual(report.wallets.elder_demo,{balance:20,credits:6,redemptions:1});
-      assert.deepEqual(report.wallets.helper_demo,{balance:0,credits:5,redemptions:1});
+      assert.deepEqual(report.wallets.elder_demo,{balance:0,credits:0,demoOpeningCredits:0,redemptions:0});
+      assert.deepEqual(report.wallets.helper_demo,{balance:0,credits:0,demoOpeningCredits:0,redemptions:0});
       assert.equal(report.progress.elder.counts.outings,2);assert.equal(report.progress.elder.pendingOutingClassifications,2);
       assert.equal(report.progress.helper.counts.helpingSessions,5);
       assert.equal((await stored('elderSettings/elder_demo')).familySharingEnabled,true);assert.equal((await stored('elderSettings/elder_demo')).familyBookingEnabled,true);

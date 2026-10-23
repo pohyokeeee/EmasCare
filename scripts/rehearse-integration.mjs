@@ -21,7 +21,7 @@ export async function rehearseIntegration(client){
     assert.equal(first.warningsCleared,0);assert.deepEqual(await client.call('coordinator_demo','processDemoDueItems',input),first);
   });
   const completions=[];
-  for(const requestId of rehearsalIds)await step(`Separate confirmations and 20-coin credits: ${requestId}`,async()=>{
+  for(const requestId of rehearsalIds)await step(`Separate confirmations and pending monthly rewards: ${requestId}`,async()=>{
     let r=await client.read('elder_demo',`requests/${requestId}`);assert(r,'Run demo:prepare to create the uncompleted assigned fixtures');
     for(const [state,action]of [['assigned','accept'],['accepted','start'],['in_progress','finish']]){
       if(r.state===state)({request:r}=await client.call('helper_demo','transitionRequest',command(key(`${requestId}-${action}`),{requestId,action})));
@@ -36,15 +36,15 @@ export async function rehearseIntegration(client){
     assert.deepEqual(await verifyWallet(client,'elder_demo'),before);
     for(const [role,uid]of [['elder','elder_demo'],['helper','helper_demo']]){
       const claim=await client.read(uid,`rewardClaims/${r.participationIds[role]}`);
-      assert.equal(claim.status,'credited');assert.equal(claim.amountCoins,20);
+      assert.equal(claim.status,'pending_monthly');assert.equal(claim.amountCoins,20);assert.equal(claim.ledgerEntryId,null);
     }
     completions.push({requestId,participationIds:r.participationIds});
   });
-  const attendance=await step('Standalone activity earns one elder credit through coordinator verification',async()=>{
+  const attendance=await step('Standalone activity creates one elder monthly claim through coordinator verification',async()=>{
     let {attendance:a}=await client.call('elder_demo','submitActivityAttendance',command(key('standalone-submit'),{activityId:'activity_demo_attendance'}));
     if(a.status==='submitted')({attendance:a}=await client.call('coordinator_demo','reviewActivityAttendance',command(key('standalone-verify'),{
       attendanceId:a.id,decision:'verify',verificationMethod:'organizer_roster',note:'Synthetic integration rehearsal: coordinator confirms the seeded ended demo activity attendance.'})));
-    assert.equal(a.status,'verified');const claim=await client.read('elder_demo',`rewardClaims/${a.participationId}`);assert.equal(claim.amountCoins,20);return a;
+    assert.equal(a.status,'verified');const claim=await client.read('elder_demo',`rewardClaims/${a.participationId}`);assert.equal(claim.status,'pending_monthly');assert.equal(claim.amountCoins,20);return a;
   });
   await step('Sharing consent gates cheers, progress and notifications independently of booking',async()=>{
     const first=await client.call('family_demo','sendFamilyCheer',command(key('cheer'),{participationId:attendance.participationId}));
@@ -60,15 +60,15 @@ export async function rehearseIntegration(client){
       await client.call('elder_demo','saveElderSettings',command(`integration-revoke-${runKey}`,{...input,familySharingEnabled:false}));
       await assert.rejects(client.call('family_demo','getProgress',{contractVersion:1,scope:'elder',entityId:'elder_demo',periodType:'week',periodKey:null}),e=>e.details?.reason==='CONSENT_REQUIRED');
       if(readInput)await assert.rejects(client.call('family_demo','markNotificationRead',readInput),e=>e.details?.reason==='CONSENT_REQUIRED');
-      assert(await client.read('family_demo','requests/request_demo_ready'),'Booking visibility stays available under its separate current consent');
+      await assert.rejects(client.read('family_demo','requests/request_demo_ready'),e=>e.code==='permission-denied');
     }finally{await client.call('elder_demo','saveElderSettings',command(`integration-restore-${runKey}`,input));}
   });
-  await step('Owner wallets redeem earned coins once; retries reuse the persisted voucher',async()=>{
+  await step('Monthly release and voucher threshold stay protected',async()=>{
+    const settlement=await client.call('coordinator_demo','settleDueMonthlyRewards',command(key('settle-due')));
+    assert.equal(settlement.settledClaims,0,'Current-month claims are not released early');
     for(const uid of ['elder_demo','helper_demo']){
-      const input=command(key(`voucher-${uid}`),{voucherId:'voucher_demo'});
-      const first=await client.call(uid,'redeemDemoVoucher',input);assert.equal(first.redemption.isDemo,true);assert.equal(first.redemption.costCoins,100);
-      const saved=await verifyWallet(client,uid);assert.deepEqual(await client.call(uid,'redeemDemoVoucher',input),first);
-      assert.deepEqual(await verifyWallet(client,uid),saved);
+      assert.equal((await verifyWallet(client,uid)).balance,0);
+      await assert.rejects(client.call(uid,'redeemDemoVoucher',command(key(`voucher-${uid}`),{voucherId:'voucher_demo'})),e=>e.details?.reason==='INSUFFICIENT_BALANCE');
     }
     await assert.rejects(client.call('family_demo','redeemDemoVoucher',command(key('family-cannot-spend'),{voucherId:'voucher_demo'})),e=>e.details?.reason==='ROLE_NOT_ALLOWED');
   });

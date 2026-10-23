@@ -17,6 +17,7 @@ import {projectId,region} from '../scripts/local.mjs';
 const require=createRequire(import.meta.url);
 const {reconcileVerifiedParticipation}=require('../functions/lib/reconciliation.js');
 const {createSessionService}=require('../functions/lib/sessions.js');
+const {createMonthlyRewardService}=require('../functions/lib/monthly_rewards.js');
 const {createWalletService,redemptionId,redemptionEntryId}=require('../functions/lib/wallet.js');
 const {rewardEntryId}=require('../functions/lib/rewards.js');
 const {completionId,participationId}=require('../functions/lib/completions.js');
@@ -65,6 +66,12 @@ test('Stage 5 configured rewards, both-role wallets, immutable ledger and protec
       for(const action of ['accept','start','finish'])await call('helper_demo','transitionRequest',command({requestId:'request_demo_ready',action}));
       await call('elder_demo','transitionRequest',command({requestId:'request_demo_ready',action:'confirm'}));
       return (await call('helper_demo','transitionRequest',command({requestId:'request_demo_ready',action:'confirm'}))).data.request;
+    };
+    const settleDue=async()=>{
+      const rows=(await db.collection('rewardClaims').where('status','==','pending_monthly').get()).docs;
+      if(!rows.length)return {settledClaims:0,totalCoins:0};
+      const at=Math.max(...rows.map((row)=>row.data().releaseAt.toMillis()));
+      return createMonthlyRewardService(db,()=>Timestamp.fromMillis(at)).settleDueMonthlyRewards('coordinator_demo',command());
     };
     t.beforeEach(async()=>{await resetDemo(admin);await seedDemo(admin);await db.doc(`rewardPolicyVersions/${policyId}`).delete();});
 
@@ -155,14 +162,23 @@ test('Stage 5 configured rewards, both-role wallets, immutable ledger and protec
       await assert.rejects(redeem('elder_demo',{...input,voucherId:'another'}),reason('IDEMPOTENCY_KEY_REUSED'));
     });
 
-    await t.test('synthetic approved policy credits both actual participants once and independently of phone-help outing exclusion',async()=>{
+    await t.test('synthetic approved policy releases both actual participants monthly and independently of phone-help outing exclusion',async()=>{
       const policy=await install(),done=await finishReady(),amount=await testAmount();
       for(const role of ['elder','helper']){
-        const uid=`${role}_demo`,pid=done.participationIds[role],claim=await stored(`rewardClaims/${pid}`),entry=await stored(`wallets/${uid}/entries/${rewardEntryId(pid)}`);
-        assert.equal(await balance(uid),amount);assert.equal(claim.status,'credited');assert.equal(claim.amountCoins,amount);
-        assert.equal(claim.ruleVersion,policy.version);assert.equal(entry.ownerUid,uid);assert.equal(entry.participationId,pid);assert.equal(entry.completionEventId,done.completionEventId);
-        assert.equal(entry.amount,amount);assert.equal(entry.rateCoins,amount);assert.equal(entry.balanceAfter,amount);
+        const uid=`${role}_demo`,pid=done.participationIds[role],claim=await stored(`rewardClaims/${pid}`);
+        assert.equal(await balance(uid),0);assert.equal(claim.status,'pending_monthly');assert.equal(claim.amountCoins,amount);assert.equal(claim.ledgerEntryId,null);
+        assert.equal(claim.ruleVersion,policy.version);assert.equal(await stored(`wallets/${uid}/entries/${rewardEntryId(pid)}`),undefined);
         assert.equal((await stored(`completionMarkers/${pid}`)).outingClassification,'does_not_count');
+      }
+      const dueRows=(await db.collection('rewardClaims').where('status','==','pending_monthly').get()).docs;
+      const releaseAt=Math.max(...dueRows.map((row)=>row.data().releaseAt.toMillis()));
+      const scheduled=createMonthlyRewardService(db,()=>Timestamp.fromMillis(releaseAt));
+      assert.deepEqual(await scheduled.settleDueMonthlyRewardsScheduled(),
+        {settledClaims:2,totalCoins:amount*2,processedAt:new Date(releaseAt).toISOString(),townships:[townshipId]});
+      for(const role of ['elder','helper']){
+        const uid=`${role}_demo`,pid=done.participationIds[role],claim=await stored(`rewardClaims/${pid}`),entry=await stored(`wallets/${uid}/entries/${rewardEntryId(pid)}`);
+        assert.equal(await balance(uid),amount);assert.equal(claim.status,'credited');assert.equal(entry.ownerUid,uid);assert.equal(entry.participationId,pid);assert.equal(entry.completionEventId,done.completionEventId);
+        assert.equal(entry.amount,amount);assert.equal(entry.rateCoins,amount);assert.equal(entry.balanceAfter,amount);
       }
       await call('elder_demo','transitionRequest',command({requestId:done.id,action:'confirm'}));
       assert.equal((await entries('elder_demo')).length,1);assert.equal((await entries('helper_demo')).length,1);
@@ -173,13 +189,14 @@ test('Stage 5 configured rewards, both-role wallets, immutable ledger and protec
       await install('activity_attendance');const amount=await testAmount();
       const submitted=(await call('elder_solo','submitActivityAttendance',command({activityId:'activity_demo_attendance'}))).data.attendance;
       await call('coordinator_demo','reviewActivityAttendance',command({attendanceId:submitted.id,decision:'verify',verificationMethod:'organizer_roster',note:'Isolated test roster.'}));
-      assert.equal(await balance('elder_solo'),amount);
+      assert.equal(await balance('elder_solo'),0);
       const a=await stored('activities/activity_garden');let now=Timestamp.now();const service=createSessionService(db,()=>now);
       const r=(await service.createRequest('elder_demo',command({elderId:'elder_demo',activityId:'activity_garden',placeId:a.placeId,startsAt:a.startsAt.toDate().toISOString(),endsAt:a.endsAt.toDate().toISOString(),taskType:'walk_with_me',preferredLanguage:'en',preferredHelperGender:'any'}))).data.request;
       await service.assignRequest('coordinator_demo',command({requestId:r.id,pairingId:'pairing_demo'}));
       const act=(uid,action)=>service.transitionRequest(uid,command({requestId:r.id,action}));
       await act('helper_demo','accept');now=a.startsAt;await act('helper_demo','start');now=a.endsAt;await act('helper_demo','finish');
       await act('elder_demo','confirm');const done=(await act('helper_demo','confirm')).data.request;
+      await settleDue();
       for(const role of ['elder','helper']){
         assert.equal(await balance(`${role}_demo`),amount);assert.equal((await entries(`${role}_demo`)).length,1);
         await reconcileVerifiedParticipation(db,done.participationIds[role],()=>now);assert.equal(await balance(`${role}_demo`),amount);
@@ -191,6 +208,8 @@ test('Stage 5 configured rewards, both-role wallets, immutable ledger and protec
       const done=await finishReady(),pid=done.participationIds.elder,first=(await stored(`participations/${pid}`)).verifiedAt;
       await install();const amount=await testAmount();
       await Promise.all([reconcileVerifiedParticipation(db,pid),reconcileVerifiedParticipation(db,pid)]);
+      assert.equal((await stored(`rewardClaims/${pid}`)).status,'pending_monthly');assert.equal(await balance('elder_demo'),0);assert.equal((await entries('elder_demo')).length,0);
+      await settleDue();
       assert.equal(await balance('elder_demo'),amount);assert.equal((await entries('elder_demo')).length,1);
       assert.equal((await stored(`rewardClaims/${pid}`)).verifiedAt.toMillis(),first.toMillis());
       await db.doc(`rewardPolicyVersions/${policyId}`).update({version:'test-only-v2',rules:(await rulesFor()).map((r)=>({...r,rateCoins:amount*2}))});
@@ -210,7 +229,8 @@ test('Stage 5 configured rewards, both-role wallets, immutable ledger and protec
       assert.equal((await stored(`rewardClaims/${done.participationIds.elder}`)).amountCoins,0);
       assert.equal((await stored(`rewardClaims/${done.participationIds.helper}`)).status,'pending_policy');
       await install();await reconcileVerifiedParticipation(db,done.participationIds.elder);assert.equal(await balance('elder_demo'),0);
-      await reconcileVerifiedParticipation(db,done.participationIds.helper);assert.equal(await balance('helper_demo'),await testAmount());
+      await reconcileVerifiedParticipation(db,done.participationIds.helper);assert.equal((await stored(`rewardClaims/${done.participationIds.helper}`)).status,'pending_monthly');
+      await settleDue();assert.equal(await balance('helper_demo'),await testAmount());
     });
 
     await t.test('unverified or altered sources cannot be reconciled into a reward',async()=>{
@@ -224,20 +244,20 @@ test('Stage 5 configured rewards, both-role wallets, immutable ledger and protec
       assert.equal(await balance('elder_demo'),0);assert.equal((await entries('elder_demo')).length,0);
     });
 
-    await t.test('a failed second-participant credit rolls back final confirmation and every first-participant financial effect',async()=>{
-      await install();for(const action of ['accept','start','finish'])await call('helper_demo','transitionRequest',command({requestId:'request_demo_ready',action}));
-      await call('elder_demo','transitionRequest',command({requestId:'request_demo_ready',action:'confirm'}));
-      await db.doc('wallets/helper_demo').update({balance:-1});const input=command({requestId:'request_demo_ready',action:'confirm'});
-      await assert.rejects(call('helper_demo','transitionRequest',input),reason('INVALID_WALLET_BALANCE'));
+    await t.test('invalid wallet state rolls back monthly settlement without partial participant credit',async()=>{
+      await install();const done=await finishReady();
+      await db.doc('wallets/helper_demo').update({balance:-1});
+      await assert.rejects(settleDue(),reason('INVALID_WALLET_BALANCE'));
       assert.equal(await balance('elder_demo'),0);assert.equal((await entries('elder_demo')).length,0);
-      assert.equal((await db.collection('participations').get()).size,0);assert.equal((await db.collection('rewardClaims').get()).size,0);
-      const request=await stored('requests/request_demo_ready');assert.equal(request.state,'awaiting_confirmation');assert.equal(request.helperConfirmation,null);
-      await db.doc('wallets/helper_demo').update({balance:0});await call('helper_demo','transitionRequest',input);assert.equal(await balance('elder_demo'),await testAmount());
+      assert.equal((await stored(`rewardClaims/${done.participationIds.elder}`)).status,'pending_monthly');
+      assert.equal((await stored(`rewardClaims/${done.participationIds.helper}`)).status,'pending_monthly');
+      await db.doc('wallets/helper_demo').update({balance:0});await settleDue();assert.equal(await balance('elder_demo'),await testAmount());
     });
 
     await t.test('concurrent completion credit and voucher debit preserve the wallet and both immutable ledger entries',async()=>{
       const done=await finishReady();await install();const amount=await testAmount();await db.doc('wallets/elder_demo').update({balance:amount});
       await Promise.all([reconcileVerifiedParticipation(db,done.participationIds.elder),redeem()]);
+      await settleDue();
       assert.equal(await balance('elder_demo'),amount);assert.equal((await entries('elder_demo')).length,2);
     });
 
@@ -273,7 +293,7 @@ test('Stage 5 configured rewards, both-role wallets, immutable ledger and protec
     });
 
     await t.test('seed preserves accounted balances; reset removes demo financial history and preserves unrelated accounts/history',async()=>{
-      await install();const done=await finishReady();await redeem();const helperBalance=await balance('helper_demo');
+      await install();const done=await finishReady();await settleDue();await redeem();const helperBalance=await balance('helper_demo');
       await seedDemo(admin);assert.equal(await balance('helper_demo'),helperBalance);assert.equal((await entries('helper_demo')).length,1);
       const external='test_stage5_external',externalPid=participationId(done.completionEventId,external),amount=await testAmount();
       const paths=[`participations/${externalPid}`,`rewardClaims/${externalPid}`,`wallets/${external}`,`wallets/${external}/entries/external`, 'redemptions/test_stage5_external'];

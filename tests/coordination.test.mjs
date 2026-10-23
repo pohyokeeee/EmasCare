@@ -208,10 +208,7 @@ test('Stage 6 coordination, consent-safe notifications, progress and voice bound
       const provider=async(context)=>{calls++;assert.equal(JSON.stringify(context).includes('elder_demo'),false);return {transcript:'Garden walk tomorrow',draft:{activityId:'activity_garden',taskType:'walk_with_me'}};};
       const voice=createVoiceService(db,provider,()=>fixed),input={contractVersion:1,elderId:'elder_demo',locale:'en',input:{type:'text',text:'Garden walk tomorrow'}};
       for(const uid of ['helper_demo','coordinator_demo','elder_solo','family_unrelated'])await assert.rejects(voice.parseVoiceBooking(uid,input));assert.equal(calls,0);
-      const parsed=await voice.parseVoiceBooking('family_demo',input);assert.equal(parsed.data.canConfirm,true);assert.equal(parsed.data.draft.elderId,'elder_demo');
-      const revoke=createVoiceService(db,async(context)=>{await db.doc('elderSettings/elder_demo').update({familyBookingEnabled:false});return provider(context);},()=>fixed);
-      await assert.rejects(revoke.parseVoiceBooking('family_demo',input),reason('CONSENT_REQUIRED'));
-      await db.doc('elderSettings/elder_demo').update({familyBookingEnabled:true});
+      await assert.rejects(voice.parseVoiceBooking('family_demo',input),reason('ROLE_NOT_ALLOWED'));
       const results=await Promise.allSettled(Array.from({length:6},()=>voice.parseVoiceBooking('elder_demo',input)));
       assert.equal(results.filter((r)=>r.status==='fulfilled').length,5);assert.equal(results.filter((r)=>r.status==='rejected'&&reason('VOICE_RATE_LIMIT')(r.reason)).length,1);
       const rate=await stored('voiceLimits/elder_demo');assert.deepEqual(Object.keys(rate).sort(),['count','minute','updatedAt']);

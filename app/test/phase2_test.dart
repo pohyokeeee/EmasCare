@@ -403,7 +403,7 @@ void main() {
   );
 
   testWidgets(
-    'family request form and sample request list disappear when elder withdraws booking',
+    'family can view permitted sessions but cannot create companion requests',
     (tester) async {
       final mock = MockEmasRepository();
       final c = PreviewController(mock);
@@ -415,15 +415,8 @@ void main() {
       c.demo.setFamilyBooking(AppRole.elder, false);
       await tester.pumpAndSettle();
       expect(find.text('Sample walk'), findsNothing);
-      expect(find.text('Booking permission is off.'), findsOneWidget);
-      expect(
-        tester
-            .widget<EmasButton>(
-              find.widgetWithText(EmasButton, 'New sample request'),
-            )
-            .onPressed,
-        isNull,
-      );
+      expect(find.text('Family companion updates are off.'), findsOneWidget);
+      expect(find.widgetWithText(EmasButton, 'New sample request'), findsNothing);
       await tester.pumpWidget(const SizedBox.shrink());
       c.dispose();
       mock.dispose();
@@ -450,9 +443,8 @@ void main() {
       c.navigate(destination: Destination.activities);
       await tester.pumpAndSettle();
       await tapVisible(tester, find.byKey(const ValueKey('activity-tai_chi')));
-      await tapVisible(tester, find.text('Preview a companion request'));
-      await tapVisible(tester, find.byKey(const ValueKey('review-request')));
-      expect(find.text('Not sent'), findsOneWidget);
+      expect(find.text('Preview a companion request'), findsNothing);
+      expect(find.byKey(const ValueKey('review-request')), findsNothing);
       expect(find.byKey(const ValueKey('create-sample-request')), findsNothing);
       expect(c.demo.requests, isEmpty);
       fake.householdEvents.add(stage2.household(fake.current, booking: false));

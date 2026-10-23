@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {initializeApp,deleteApp} from 'firebase/app';
 import {getAuth,connectAuthEmulator,signInWithEmailAndPassword} from 'firebase/auth';
 import {getFunctions,connectFunctionsEmulator,httpsCallable} from 'firebase/functions';
-import {getFirestore,connectFirestoreEmulator,doc,getDocFromServer,getDocsFromServer,collection,query,where,orderBy,onSnapshot,terminate} from 'firebase/firestore';
+import {getFirestore,connectFirestoreEmulator,doc,getDocFromServer,getDocsFromServer,collection,query,where,orderBy,terminate} from 'firebase/firestore';
 import {Timestamp} from 'firebase-admin/firestore';
 import {deleteApp as deleteAdminApp} from 'firebase-admin/app';
 import {demoClients,seedDemo,resetDemo} from '../scripts/demo.mjs';
@@ -79,55 +79,43 @@ test('Stage 3 companion backend: authenticated APIs, races, rules and canonical 
       await assert.rejects(call('helper_demo','setHelperAvailability',command({available:true,slots:[{weekday:1,startMinute:0,endMinute:90},{weekday:1,startMinute:60,endMinute:120}]})),reason('INVALID_AVAILABILITY'));
     });
 
-    await t.test('family booking consent is independent, current and rechecked on cached results and reads', async () => {
-      await db.doc('elderSettings/elder_demo').update({familySharingEnabled:false});
+    await t.test('family companion availability is self-scoped, idempotent and never an assignable helper profile', async () => {
+      const input = command({available:true,slots:[]});
+      const result = await call('family_demo','setCompanionAvailability',input);
+      assert.deepEqual(result,{contractVersion:1,data:{availability:wireRecord('family_demo',await stored('companionAvailability/family_demo'))}});
+      assert.equal(result.data.availability.role,'family');
+      assert.equal(result.data.availability.available,true);
+      await read('family_demo','companionAvailability/family_demo');
+      await assert.rejects(read('elder_demo','companionAvailability/family_demo'),{code:'permission-denied'});
+      assert.deepEqual(await call('family_demo','setCompanionAvailability',input),result);
+      await assert.rejects(call('family_demo','setCompanionAvailability',{...input,available:false}),reason('IDEMPOTENCY_KEY_REUSED'));
+      await assert.rejects(call('elder_demo','setCompanionAvailability',command({available:true})),reason('ROLE_NOT_ALLOWED'));
+    });
+
+    await t.test('only elders create and cancel; family request visibility follows sharing consent', async () => {
       const input = await booking();
-      const result = await call('family_demo','createRequest',input), id = result.data.request.id;
-      assert.equal(result.data.request.createdBy,'family_demo');
-      assert.equal(result.data.request.state,'requested');
-      assert.deepEqual(await call('family_demo','createRequest',input),result);
+      await assert.rejects(call('family_demo','createRequest',input),reason('ROLE_NOT_ALLOWED'));
+      await assert.rejects(call('family_unrelated','createRequest',await booking()),reason('ROLE_NOT_ALLOWED'));
+      await assert.rejects(call('coordinator_demo','createRequest',await booking()),reason('ROLE_NOT_ALLOWED'));
+      const id = 'request_demo_ready';
       await read('family_demo',`requests/${id}`);
-      await assert.rejects(call('family_unrelated','createRequest',await booking()),reason('UNRELATED_HOUSEHOLD'));
-      await assert.rejects(call('elder_solo','createRequest',await booking()),reason('ROLE_NOT_ALLOWED'));
-      const fs = clients.get('family_demo').firestore;
-      let unsubscribe,listenerTimer;
-      let initialReady;
-      const initialSnapshot = new Promise((resolve) => { initialReady=resolve; });
-      const revoked = new Promise((resolve,reject) => {
-        listenerTimer = setTimeout(()=>reject(new Error('booking listener did not revoke')),15000);
-        unsubscribe = onSnapshot(doc(fs,`requests/${id}`),initialReady,(error)=>{ clearTimeout(listenerTimer); resolve(error); });
-      });
-      try {
-        await initialSnapshot;
-        await call('elder_demo','saveElderSettings',command({familySharingEnabled:false,familyBookingEnabled:false,
-          dueLocalTime:'09:00',graceMinutes:30,pauseToday:false}));
-        // Use an independent server request: the SDK can reuse an already
-        // synchronized listener target even for getDocFromServer().
-        const token=await getAuth(clients.get('family_demo').app).currentUser.getIdToken();
-        const freshRead=await fetch(`http://127.0.0.1:8080/v1/projects/${projectId}/databases/(default)/documents/requests/${id}`,
-          {headers:{Authorization:`Bearer ${token}`},signal:AbortSignal.timeout(10000)});
-        assert.equal(freshRead.status,403,await freshRead.text());
-        await assert.rejects(call('family_demo','createRequest',input),reason('CONSENT_REQUIRED'));
-        await assert.rejects(act('family_demo',id,'cancel'),reason('CONSENT_REQUIRED'));
-        // A must tear down cached views on the household access flag. A request
-        // listener is re-authorized when its next result would be delivered.
-        await assign(id);
-        assert.equal((await revoked).code,'permission-denied');
-        await assert.rejects(read('family_demo',`requests/${id}`),{code:'permission-denied'});
-        await read('elder_demo',`requests/${id}`);
-      } finally { clearTimeout(listenerTimer); unsubscribe?.(); }
+      await assert.rejects(act('family_demo',id,'cancel'),reason('ROLE_NOT_ALLOWED'));
+      await call('elder_demo','saveElderSettings',command({familySharingEnabled:false,familyBookingEnabled:true,
+        dueLocalTime:'09:00',graceMinutes:30,pauseToday:false}));
+      await assert.rejects(read('family_demo',`requests/${id}`),{code:'permission-denied'});
+      await read('elder_demo',`requests/${id}`);
+      await call('elder_demo','saveElderSettings',command({familySharingEnabled:true,familyBookingEnabled:false,
+        dueLocalTime:'09:00',graceMinutes:30,pauseToday:false}));
+      await read('family_demo',`requests/${id}`);
     });
 
     await t.test('request creation validates activities and prevents different-key/actor duplicate activity bookings', async () => {
       await assert.rejects(create({taskType:'phone_help'}),reason('INVALID_PLACE'));
       await assert.rejects(create({activityId:'activity_garden',endsAt:new Date((await activity()).endsAt.toMillis()+60000).toISOString()}),reason('ACTIVITY_SCHEDULE_MISMATCH'));
-      const results = await Promise.allSettled([
-        call('elder_demo','createRequest',await booking({activityId:'activity_garden'})),
-        call('family_demo','createRequest',await booking({activityId:'activity_garden'})),
-      ]);
-      assert.equal(results.filter((r)=>r.status==='fulfilled').length,1);
-      assert.equal(results.find((r)=>r.status==='rejected').reason.details.reason,'ACTIVITY_REQUEST_EXISTS');
-      const id = results.find((r)=>r.status==='fulfilled').value.data.request.id;
+      const first = await call('elder_demo','createRequest',await booking({activityId:'activity_garden'}));
+      const id = first.data.request.id;
+      await assert.rejects(call('family_demo','createRequest',await booking({activityId:'activity_garden'})),reason('ROLE_NOT_ALLOWED'));
+      await assert.rejects(call('elder_demo','createRequest',await booking({activityId:'activity_garden'})),reason('ACTIVITY_REQUEST_EXISTS'));
       assert.equal((await stored(`activityElderLocks/${activityLockId('activity_garden','elder_demo')}`)).requestId,id);
       await act('elder_demo',id,'cancel');
       assert.equal(await stored(`activityElderLocks/${activityLockId('activity_garden','elder_demo')}`),undefined);
@@ -174,7 +162,7 @@ test('Stage 3 companion backend: authenticated APIs, races, rules and canonical 
       const adjacent=await create({startsAt:a.endsAt,endsAt:new Date(Date.parse(a.endsAt)+3600000).toISOString()});
       await assign(adjacent.id);
       await assert.rejects(act('helper_demo',winner.id,'cancel'),reason('ROLE_NOT_ALLOWED'));
-      await act('family_demo',winner.id,'cancel');
+      await act('elder_demo',winner.id,'cancel');
       assert.equal((await assign(loser.id)).data.request.state,'assigned');
       assert.equal((await slots()).some((s)=>s.requestId===winner.id),false);
       assert.equal((await act('coordinator_demo',winner.id,'cancel')).data.request.state,'cancelled');
@@ -214,6 +202,21 @@ test('Stage 3 companion backend: authenticated APIs, races, rules and canonical 
       assert.equal((await stored('helperSessions/helper_demo')).requestId,null);
     });
 
+    await t.test('assigned elder/helper chat is scoped, idempotent and available through completion', async () => {
+      const messageInput = command({requestId:'request_demo_ready',text:'Hello, I am on my way.'});
+      await assert.rejects(call('family_demo','sendSessionMessage',messageInput),reason('CHAT_PARTICIPANT_REQUIRED'));
+      await assert.rejects(call('coordinator_demo','listSessionMessages',{contractVersion:1,requestId:'request_demo_ready'}),reason('CHAT_PARTICIPANT_REQUIRED'));
+      const first = await call('elder_demo','sendSessionMessage',messageInput);
+      assert.equal(first.data.message.senderUid,'elder_demo');
+      assert.deepEqual(await call('elder_demo','sendSessionMessage',messageInput),first);
+      const listed = await call('helper_demo','listSessionMessages',{contractVersion:1,requestId:'request_demo_ready'});
+      assert.equal(listed.data.messages.length,1);assert.equal(listed.data.messages[0].text,messageInput.text);
+      for (const action of ['accept','start','finish']) await act('helper_demo','request_demo_ready',action);
+      await act('helper_demo','request_demo_ready','confirm');await act('elder_demo','request_demo_ready','confirm');
+      const after = await call('helper_demo','sendSessionMessage',command({requestId:'request_demo_ready',text:'Follow-up after completion.'}));
+      assert.equal(after.data.message.senderUid,'helper_demo');
+    });
+
     await t.test('server clocks enforce activity attendance; concurrent elder/helper confirmation uses one canonical event and participation', async () => {
       let now=Timestamp.now(); const service=createSessionService(db,()=>now);
       const r=await create({activityId:'activity_garden'}); await assign(r.id);
@@ -235,7 +238,7 @@ test('Stage 3 companion backend: authenticated APIs, races, rules and canonical 
       await read('family_demo',`activityAttendances/${attendanceId('activity_garden','elder_demo')}`);
       await db.doc('elderSettings/elder_demo').update({familySharingEnabled:false});
       await assert.rejects(read('family_demo',`activityAttendances/${attendanceId('activity_garden','elder_demo')}`),{code:'permission-denied'});
-      await read('family_demo',`requests/${r.id}`);
+      await assert.rejects(read('family_demo',`requests/${r.id}`),{code:'permission-denied'});
       assert.equal((await db.collection('participations').get()).size,2);
       assert.equal((await db.collection('rewardClaims').get()).size,2);
       await assert.rejects(create({activityId:'activity_garden'}),reason('ACTIVITY_ALREADY_COMPLETED'));
@@ -323,9 +326,10 @@ test('Stage 3 companion backend: authenticated APIs, races, rules and canonical 
         `helperReservations/${reservationId('helper_demo',new Date(Date.parse(r.startsAt)+8*3600000).toISOString().slice(0,10))}`]) {
         await assert.rejects(read('coordinator_demo',path),{code:'permission-denied'});
       }
-      await db.doc('elderSettings/elder_demo').update({familySharingEnabled:false}); await read('family_demo',`requests/${r.id}`);
-      await db.doc('elderSettings/elder_demo').update({familyBookingEnabled:false,familySharingEnabled:true});
+      await db.doc('elderSettings/elder_demo').update({familySharingEnabled:false});
       await assert.rejects(read('family_demo',`requests/${r.id}`),{code:'permission-denied'});
+      await db.doc('elderSettings/elder_demo').update({familyBookingEnabled:false,familySharingEnabled:true});
+      await read('family_demo',`requests/${r.id}`);
     });
 
     await t.test('published JSON examples match clock-injected real service response envelopes', async () => {

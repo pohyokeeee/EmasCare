@@ -11,9 +11,12 @@ Every mutation input contains `contractVersion: 1` and a nonempty `idempotencyKe
 | Callable | Caller | Business input fields | Exact `data` result |
 | --- | --- | --- | --- |
 | `setHelperAvailability` | Helper, themselves | `available`, `slots` | `{helperProfile}` |
-| `createRequest` | Actual elder or linked family with current booking consent | `elderId`, `activityId`, `placeId`, `startsAt`, `endsAt`, `taskType`, `preferredLanguage`, `preferredHelperGender` | `{request}` |
+| `setCompanionAvailability` | Family/helper, themselves | `available`, optional `slots` | `{availability}` |
+| `createRequest` | Actual elder, for themselves | `elderId`, `activityId`, `placeId`, `startsAt`, `endsAt`, `taskType`, `preferredLanguage`, `preferredHelperGender` | `{request}` |
 | `assignRequest` | Same-township coordinator | `requestId`, `pairingId` | `{request}` |
 | `transitionRequest` | Authorized participant/coordinator as below | `requestId`, `action` | `{request}` |
+| `listSessionMessages` | Assigned elder or helper | `requestId`, optional `limit` (1–100) | `{messages}` |
+| `sendSessionMessage` | Assigned elder or helper | `requestId`, `text` | `{message}` |
 
 Copy complete inputs and responses from [stage3_sessions.json](fixtures/stage3_sessions.json). These are synthetic successive UI states, including a completed activity and two pending-policy claims. They are checked against the real service using an internal test clock. They are not seed instructions. The private full-contract files remain excluded from Git.
 
@@ -22,6 +25,8 @@ Availability example:
 ```json
 {"contractVersion":1,"idempotencyKey":"availability-001","available":true,"slots":[{"weekday":1,"startMinute":540,"endMinute":720}]}
 ```
+
+The companion availability endpoint is an informational check-in for residents who are free to be contacted. It never makes a family member assignable, creates a request, grants session access or awards coins. Family can use it even when the linked elder has not granted booking consent.
 
 Slots are Malaysian local weekly intervals: Monday is 1, Sunday is 7, minutes range from 0 to 1440. Start is inclusive, end exclusive. Slots must have positive length, integer fields, and no overlap on a weekday; adjacent slots are allowed. The server sorts them. An empty list means no assignable hours. Only `available` and `availabilitySlots` change; approval, tier, languages, gender and allowed tasks remain backend owned. `data.helperProfile` includes `id` and the full profile, with UTC ISO timestamps.
 
@@ -63,7 +68,7 @@ Assignment requires an active, mutually accepted recurring pairing for that elde
 | `accepted` | `start` | Assigned helper | `in_progress` |
 | `in_progress` | `finish` | Assigned helper | `awaiting_confirmation` |
 | `awaiting_confirmation` | `confirm` | Actual elder or assigned helper, only for themselves | Same state until both confirm, then `completed` |
-| `requested`, `assigned`, `accepted` | `cancel` | Actual elder, booking-consented family, or coordinator | `cancelled` |
+| `requested`, `assigned`, `accepted` | `cancel` | Actual elder or coordinator | `cancelled` |
 
 ```json
 {"contractVersion":1,"idempotencyKey":"accept-001","requestId":"ID_FROM_CREATE_RESPONSE","action":"accept"}
@@ -73,7 +78,21 @@ There is no reopening, reassignment, or in-progress cancellation in this stage. 
 
 Start requires the scheduled start time to have arrived. An activity session must start before activity end and cannot finish before that end. Standalone helping sessions can finish when the helping ends; no invented minimum duration is used. Approval and blocks are rechecked on accept/start. Existing commitments are retained when availability changes. An in-progress helper lock prevents another session starting if an earlier session overruns; finishing releases that lock. Scheduled reservations release on cancellation or final confirmation.
 
-Successful same-key retries return the original saved response after rechecking current role and access, so it may describe an earlier state than the current stream. A changed intent under the same key fails. Family booking consent is checked on every new action and receipt replay, separately from daily sharing consent.
+Successful same-key retries return the original saved response after rechecking current role and access, so it may describe an earlier state than the current stream. A changed intent under the same key fails. Family cannot create, cancel, assign, accept, confirm or otherwise mutate a session. Family can read a request only while current `familySharingEnabled` consent is true; booking consent is no longer used for request visibility.
+
+## Session chat
+
+After assignment, the assigned elder and helper can use `listSessionMessages` and `sendSessionMessage`. Messages are ordered by `createdAt ASC` and remain readable and writable through `completed` for follow-up coordination. Family and coordinators have no chat access. Each message is linked to its request and sender; idempotency keys make retries return the same message without duplicates.
+
+```json
+{"contractVersion":1,"requestId":"REQUEST_ID","limit":100}
+```
+
+```json
+{"contractVersion":1,"idempotencyKey":"message-001","requestId":"REQUEST_ID","text":"I am on my way."}
+```
+
+Both responses retain the standard `{contractVersion:1,data:{...}}` envelope; `data.messages` is an ordered list and `data.message` contains `id`, `requestId`, participant IDs, sender identity, `text` and server `createdAt`.
 
 ## Completion, progress and pending rewards
 
@@ -81,7 +100,7 @@ Completion creates one canonical event per activity occurrence, or per standalon
 
 Activity completion also materializes `activityAttendances` with `mode:companion_session`, `status:verified` and `verificationMethod:mutual_session_confirmation`. [Stage 4 adds standalone submission/coordinator review](BACKEND_ATTENDANCE.md) without replacing session confirmations. Internal per-participation markers classify activity attendance and standalone walks as `counts`, phone help as `does_not_count`, and standalone sit/carry as `pending_definition`. Future township progress must count elder participations; helper participation is not an extra elder outing. Aggregate/reporting endpoints arrive in Stage 6.
 
-All new reward claims stay `pending_policy`, with `eligible`, `amountCoins`, `rateCoins`, `ruleId`, `ruleVersion` and `ledgerEntryId` null, reason `REWARD_POLICY_PENDING`. No coins, wallet entries, monthly award or four-session threshold are created. Phone-help reward eligibility and exact rates remain undecided. No public award endpoint exists. Reward evaluation/redemption is Stage 5 after policy agreement.
+With no approved policy, claims remain `pending_policy`. When an approved policy marks a verified elder/helper participation eligible, the completion transaction creates a `pending_monthly` claim with its approved amount, `rewardMonth` (MYT), and `releaseAt` (the first day of the next MYT calendar month); it does not change the wallet yet. A same-township coordinator calls `settleDueMonthlyRewards` after the release time to credit both roles' wallets and immutable ledgers. Repeated confirmations, reconciliation and settlement are idempotent, and an activity attended during a companion session has one participation per actual beneficiary, not two rewards.
 
 ## Read streams for the adapter
 
@@ -97,7 +116,7 @@ All direct browser writes remain denied. Firestore stores `Timestamp`; callable 
 | Family-safe attendance history | `activityAttendances`, `elderId == selectedElderId`, `householdId == currentHouseholdId`, order `verifiedAt DESC` |
 | Own participation/claim history | `participations` or `rewardClaims`, `beneficiaryUid == currentUid`, `townshipId == currentTownshipId`, order `verifiedAt DESC` |
 
-An assigned helper reads only their requests. Family request reads require current booking consent; family attendance reads require current sharing consent. Neither grants family financial access. A helper cannot read another participant's claims. Same-township coordinator can read operational records/claims. Backend locks, runtime sessions, canonical events and completion markers remain inaccessible even to coordinator clients. Composite index definitions are included; emulator query tests do not prove production indexes have been deployed.
+An assigned helper reads only their requests. Family request and attendance reads require current sharing consent; neither grants family financial access or mutation authority. A helper cannot read another participant's claims. Same-township coordinator can read operational records/claims. Backend locks, runtime sessions, canonical events and completion markers remain inaccessible even to coordinator clients. Composite index definitions are included; emulator query tests do not prove production indexes have been deployed.
 
 Watch the household access flags. On consent withdrawal, clear affected family state, unsubscribe immediately and handle denied listeners/reads. An idle request stream is not a consent-change notification: it can retain its last snapshot until another result would be delivered. The client SDK can reuse that synchronized target even for `getDocFromServer()`. An independent server request is denied, command replays fail, and permission is checked again before changed request data is delivered. The backend cannot erase data already retained in frontend memory. Broad unscoped collection queries fail; rules do not filter them into safe results.
 
@@ -109,9 +128,9 @@ Use Firebase callable `code` and `details.reason`, not fallback message parsing.
 | --- | --- |
 | `unauthenticated` | `AUTH_REQUIRED` |
 | `permission-denied` | `PROFILE_REQUIRED`, `ROLE_NOT_ALLOWED`, `TOWNSHIP_NOT_ALLOWED`, `UNRELATED_HOUSEHOLD`, `CONSENT_REQUIRED`, `ELDER_ACCESS_DENIED`, `NOT_ASSIGNED_HELPER` |
-| `invalid-argument` | `UNSUPPORTED_CONTRACT_VERSION`, `INVALID_PAYLOAD`, `UNKNOWN_FIELD`, `INVALID_IDEMPOTENCY_KEY`, `INVALID_ID`, `INVALID_AVAILABILITY`, `INVALID_TIME_RANGE`, `INVALID_TASK`, `INVALID_PREFERENCES`, `INVALID_PLACE`, `ACTIVITY_SCHEDULE_MISMATCH`, `INVALID_ACTION` |
+| `invalid-argument` | `UNSUPPORTED_CONTRACT_VERSION`, `INVALID_PAYLOAD`, `UNKNOWN_FIELD`, `INVALID_IDEMPOTENCY_KEY`, `INVALID_ID`, `INVALID_LIMIT`, `INVALID_MESSAGE`, `INVALID_AVAILABILITY`, `INVALID_TIME_RANGE`, `INVALID_TASK`, `INVALID_PREFERENCES`, `INVALID_PLACE`, `ACTIVITY_SCHEDULE_MISMATCH`, `INVALID_ACTION` |
 | `not-found` | `REQUEST_NOT_FOUND`, `PLACE_NOT_FOUND`, `ACTIVITY_NOT_FOUND` |
-| `failed-precondition` | `ELDER_HOUSEHOLD_REQUIRED`, `HELPER_PROFILE_REQUIRED`, `INVALID_TRANSITION`, `PAIRING_NOT_ELIGIBLE`, `HELPER_UNAVAILABLE`, `HELPER_BLOCKED`, `HELPER_BUSY`, `SESSION_ALREADY_DUE`, `SESSION_NOT_STARTED`, `ACTIVITY_NOT_FINISHED`, `ACTIVITY_ALREADY_FINISHED`, `ACTIVITY_REQUEST_EXISTS`, `ACTIVITY_ALREADY_COMPLETED`, `ATTENDANCE_ALREADY_REVIEWED` |
+| `failed-precondition` | `ELDER_HOUSEHOLD_REQUIRED`, `HELPER_PROFILE_REQUIRED`, `INVALID_TRANSITION`, `PAIRING_NOT_ELIGIBLE`, `HELPER_UNAVAILABLE`, `HELPER_BLOCKED`, `HELPER_BUSY`, `SESSION_ALREADY_DUE`, `SESSION_NOT_STARTED`, `ACTIVITY_NOT_FINISHED`, `ACTIVITY_ALREADY_FINISHED`, `ACTIVITY_REQUEST_EXISTS`, `ACTIVITY_ALREADY_COMPLETED`, `ATTENDANCE_ALREADY_REVIEWED`, `SESSION_NOT_CHATABLE` |
 | `already-exists` | `IDEMPOTENCY_KEY_REUSED` |
 
 ## Verification and handover routine

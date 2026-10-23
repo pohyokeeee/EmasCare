@@ -62,7 +62,7 @@ submitted -> verified
 submitted -> rejected
 ```
 
-Self-submission creates no completion event, participation, reward claim or outing marker. Verification atomically records the review, verified attendance, canonical event/elder participation, one outing marker, a pending-policy reward claim, the activity/elder lock and the command receipt. Rejection records review metadata but creates none of those verified effects.
+Self-submission creates no completion event, participation, reward claim or outing marker. Verification atomically records the review, verified attendance, canonical event/elder participation, one outing marker, a pending-policy or pending-monthly reward claim, the activity/elder lock and the command receipt. Rejection records review metadata but creates none of those verified effects.
 
 Verified and rejected reviews are terminal. Successful same-key retries return the stored original result; changed intent under that key fails. A new review key against terminal standalone attendance fails with `ATTENDANCE_ALREADY_REVIEWED`, even for the same decision. Repeated submissions with new keys return the existing canonical attendance and preserve its first submission/review metadata. To make another eligible participation, the elder needs a different activity occurrence.
 
@@ -78,7 +78,7 @@ The shared completion writer identifies an activity event by occurrence ID, and 
 
 The request API additionally returns `ATTENDANCE_ALREADY_SUBMITTED` if existing submitted/rejected attendance owns that occurrence. Verified attendance still returns `ACTIVITY_ALREADY_COMPLETED`. This protects the shared lock even if source schedules change or requests race across timing boundaries. Existing Stage 3 success envelopes remain unchanged.
 
-Reward rates and detailed eligibility are still unapproved. Claims remain `pending_policy` with `eligible`, `amountCoins`, `rateCoins`, `ruleId`, `ruleVersion` and `ledgerEntryId` null. Wallet balances and ledgers are unchanged. There is no monthly threshold or public award function. Stage 5 will implement rewards/redemption after policy agreement; aggregate progress/reporting APIs remain Stage 6. A verified physical activity has an internal `counts` marker for its elder participation.
+Reward rates and detailed eligibility are configured in a backend-owned policy. An eligible verified attendance creates a `pending_monthly` claim for the elder; settlement on or after the first day of the next MYT month credits the wallet and immutable ledger. Standalone attendance and companion attendance use the same canonical activity/elder identity, so the same person cannot earn twice for one occurrence. A verified physical activity has an internal `counts` marker for its elder participation.
 
 ## Read queries and consent
 

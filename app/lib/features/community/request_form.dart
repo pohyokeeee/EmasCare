@@ -74,11 +74,7 @@ class _CompanionRequestFormState extends State<CompanionRequestForm> {
   }
 
   bool _permitted(PreviewController c) {
-    if (c.role == AppRole.elder) return true;
-    if (c.role != AppRole.family) return false;
-    return c.session?.connected == true
-        ? c.session!.selectedElder?.booking == true
-        : c.demo.familyBooking;
+    return c.role == AppRole.elder;
   }
 
   String _elderName(PreviewController c) => c.session?.connected == true
@@ -133,16 +129,16 @@ class _CompanionRequestFormState extends State<CompanionRequestForm> {
           const SizedBox(height: 18),
           Text(
             c.t(
-              'Booking needs your elder’s consent.',
-              'Tempahan memerlukan kebenaran warga emas.',
+              'Only the elder can request a companion.',
+              'Hanya warga emas boleh meminta teman.',
             ),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
           Text(
             c.t(
-              'A linked elder must enable family booking. Daily sharing is a separate permission. Family cannot change either permission.',
-              'Warga emas terpaut mesti membenarkan tempahan keluarga. Perkongsian harian ialah kebenaran berasingan. Keluarga tidak boleh mengubah kebenaran tersebut.',
+              'Family, helpers and coordinators can view the parts permitted to them, but the elder starts every companion request.',
+              'Keluarga, pembantu dan penyelaras boleh melihat bahagian yang dibenarkan, tetapi warga emas memulakan setiap permintaan teman.',
             ),
           ),
           const SizedBox(height: 18),

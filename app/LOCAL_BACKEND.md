@@ -35,9 +35,10 @@ Terminal 2, repository root:
 ```powershell
 npm.cmd run demo:reset
 npm.cmd run demo:configure-rewards
+npm.cmd run demo:wallet  # presentation-only: 50 demo coins, redeem at 100
 ```
 
-Reset is for disposable emulator fixtures. It restores both elders' settings/statuses and the six demo accounts, clears their known receipts/session-derived history and seeds `request_demo_ready` for an immediate phone-help walkthrough. The configuration command applies the owner's 20-coin rule for all five verified action types and both participant roles, then reconciles earlier verified pending records. It does not add an opening balance. Emulator data is in memory; after restart/reset, reapply configuration. Skip reset when preserving the current saved examples.
+Reset is for disposable emulator fixtures. It restores both elders' settings/statuses and the six demo accounts, clears their known receipts/session-derived history and seeds `request_demo_ready` for an immediate phone-help walkthrough. The configuration command applies the owner's 20-coin rule for all five verified action types and both participant roles, then reconciles earlier verified pending records. The optional `demo:wallet` command adds a clearly labeled 50-coin presentation balance for the elder and helper; it is not an earned completion reward, and the 100-coin redemption guard remains active. Emulator data is in memory; after restart/reset, reapply configuration and, if presenting the wallet, `demo:wallet`. Skip reset when preserving the current saved examples.
 
 Terminal 3:
 

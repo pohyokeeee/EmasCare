@@ -81,8 +81,8 @@ class _ConnectedCompanions extends StatelessWidget {
               children: [
                 Text(
                   c.t(
-                    'Family booking permission',
-                    'Kebenaran tempahan keluarga',
+                    'Family companion updates',
+                    'Kemas kini teman keluarga',
                   ),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
@@ -167,16 +167,14 @@ class _ConnectedCompanions extends StatelessWidget {
               child: _PairingCard(pair),
             ),
         const SizedBox(height: 20),
-        if (c.role == AppRole.elder || family) ...[
+        if (c.role == AppRole.elder) ...[
           EmasButton(
             label: c.t(
               'Preview a companion request',
               'Pratonton permintaan teman',
             ),
             icon: Icons.edit_calendar_outlined,
-            onPressed: !family || c.session!.selectedElder?.booking == true
-                ? () => openCompanionRequest(context)
-                : null,
+            onPressed: () => openCompanionRequest(context),
           ),
           const SizedBox(height: 20),
         ],
@@ -405,8 +403,7 @@ class _SampleCompanions extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = PreviewScope.of(context), demo = c.demo;
     final family = c.role == AppRole.family;
-    final canRequest =
-        c.role == AppRole.elder || (family && demo.familyBooking);
+    final canRequest = c.role == AppRole.elder;
     final requests = demo.requests
         .where((r) => c.role != AppRole.helper || r.helperName != null)
         .toList();
@@ -469,14 +466,14 @@ class _SampleCompanions extends StatelessWidget {
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       c.t(
-                        'Allow sample family booking',
-                        'Benarkan tempahan keluarga contoh',
+                        'Share companion updates with family',
+                        'Kongsi kemas kini teman dengan keluarga',
                       ),
                     ),
                     subtitle: Text(
                       c.t(
-                        'Only the elder changes this permission. Daily sharing is separate.',
-                        'Hanya warga emas mengubah kebenaran ini. Perkongsian harian adalah berasingan.',
+                        'Only the elder changes this permission. Family cannot create requests; daily sharing is separate.',
+                        'Hanya warga emas mengubah kebenaran ini. Keluarga tidak boleh mencipta permintaan; perkongsian harian adalah berasingan.',
                       ),
                     ),
                     value: demo.familyBooking,
@@ -498,13 +495,15 @@ class _SampleCompanions extends StatelessWidget {
                     ),
                   ),
                 const SizedBox(height: 18),
-                EmasButton(
-                  label: c.t('New sample request', 'Permintaan contoh baharu'),
-                  icon: Icons.add,
-                  onPressed: canRequest
-                      ? () => openCompanionRequest(context)
-                      : null,
-                ),
+                if (canRequest)
+                  EmasButton(
+                    label: c.t(
+                      'New sample request',
+                      'Permintaan contoh baharu',
+                    ),
+                    icon: Icons.add,
+                    onPressed: () => openCompanionRequest(context),
+                  ),
               ],
             ),
           ),
@@ -514,12 +513,12 @@ class _SampleCompanions extends StatelessWidget {
           PreviewEmpty(
             icon: Icons.lock_outline,
             title: c.t(
-              'Booking permission is off.',
-              'Kebenaran tempahan tidak aktif.',
+              'Family companion updates are off.',
+              'Kemas kini teman keluarga tidak aktif.',
             ),
             description: c.t(
-              'Ask your elder to enable family booking. Sample requests are hidden while permission is off; family cannot confirm attendance.',
-              'Minta warga emas membenarkan tempahan keluarga. Permintaan contoh disembunyikan semasa kebenaran tidak aktif; keluarga tidak boleh mengesahkan kehadiran.',
+              'Ask your elder to share companion updates. Family cannot create requests or confirm attendance on the elder’s behalf.',
+              'Minta warga emas berkongsi kemas kini teman. Keluarga tidak boleh mencipta permintaan atau mengesahkan kehadiran bagi pihak warga emas.',
             ),
           )
         else ...[

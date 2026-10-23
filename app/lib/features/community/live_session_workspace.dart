@@ -10,6 +10,7 @@ import 'community_ui.dart';
 import 'live_availability.dart';
 import 'request_form.dart';
 import 'session_ui.dart';
+import 'session_chat.dart';
 
 class LiveSessionWorkspace extends StatelessWidget {
   const LiveSessionWorkspace({super.key});
@@ -18,14 +19,18 @@ class LiveSessionWorkspace extends StatelessWidget {
     final c = PreviewScope.of(context), w = c.sessions!;
     final family = c.role == AppRole.family,
         coordinator = c.role == AppRole.coordinator;
-    final canBook =
-        c.role == AppRole.elder ||
-        (family && c.session!.selectedElder?.booking == true);
+    final familyBooking =
+        family && c.session!.selectedElder?.booking == true;
+    final canBook = c.role == AppRole.elder;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (c.role == AppRole.helper) ...[
           const LiveAvailabilityCard(),
+          const SizedBox(height: 24),
+        ],
+        if (family) ...[
+          const FamilyAvailabilityCard(),
           const SizedBox(height: 24),
         ],
         if (family) ...[
@@ -35,8 +40,8 @@ class LiveSessionWorkspace extends StatelessWidget {
               children: [
                 Text(
                   c.t(
-                    'Family booking permission',
-                    'Kebenaran tempahan keluarga',
+                    'Family companion updates',
+                    'Kemas kini teman keluarga',
                   ),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
@@ -71,7 +76,7 @@ class LiveSessionWorkspace extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Pill(
-                      canBook
+                      familyBooking
                           ? c.t(
                               'Booking consent is on',
                               'Kebenaran tempahan aktif',
@@ -87,8 +92,8 @@ class LiveSessionWorkspace extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   c.t(
-                    'Your elder controls booking permission. Daily check-in sharing is a separate choice.',
-                    'Warga emas mengawal kebenaran tempahan. Perkongsian daftar masuk harian ialah pilihan berasingan.',
+                    'Your elder controls which companion updates you can see. Daily check-in sharing is a separate choice.',
+                    'Warga emas mengawal kemas kini teman yang boleh anda lihat. Perkongsian daftar masuk harian ialah pilihan berasingan.',
                   ),
                   style: const TextStyle(color: Palette.muted),
                 ),
@@ -137,7 +142,7 @@ class LiveSessionWorkspace extends StatelessWidget {
             ),
           const SizedBox(height: 18),
         ],
-        if (c.role == AppRole.elder || family) ...[
+        if (c.role == AppRole.elder) ...[
           EmasButton(
             label: c.t('New request', 'Permintaan baharu'),
             icon: Icons.add,
@@ -195,16 +200,16 @@ class LiveSessionWorkspace extends StatelessWidget {
         ),
         if (w.error != null)
           CommunityError(w.error!.message(c.malay), retry: w.retry)
-        else if (family && !canBook)
+        else if (family && !familyBooking)
           PreviewEmpty(
             icon: Icons.lock_outline,
             title: c.t(
-              'Booking permission is off.',
-              'Kebenaran tempahan tidak aktif.',
+              'Family companion updates are off.',
+              'Kemas kini teman keluarga tidak aktif.',
             ),
             description: c.t(
-              'Requests are hidden until your elder allows family booking. You cannot confirm participation on their behalf.',
-              'Permintaan disembunyikan sehingga warga emas membenarkan tempahan keluarga. Anda tidak boleh mengesahkan penyertaan bagi pihak mereka.',
+              'Requests are hidden until your elder shares companion updates. You cannot create requests or confirm participation on their behalf.',
+              'Permintaan disembunyikan sehingga warga emas berkongsi kemas kini teman. Anda tidak boleh mencipta permintaan atau mengesahkan penyertaan bagi pihak mereka.',
             ),
           )
         else if (w.loading)
@@ -475,11 +480,9 @@ class _LiveSessionCard extends StatelessWidget {
                   : () => action('confirm'),
             ),
           PendingSessionAction(name),
+          SessionChatButton(request: r),
           if (r.cancellable &&
-              (elder ||
-                  c.role == AppRole.coordinator ||
-                  (c.role == AppRole.family &&
-                      c.session!.selectedElder?.booking == true)))
+              (elder || c.role == AppRole.coordinator))
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(
